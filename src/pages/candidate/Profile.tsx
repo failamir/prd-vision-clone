@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, User } from "lucide-react";
@@ -16,6 +17,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState({
@@ -109,8 +112,7 @@ const Profile = () => {
       const file = event.target.files?.[0];
       if (!file) return;
 
-      // Validate file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         toast({
           title: "File too large",
@@ -120,7 +122,6 @@ const Profile = () => {
         return;
       }
 
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         toast({
           title: "Invalid file type",
@@ -135,7 +136,6 @@ const Profile = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Delete old avatar if exists
       if (profile.avatar_url) {
         const oldPath = profile.avatar_url.split("/").pop();
         if (oldPath) {
@@ -145,7 +145,6 @@ const Profile = () => {
         }
       }
 
-      // Upload new avatar
       const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
@@ -156,12 +155,10 @@ const Profile = () => {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from("avatars")
         .getPublicUrl(filePath);
 
-      // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from("candidate_profiles")
         .update({ avatar_url: publicUrl })
@@ -242,36 +239,24 @@ const Profile = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    );
-  }
+  const progressPercentage = (currentStep / totalSteps) * 100;
 
-  return (
-    <DashboardLayout>
-      <div className="max-w-4xl">
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold text-foreground mb-2">My Profile</h2>
-          <p className="text-muted-foreground">Manage your personal and professional information</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Avatar Upload Section */}
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
           <Card className="p-6">
-            <h3 className="text-xl font-semibold text-foreground mb-4">Profile Photo</h3>
-            <div className="flex flex-col md:flex-row items-center gap-6">
+            <h3 className="text-xl font-semibold text-foreground mb-6">Personal Detail</h3>
+            
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center gap-4 mb-6 pb-6 border-b">
               <Avatar className="w-32 h-32">
                 <AvatarImage src={avatarPreview} alt={profile.full_name} />
                 <AvatarFallback className="text-2xl">
                   <User className="w-16 h-16" />
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
+              <div>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -298,16 +283,12 @@ const Profile = () => {
                     </>
                   )}
                 </Button>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Maximum file size: 5MB. Supported formats: JPG, PNG, WEBP
+                <p className="text-sm text-muted-foreground mt-2 text-center">
+                  Max 5MB, JPG/PNG
                 </p>
               </div>
             </div>
-          </Card>
 
-          {/* Personal Information */}
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold text-foreground mb-4">Personal Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="full_name">Full Name *</Label>
@@ -318,8 +299,9 @@ const Profile = () => {
                   required
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="ktp_number">KTP *</Label>
+                <Label htmlFor="ktp_number">KTP Number *</Label>
                 <Input
                   id="ktp_number"
                   value={profile.ktp_number}
@@ -327,7 +309,7 @@ const Profile = () => {
                   placeholder="Indonesian ID Number"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label>Weight and Height *</Label>
                 <div className="flex gap-2">
@@ -436,9 +418,17 @@ const Profile = () => {
                   onChange={(e) => setProfile({ ...profile, date_of_birth: e.target.value })}
                 />
               </div>
+            </div>
+          </Card>
+        );
 
+      case 2:
+        return (
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold text-foreground mb-6">Pre Screening</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="how_found_us">How did you find us ? *</Label>
+                <Label htmlFor="how_found_us">How did you find us? *</Label>
                 <Select value={profile.how_found_us} onValueChange={(value) => setProfile({ ...profile, how_found_us: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select option" />
@@ -470,133 +460,203 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="referral_name">Referral Name *</Label>
+                <Label htmlFor="referral_name">Referral Name</Label>
                 <Input
                   id="referral_name"
                   value={profile.referral_name}
                   onChange={(e) => setProfile({ ...profile, referral_name: e.target.value })}
+                  placeholder="If referred by someone"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="covid_vaccinated">Have you been vaccinated against Covid-19? *</Label>
+                <Label htmlFor="covid_vaccinated">COVID-19 Vaccination Status *</Label>
                 <Select value={profile.covid_vaccinated} onValueChange={(value) => setProfile({ ...profile, covid_vaccinated: value })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select option" />
+                    <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
+                    <SelectItem value="yes">Yes - Fully Vaccinated</SelectItem>
+                    <SelectItem value="partial">Partially Vaccinated</SelectItem>
+                    <SelectItem value="no">Not Vaccinated</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-          </Card>
 
-          {/* Professional Information */}
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold text-foreground mb-4">Professional Information</h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="professional_title">Professional Title</Label>
                 <Input
                   id="professional_title"
-                  placeholder="e.g. Senior Deck Officer"
                   value={profile.professional_title}
                   onChange={(e) => setProfile({ ...profile, professional_title: e.target.value })}
+                  placeholder="e.g., Cruise Ship Crew, Chef"
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="bio">Bio / About Me</Label>
+                <Label htmlFor="expected_salary_min">Expected Salary Min (USD)</Label>
+                <Input
+                  id="expected_salary_min"
+                  type="number"
+                  value={profile.expected_salary_min}
+                  onChange={(e) => setProfile({ ...profile, expected_salary_min: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="expected_salary_max">Expected Salary Max (USD)</Label>
+                <Input
+                  id="expected_salary_max"
+                  type="number"
+                  value={profile.expected_salary_max}
+                  onChange={(e) => setProfile({ ...profile, expected_salary_max: e.target.value })}
+                />
+              </div>
+            </div>
+          </Card>
+        );
+
+      case 3:
+        return (
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold text-foreground mb-6">Screening</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio / About You</Label>
                 <Textarea
                   id="bio"
-                  rows={4}
-                  placeholder="Tell us about your experience and career goals..."
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                  placeholder="Tell us about yourself, your experience, and what makes you unique..."
+                  rows={5}
+                  className="resize-none"
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="website">Website / Portfolio</Label>
                 <Input
                   id="website"
                   type="url"
-                  placeholder="https://"
                   value={profile.website}
                   onChange={(e) => setProfile({ ...profile, website: e.target.value })}
+                  placeholder="https://"
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="expected_salary_min">Expected Salary (Min USD)</Label>
+                  <Label htmlFor="linkedin_url">LinkedIn URL</Label>
                   <Input
-                    id="expected_salary_min"
-                    type="number"
-                    placeholder="2000"
-                    value={profile.expected_salary_min}
-                    onChange={(e) => setProfile({ ...profile, expected_salary_min: e.target.value })}
+                    id="linkedin_url"
+                    type="url"
+                    value={profile.linkedin_url}
+                    onChange={(e) => setProfile({ ...profile, linkedin_url: e.target.value })}
+                    placeholder="https://linkedin.com/in/"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="expected_salary_max">Expected Salary (Max USD)</Label>
+                  <Label htmlFor="facebook_url">Facebook URL</Label>
                   <Input
-                    id="expected_salary_max"
-                    type="number"
-                    placeholder="5000"
-                    value={profile.expected_salary_max}
-                    onChange={(e) => setProfile({ ...profile, expected_salary_max: e.target.value })}
+                    id="facebook_url"
+                    type="url"
+                    value={profile.facebook_url}
+                    onChange={(e) => setProfile({ ...profile, facebook_url: e.target.value })}
+                    placeholder="https://facebook.com/"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="twitter_url">Twitter URL</Label>
+                  <Input
+                    id="twitter_url"
+                    type="url"
+                    value={profile.twitter_url}
+                    onChange={(e) => setProfile({ ...profile, twitter_url: e.target.value })}
+                    placeholder="https://twitter.com/"
                   />
                 </div>
               </div>
             </div>
           </Card>
+        );
 
-          {/* Social Media */}
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold text-foreground mb-4">Social Media</h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="linkedin_url">LinkedIn URL</Label>
-                <Input
-                  id="linkedin_url"
-                  type="url"
-                  placeholder="https://linkedin.com/in/yourprofile"
-                  value={profile.linkedin_url}
-                  onChange={(e) => setProfile({ ...profile, linkedin_url: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="facebook_url">Facebook URL</Label>
-                <Input
-                  id="facebook_url"
-                  type="url"
-                  placeholder="https://facebook.com/yourprofile"
-                  value={profile.facebook_url}
-                  onChange={(e) => setProfile({ ...profile, facebook_url: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="twitter_url">Twitter URL</Label>
-                <Input
-                  id="twitter_url"
-                  type="url"
-                  placeholder="https://twitter.com/yourprofile"
-                  value={profile.twitter_url}
-                  onChange={(e) => setProfile({ ...profile, twitter_url: e.target.value })}
-                />
-              </div>
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="max-w-4xl">
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-foreground mb-2">My Profile</h2>
+          <p className="text-muted-foreground">Complete your profile in {totalSteps} easy steps</p>
+        </div>
+
+        {/* Progress Indicator */}
+        <div className="mb-8 space-y-3">
+          <div className="flex justify-between items-center">
+            <div className={`text-sm font-medium ${currentStep === 1 ? "text-primary" : "text-muted-foreground"}`}>
+              Step 1: Personal Detail
             </div>
-          </Card>
+            <div className={`text-sm font-medium ${currentStep === 2 ? "text-primary" : "text-muted-foreground"}`}>
+              Step 2: Pre Screening
+            </div>
+            <div className={`text-sm font-medium ${currentStep === 3 ? "text-primary" : "text-muted-foreground"}`}>
+              Step 3: Screening
+            </div>
+          </div>
+          <Progress value={progressPercentage} className="h-2" />
+          <p className="text-sm text-muted-foreground text-right">
+            Step {currentStep} of {totalSteps}
+          </p>
+        </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={fetchProfile}>
-              Cancel
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {renderStepContent()}
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+              disabled={currentStep === 1}
+            >
+              Previous
             </Button>
-            <Button type="submit" disabled={saving}>
-              {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Save Changes
-            </Button>
+
+            {currentStep < totalSteps ? (
+              <Button
+                type="button"
+                onClick={() => setCurrentStep(Math.min(totalSteps, currentStep + 1))}
+              >
+                Next
+              </Button>
+            ) : (
+              <Button type="submit" disabled={saving}>
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Profile"
+                )}
+              </Button>
+            )}
           </div>
         </form>
       </div>
