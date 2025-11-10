@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Calendar, Shield } from "lucide-react";
+import { Loader2, Mail, Calendar, Shield, UserCog } from "lucide-react";
+import { RoleManagementDialog } from "@/components/admin/RoleManagementDialog";
 import {
   Table,
   TableBody,
@@ -27,6 +28,8 @@ const AdminUsers = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -88,6 +91,15 @@ const AdminUsers = () => {
       default:
         return "bg-green-100 text-green-800";
     }
+  };
+
+  const handleManageRoles = (user: User) => {
+    setSelectedUser(user);
+    setDialogOpen(true);
+  };
+
+  const handleRoleUpdated = () => {
+    fetchUsers();
   };
 
   if (loading) {
@@ -157,8 +169,13 @@ const AdminUsers = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Button variant="outline" size="sm">
-                      View Profile
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleManageRoles(user)}
+                    >
+                      <UserCog className="w-4 h-4 mr-2" />
+                      Manage Roles
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -172,6 +189,17 @@ const AdminUsers = () => {
             </div>
           )}
         </Card>
+
+        {selectedUser && (
+          <RoleManagementDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            userId={selectedUser.id}
+            userName={selectedUser.full_name}
+            currentRoles={selectedUser.roles}
+            onRoleUpdated={handleRoleUpdated}
+          />
+        )}
       </div>
     </AdminLayout>
   );
