@@ -9,8 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, User } from "lucide-react";
+import { Loader2, Upload, User, FileText, Trash2, Edit2, ExternalLink } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Profile = () => {
   const { toast } = useToast();
@@ -21,6 +24,17 @@ const Profile = () => {
   const totalSteps = 3;
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const testFileInputRef = useRef<HTMLInputElement>(null);
+  const [screeningTab, setScreeningTab] = useState("deck_experience");
+  const [medicalTests, setMedicalTests] = useState<any[]>([]);
+  const [loadingTests, setLoadingTests] = useState(false);
+  const [newTest, setNewTest] = useState({
+    test_name: "",
+    score: "",
+    file: null as File | null,
+  });
+  const [uploadingTest, setUploadingTest] = useState(false);
+  const [candidateId, setCandidateId] = useState<string | null>(null);
   const [profile, setProfile] = useState({
     full_name: "",
     email: "",
@@ -53,6 +67,12 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    if (candidateId && currentStep === 2) {
+      fetchMedicalTests();
+    }
+  }, [candidateId, currentStep]);
+
   const fetchProfile = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -67,6 +87,7 @@ const Profile = () => {
       if (error) throw error;
 
       if (data) {
+        setCandidateId(data.id);
         setProfile({
           full_name: data.full_name || "",
           email: data.email || "",
@@ -237,6 +258,148 @@ const Profile = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const fetchMedicalTests = async () => {
+    if (!candidateId) return;
+    
+    setLoadingTests(true);
+    try {
+      const { data, error } = await supabase
+        .from("candidate_medical_tests" as any)
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setMedicalTests(data || []);
+    } catch (error) {
+      console.error("Error fetching medical tests:", error);
+      toast({
+        title: "Error loading medical tests",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingTests(false);
+    }
+  };
+
+  const handleTestFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 8 * 1024 * 1024; // 8MB
+    if (file.size > maxSize) {
+      toast({
+        title: "File too large",
+        description: "Please select a PDF file under 8MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.type !== "application/pdf") {
+      toast({
+        title: "Invalid file type",
+        description: "Please select a PDF file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setNewTest({ ...newTest, file });
+  };
+
+  const handleSaveTest = async () => {
+    if (!candidateId || !newTest.test_name || !newTest.score) {
+      toast({
+        title: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingTest(true);
+    try {
+      let filePath = null;
+      let fileName = null;
+
+      if (newTest.file) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const fileExt = newTest.file.name.split(".").pop();
+        fileName = `${Date.now()}.${fileExt}`;
+        filePath = `${user.id}/medical-tests/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("documents")
+          .upload(filePath, newTest.file);
+
+        if (uploadError) throw uploadError;
+      }
+
+      const { error } = await supabase
+        .from("candidate_medical_tests" as any)
+        .insert({
+          candidate_id: candidateId,
+          test_name: newTest.test_name,
+          score: parseFloat(newTest.score),
+          file_path: filePath,
+          file_name: fileName,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Medical test saved successfully",
+      });
+
+      setNewTest({ test_name: "", score: "", file: null });
+      if (testFileInputRef.current) {
+        testFileInputRef.current.value = "";
+      }
+      fetchMedicalTests();
+    } catch (error) {
+      console.error("Error saving medical test:", error);
+      toast({
+        title: "Error saving medical test",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingTest(false);
+    }
+  };
+
+  const handleDeleteTest = async (testId: string, filePath: string | null) => {
+    try {
+      if (filePath) {
+        await supabase.storage.from("documents").remove([filePath]);
+      }
+
+      const { error } = await supabase
+        .from("candidate_medical_tests" as any)
+        .delete()
+        .eq("id", testId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Medical test deleted successfully",
+      });
+      fetchMedicalTests();
+    } catch (error) {
+      console.error("Error deleting medical test:", error);
+      toast({
+        title: "Error deleting medical test",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getFileUrl = (filePath: string) => {
+    const { data } = supabase.storage.from("documents").getPublicUrl(filePath);
+    return data.publicUrl;
   };
 
   const progressPercentage = (currentStep / totalSteps) * 100;
@@ -425,160 +588,188 @@ const Profile = () => {
       case 2:
         return (
           <Card className="p-6">
-            <h3 className="text-xl font-semibold text-foreground mb-6">Pre Screening</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="how_found_us">How did you find us? *</Label>
-                <Select value={profile.how_found_us} onValueChange={(value) => setProfile({ ...profile, how_found_us: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select option" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Institution / School / Courses">Institution / School / Courses</SelectItem>
-                    <SelectItem value="Social Media">Social Media</SelectItem>
-                    <SelectItem value="Job Portal">Job Portal</SelectItem>
-                    <SelectItem value="Referral">Referral</SelectItem>
-                    <SelectItem value="Others">Others</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <Alert className="mb-6 bg-orange-50 border-orange-200">
+              <AlertDescription className="text-orange-900">
+                If the test results are out, you must immediately upload the results here
+              </AlertDescription>
+            </Alert>
 
-              <div className="space-y-2">
-                <Label htmlFor="registration_city">In which city do you register? *</Label>
-                <Select value={profile.registration_city} onValueChange={(value) => setProfile({ ...profile, registration_city: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select city" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Yogyakarta">Yogyakarta</SelectItem>
-                    <SelectItem value="Jakarta">Jakarta</SelectItem>
-                    <SelectItem value="Surabaya">Surabaya</SelectItem>
-                    <SelectItem value="Bandung">Bandung</SelectItem>
-                    <SelectItem value="Others">Others</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <h3 className="text-lg font-semibold text-foreground mb-4">(Marlins/NEHA/CES)</h3>
 
-              <div className="space-y-2">
-                <Label htmlFor="referral_name">Referral Name</Label>
-                <Input
-                  id="referral_name"
-                  value={profile.referral_name}
-                  onChange={(e) => setProfile({ ...profile, referral_name: e.target.value })}
-                  placeholder="If referred by someone"
-                />
+            {loadingTests ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>
+            ) : (
+              <>
+                {medicalTests.length > 0 && (
+                  <div className="mb-6 border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Test Name</TableHead>
+                          <TableHead>Score</TableHead>
+                          <TableHead>File Result</TableHead>
+                          <TableHead className="w-[100px]"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {medicalTests.map((test) => (
+                          <TableRow key={test.id}>
+                            <TableCell>{test.test_name}</TableCell>
+                            <TableCell>{test.score}</TableCell>
+                            <TableCell>
+                              {test.file_path ? (
+                                <a
+                                  href={getFileUrl(test.file_path)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline inline-flex items-center gap-1"
+                                >
+                                  View File <ExternalLink className="w-3 h-3" />
+                                </a>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="h-8 px-3"
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="h-8 px-3"
+                                  onClick={() => handleDeleteTest(test.id, test.file_path)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
 
-              <div className="space-y-2">
-                <Label htmlFor="covid_vaccinated">COVID-19 Vaccination Status *</Label>
-                <Select value={profile.covid_vaccinated} onValueChange={(value) => setProfile({ ...profile, covid_vaccinated: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes - Fully Vaccinated</SelectItem>
-                    <SelectItem value="partial">Partially Vaccinated</SelectItem>
-                    <SelectItem value="no">Not Vaccinated</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="test_name">Test Name</Label>
+                    <Input
+                      id="test_name"
+                      value={newTest.test_name}
+                      onChange={(e) => setNewTest({ ...newTest, test_name: e.target.value })}
+                      placeholder="e.g., Marlin"
+                    />
+                  </div>
 
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="professional_title">Professional Title</Label>
-                <Input
-                  id="professional_title"
-                  value={profile.professional_title}
-                  onChange={(e) => setProfile({ ...profile, professional_title: e.target.value })}
-                  placeholder="e.g., Cruise Ship Crew, Chef"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="score">Score</Label>
+                    <Input
+                      id="score"
+                      type="number"
+                      step="0.01"
+                      value={newTest.score}
+                      onChange={(e) => setNewTest({ ...newTest, score: e.target.value })}
+                      placeholder="e.g., 99"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="expected_salary_min">Expected Salary Min (USD)</Label>
-                <Input
-                  id="expected_salary_min"
-                  type="number"
-                  value={profile.expected_salary_min}
-                  onChange={(e) => setProfile({ ...profile, expected_salary_min: e.target.value })}
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="test_file">File Result*</Label>
+                    <Input
+                      ref={testFileInputRef}
+                      id="test_file"
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleTestFileChange}
+                    />
+                    <p className="text-sm text-destructive">Filetype: Pdf, Max 8 MB</p>
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="expected_salary_max">Expected Salary Max (USD)</Label>
-                <Input
-                  id="expected_salary_max"
-                  type="number"
-                  value={profile.expected_salary_max}
-                  onChange={(e) => setProfile({ ...profile, expected_salary_max: e.target.value })}
-                />
-              </div>
-            </div>
+                  <Button
+                    type="button"
+                    onClick={handleSaveTest}
+                    disabled={uploadingTest}
+                    className="bg-destructive hover:bg-destructive/90"
+                  >
+                    {uploadingTest ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save"
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
           </Card>
         );
 
       case 3:
         return (
           <Card className="p-6">
-            <h3 className="text-xl font-semibold text-foreground mb-6">Screening</h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio / About You</Label>
-                <Textarea
-                  id="bio"
-                  value={profile.bio}
-                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  placeholder="Tell us about yourself, your experience, and what makes you unique..."
-                  rows={5}
-                  className="resize-none"
-                />
-              </div>
+            <Tabs value={screeningTab} onValueChange={setScreeningTab}>
+              <TabsList className="w-full justify-start h-auto flex-wrap gap-2 bg-transparent border-b rounded-none pb-2">
+                <TabsTrigger value="deck_experience" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Deck Experience
+                </TabsTrigger>
+                <TabsTrigger value="deck_certificate" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Deck Certificate
+                </TabsTrigger>
+                <TabsTrigger value="travel_document" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Travel Document
+                </TabsTrigger>
+                <TabsTrigger value="formal_education" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Formal Education Background
+                </TabsTrigger>
+                <TabsTrigger value="references" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  References
+                </TabsTrigger>
+                <TabsTrigger value="next_of_kin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Next Of Kin
+                </TabsTrigger>
+                <TabsTrigger value="emergency_contact" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Emergency Contact Details
+                </TabsTrigger>
+              </TabsList>
 
-              <div className="space-y-2">
-                <Label htmlFor="website">Website / Portfolio</Label>
-                <Input
-                  id="website"
-                  type="url"
-                  value={profile.website}
-                  onChange={(e) => setProfile({ ...profile, website: e.target.value })}
-                  placeholder="https://"
-                />
-              </div>
+              <TabsContent value="deck_experience" className="mt-6">
+                <p className="text-muted-foreground">Deck Experience content coming soon...</p>
+              </TabsContent>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="linkedin_url">LinkedIn URL</Label>
-                  <Input
-                    id="linkedin_url"
-                    type="url"
-                    value={profile.linkedin_url}
-                    onChange={(e) => setProfile({ ...profile, linkedin_url: e.target.value })}
-                    placeholder="https://linkedin.com/in/"
-                  />
-                </div>
+              <TabsContent value="deck_certificate" className="mt-6">
+                <p className="text-muted-foreground">Deck Certificate content coming soon...</p>
+              </TabsContent>
 
-                <div className="space-y-2">
-                  <Label htmlFor="facebook_url">Facebook URL</Label>
-                  <Input
-                    id="facebook_url"
-                    type="url"
-                    value={profile.facebook_url}
-                    onChange={(e) => setProfile({ ...profile, facebook_url: e.target.value })}
-                    placeholder="https://facebook.com/"
-                  />
-                </div>
+              <TabsContent value="travel_document" className="mt-6">
+                <p className="text-muted-foreground">Travel Document content coming soon...</p>
+              </TabsContent>
 
-                <div className="space-y-2">
-                  <Label htmlFor="twitter_url">Twitter URL</Label>
-                  <Input
-                    id="twitter_url"
-                    type="url"
-                    value={profile.twitter_url}
-                    onChange={(e) => setProfile({ ...profile, twitter_url: e.target.value })}
-                    placeholder="https://twitter.com/"
-                  />
-                </div>
-              </div>
-            </div>
+              <TabsContent value="formal_education" className="mt-6">
+                <p className="text-muted-foreground">Formal Education Background content coming soon...</p>
+              </TabsContent>
+
+              <TabsContent value="references" className="mt-6">
+                <p className="text-muted-foreground">References content coming soon...</p>
+              </TabsContent>
+
+              <TabsContent value="next_of_kin" className="mt-6">
+                <p className="text-muted-foreground">Next Of Kin content coming soon...</p>
+              </TabsContent>
+
+              <TabsContent value="emergency_contact" className="mt-6">
+                <p className="text-muted-foreground">Emergency Contact Details content coming soon...</p>
+              </TabsContent>
+            </Tabs>
           </Card>
         );
 
@@ -605,23 +796,32 @@ const Profile = () => {
           <p className="text-muted-foreground">Complete your profile in {totalSteps} easy steps</p>
         </div>
 
-        {/* Progress Indicator */}
-        <div className="mb-8 space-y-3">
-          <div className="flex justify-between items-center">
-            <div className={`text-sm font-medium ${currentStep === 1 ? "text-primary" : "text-muted-foreground"}`}>
-              Step 1: Personal Detail
-            </div>
-            <div className={`text-sm font-medium ${currentStep === 2 ? "text-primary" : "text-muted-foreground"}`}>
-              Step 2: Pre Screening
-            </div>
-            <div className={`text-sm font-medium ${currentStep === 3 ? "text-primary" : "text-muted-foreground"}`}>
-              Step 3: Screening
-            </div>
-          </div>
-          <Progress value={progressPercentage} className="h-2" />
-          <p className="text-sm text-muted-foreground text-right">
-            Step {currentStep} of {totalSteps}
-          </p>
+        {/* Step Tabs */}
+        <div className="mb-6 flex gap-2">
+          <Button
+            type="button"
+            variant={currentStep === 1 ? "default" : "outline"}
+            onClick={() => setCurrentStep(1)}
+            className={currentStep === 1 ? "" : "bg-background"}
+          >
+            STEP 1 : Personal Detail
+          </Button>
+          <Button
+            type="button"
+            variant={currentStep === 2 ? "default" : "outline"}
+            onClick={() => setCurrentStep(2)}
+            className={currentStep === 2 ? "" : "bg-background"}
+          >
+            STEP 2 : Pre Screening
+          </Button>
+          <Button
+            type="button"
+            variant={currentStep === 3 ? "default" : "outline"}
+            onClick={() => setCurrentStep(3)}
+            className={currentStep === 3 ? "" : "bg-background"}
+          >
+            STEP 3 : Screening
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
