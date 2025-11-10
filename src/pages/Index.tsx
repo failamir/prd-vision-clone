@@ -1,12 +1,238 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, MapPin, Clock, Briefcase } from "lucide-react";
+import heroCruise1 from "@/assets/hero-cruise-1.jpg";
+import heroCruise2 from "@/assets/hero-cruise-2.jpg";
+import heroCruise3 from "@/assets/hero-cruise-3.jpg";
+
+const heroSlides = [
+  {
+    image: heroCruise1,
+    title: "Creating Hero Of The Sea",
+    subtitle: "Join the world's leading cruise lines and shipping companies",
+  },
+  {
+    image: heroCruise2,
+    title: "Your Maritime Career Starts Here",
+    subtitle: "Professional recruitment services for seafarers worldwide",
+  },
+  {
+    image: heroCruise3,
+    title: "Sail Your Dreams",
+    subtitle: "Connecting talented seafarers with premium opportunities",
+  },
+];
+
+const urgentJobs = [
+  {
+    id: 1,
+    title: "Waiters",
+    company: "Norwegian Cruise Line",
+    department: "Hotel Department",
+    location: "International Waters",
+    type: "Full-time",
+    salary: "$2,000 - $3,500",
+    logo: "NCL",
+  },
+  {
+    id: 2,
+    title: "Deck Officer",
+    company: "SeaChef Maritime",
+    department: "Deck Department",
+    location: "International Waters",
+    type: "Full-time",
+    salary: "$4,000 - $6,000",
+    logo: "SC",
+  },
+];
+
+const partners = [
+  { name: "Norwegian Cruise Line", abbr: "NCL" },
+  { name: "NYK Ship Management", abbr: "NYKSM" },
+  { name: "Fred Olsen Cruise Line", abbr: "FOCL" },
+  { name: "SeaChef", abbr: "SC" },
+  { name: "Aloha Adriatic", abbr: "AA" },
+  { name: "Pertamina", abbr: "PTM" },
+];
 
 const Index = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      <Navbar />
+
+      {/* Hero Carousel */}
+      <section className="relative h-[600px] mt-16 overflow-hidden">
+        {heroSlides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-700 ${
+              index === currentSlide ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${slide.image})` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-ocean-deep/90 to-ocean-blue/70" />
+            <div className="relative container mx-auto px-4 h-full flex items-center">
+              <div className="max-w-2xl text-white">
+                <h1 className="text-5xl md:text-6xl font-bold mb-4">{slide.title}</h1>
+                <p className="text-xl md:text-2xl mb-8 text-blue-100">{slide.subtitle}</p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link to="/jobs">
+                    <Button size="lg" className="bg-secondary hover:bg-secondary/90 text-white">
+                      Explore Jobs
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button size="lg" variant="outline" className="bg-white/10 border-white text-white hover:bg-white/20">
+                      Join Now
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Carousel Controls */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors backdrop-blur-sm"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors backdrop-blur-sm"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+
+        {/* Carousel Indicators */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-2">
+          {heroSlides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-3 h-3 rounded-full transition-colors ${
+                index === currentSlide ? "bg-white" : "bg-white/50"
+              }`}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Urgent Jobs Section */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold text-foreground">Urgent Jobs</h2>
+            <Link to="/jobs?filter=urgent">
+              <Button variant="link" className="text-secondary">
+                View All
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {urgentJobs.map((job) => (
+              <Card key={job.id} className="p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                    {job.logo}
+                  </div>
+                  <Badge className="bg-gold text-ocean-deep hover:bg-gold/90">Urgent</Badge>
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">{job.title}</h3>
+                <p className="text-muted-foreground mb-1">{job.company}</p>
+                <p className="text-sm text-secondary font-medium mb-4">{job.department}</p>
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    {job.location}
+                  </div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Briefcase className="w-4 h-4 mr-2" />
+                    {job.type}
+                  </div>
+                  <div className="flex items-center text-sm text-foreground font-medium">
+                    <Clock className="w-4 h-4 mr-2" />
+                    {job.salary}
+                  </div>
+                </div>
+
+                <Link to={`/jobs/${job.id}`}>
+                  <Button className="w-full bg-primary hover:bg-primary/90">View Details</Button>
+                </Link>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Partners Section */}
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-foreground mb-12">Our Trusted Partners</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+            {partners.map((partner, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-center p-6 bg-card rounded-lg border border-border hover:shadow-md transition-shadow"
+              >
+                <div className="w-20 h-20 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                  {partner.abbr}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-gradient-to-r from-ocean-deep to-ocean-blue text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold mb-4">Ready to Start Your Maritime Career?</h2>
+          <p className="text-xl mb-8 text-blue-100">
+            Join thousands of seafarers who have found their dream jobs with us
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/register?role=candidate">
+              <Button size="lg" className="bg-white text-ocean-deep hover:bg-white/90">
+                Register as Candidate
+              </Button>
+            </Link>
+            <Link to="/register?role=employer">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white text-white hover:bg-white/10"
+              >
+                Register as Employer
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </div>
   );
 };
