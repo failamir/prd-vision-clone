@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ApplicationDialog } from "@/components/jobs/ApplicationDialog";
 
 interface Job {
   id: string;
@@ -51,14 +52,21 @@ const JobDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [similarJobs, setSimilarJobs] = useState<Job[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    checkAuth();
     if (id) {
       fetchJob();
       checkIfSaved();
       fetchSimilarJobs();
     }
   }, [id]);
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsAuthenticated(!!user);
+  };
 
   const fetchJob = async () => {
     try {
@@ -95,7 +103,7 @@ const JobDetail = () => {
         .from("candidate_profiles")
         .select("id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (!profile) return;
 
@@ -104,7 +112,7 @@ const JobDetail = () => {
         .select("job_id")
         .eq("candidate_id", profile.id)
         .eq("job_id", id)
-        .single();
+        .maybeSingle();
 
       setIsSaved(!!data);
     } catch (error) {
@@ -140,7 +148,7 @@ const JobDetail = () => {
         .from("candidate_profiles")
         .select("id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (!profile) {
         toast({
@@ -359,9 +367,19 @@ const JobDetail = () => {
                     <span className="text-muted-foreground">Expires in: {getDaysUntilExpiry(job.expires_at)}</span>
                   </div>
                 </div>
-                <Link to="/login">
-                  <Button className="w-full bg-primary hover:bg-primary/90 mb-3">Apply Now</Button>
-                </Link>
+                {isAuthenticated ? (
+                  <div className="mb-3">
+                    <ApplicationDialog 
+                      jobId={job.id} 
+                      jobTitle={job.title}
+                      onSuccess={checkIfSaved}
+                    />
+                  </div>
+                ) : (
+                  <Link to="/login">
+                    <Button className="w-full bg-primary hover:bg-primary/90 mb-3">Apply Now</Button>
+                  </Link>
+                )}
                 <Button 
                   variant={isSaved ? "default" : "outline"}
                   className="w-full"
