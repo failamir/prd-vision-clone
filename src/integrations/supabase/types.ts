@@ -55,6 +55,62 @@ export type Database = {
           },
         ]
       }
+      candidate_documents: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          description: string | null
+          document_type: string
+          expiry_date: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          issue_date: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          description?: string | null
+          document_type: string
+          expiry_date?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          issue_date?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          expiry_date?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          issue_date?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_documents_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_education: {
         Row: {
           candidate_id: string
@@ -142,6 +198,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "candidate_experience_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidate_medical_tests: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          file_name: string | null
+          file_path: string | null
+          id: string
+          score: number | null
+          test_name: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          score?: number | null
+          test_name: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          score?: number | null
+          test_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_medical_tests_candidate_id_fkey"
             columns: ["candidate_id"]
             isOneToOne: false
             referencedRelation: "candidate_profiles"
@@ -287,36 +384,132 @@ export type Database = {
       job_applications: {
         Row: {
           applied_at: string
+          approved_as: string | null
+          approved_position: string | null
+          bst_cc: string | null
+          c1d_expiry_date: string | null
           candidate_id: string
+          contact_no: string | null
           cover_letter: string | null
+          crew_code: string | null
           cv_id: string | null
+          cv_url: string | null
+          date_of_entry: string | null
+          education_background: string | null
+          emergency_contact: string | null
+          employment_offer: string | null
+          eo_acceptance: string | null
           id: string
+          interview_by: string | null
+          interview_date: string | null
+          interview_result: string | null
+          interview_result_notes: string | null
           job_id: string
+          letter_form_url: string | null
+          marlin_english_score: string | null
+          neha_ces_test: string | null
           notes: string | null
+          office_registered: string | null
+          photo_url: string | null
+          previous_experience: string | null
+          principal_interview_by: string | null
+          principal_interview_date: string | null
+          principal_interview_result: string | null
+          remarks: string | null
+          second_position: string | null
+          ship_experience: string | null
+          source: string | null
           status: string | null
+          suitable: string | null
+          test_result: string | null
           updated_at: string
+          vaccin_covid_booster: boolean | null
         }
         Insert: {
           applied_at?: string
+          approved_as?: string | null
+          approved_position?: string | null
+          bst_cc?: string | null
+          c1d_expiry_date?: string | null
           candidate_id: string
+          contact_no?: string | null
           cover_letter?: string | null
+          crew_code?: string | null
           cv_id?: string | null
+          cv_url?: string | null
+          date_of_entry?: string | null
+          education_background?: string | null
+          emergency_contact?: string | null
+          employment_offer?: string | null
+          eo_acceptance?: string | null
           id?: string
+          interview_by?: string | null
+          interview_date?: string | null
+          interview_result?: string | null
+          interview_result_notes?: string | null
           job_id: string
+          letter_form_url?: string | null
+          marlin_english_score?: string | null
+          neha_ces_test?: string | null
           notes?: string | null
+          office_registered?: string | null
+          photo_url?: string | null
+          previous_experience?: string | null
+          principal_interview_by?: string | null
+          principal_interview_date?: string | null
+          principal_interview_result?: string | null
+          remarks?: string | null
+          second_position?: string | null
+          ship_experience?: string | null
+          source?: string | null
           status?: string | null
+          suitable?: string | null
+          test_result?: string | null
           updated_at?: string
+          vaccin_covid_booster?: boolean | null
         }
         Update: {
           applied_at?: string
+          approved_as?: string | null
+          approved_position?: string | null
+          bst_cc?: string | null
+          c1d_expiry_date?: string | null
           candidate_id?: string
+          contact_no?: string | null
           cover_letter?: string | null
+          crew_code?: string | null
           cv_id?: string | null
+          cv_url?: string | null
+          date_of_entry?: string | null
+          education_background?: string | null
+          emergency_contact?: string | null
+          employment_offer?: string | null
+          eo_acceptance?: string | null
           id?: string
+          interview_by?: string | null
+          interview_date?: string | null
+          interview_result?: string | null
+          interview_result_notes?: string | null
           job_id?: string
+          letter_form_url?: string | null
+          marlin_english_score?: string | null
+          neha_ces_test?: string | null
           notes?: string | null
+          office_registered?: string | null
+          photo_url?: string | null
+          previous_experience?: string | null
+          principal_interview_by?: string | null
+          principal_interview_date?: string | null
+          principal_interview_result?: string | null
+          remarks?: string | null
+          second_position?: string | null
+          ship_experience?: string | null
+          source?: string | null
           status?: string | null
+          suitable?: string | null
+          test_result?: string | null
           updated_at?: string
+          vaccin_covid_booster?: boolean | null
         }
         Relationships: [
           {
