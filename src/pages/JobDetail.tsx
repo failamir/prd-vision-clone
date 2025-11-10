@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,50 +17,216 @@ import {
   Building2,
   Globe,
   Mail,
+  Loader2,
+  Bookmark,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Job {
+  id: string;
+  title: string;
+  company_name: string;
+  department: string | null;
+  location: string;
+  job_type: string;
+  salary_min: number | null;
+  salary_max: number | null;
+  salary_currency: string;
+  description: string;
+  responsibilities: string | null;
+  requirements: string | null;
+  benefits: string | null;
+  positions_available: number;
+  is_urgent: boolean;
+  created_at: string;
+  expires_at: string | null;
+}
 
 const JobDetail = () => {
-  const job = {
-    id: 1,
-    title: "Waiters",
-    company: "Norwegian Cruise Line",
-    department: "Hotel Department",
-    location: "International Waters",
-    type: "Full-time",
-    salary: "$2,000 - $3,500",
-    postedDate: "2 days ago",
-    expiryDate: "30 days",
-    positions: "5",
-    urgent: true,
-    description: `We are seeking professional and customer-oriented Waiters to join our Hotel Department aboard our luxury cruise ships. This is an excellent opportunity for individuals passionate about hospitality and eager to work in an international environment.
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [job, setJob] = useState<Job | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [similarJobs, setSimilarJobs] = useState<Job[]>([]);
 
-As a Waiter, you will be responsible for providing exceptional dining experiences to our guests, ensuring their comfort and satisfaction throughout their journey with us.`,
-    responsibilities: [
-      "Provide excellent customer service to all guests",
-      "Take orders and serve food and beverages efficiently",
-      "Maintain cleanliness and organization of dining areas",
-      "Work collaboratively with kitchen and service staff",
-      "Handle guest requests and resolve issues professionally",
-      "Follow health and safety regulations",
-    ],
-    requirements: [
-      "Minimum 1 year experience in hospitality or food service",
-      "Excellent communication and interpersonal skills",
-      "Ability to work in a fast-paced environment",
-      "Physical stamina to stand for extended periods",
-      "Basic English proficiency (additional languages a plus)",
-      "Customer service oriented with positive attitude",
-      "Willingness to work flexible hours including weekends",
-    ],
-    benefits: [
-      "Competitive salary with tips",
-      "Free accommodation and meals",
-      "Travel opportunities worldwide",
-      "Health and accident insurance",
-      "Training and career development",
-      "International work experience",
-    ],
+  useEffect(() => {
+    if (id) {
+      fetchJob();
+      checkIfSaved();
+      fetchSimilarJobs();
+    }
+  }, [id]);
+
+  const fetchJob = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("jobs")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+      if (!data) {
+        navigate("/jobs");
+        return;
+      }
+      setJob(data);
+    } catch (error) {
+      console.error("Error fetching job:", error);
+      toast({
+        title: "Error loading job",
+        variant: "destructive",
+      });
+      navigate("/jobs");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const checkIfSaved = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("candidate_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!profile) return;
+
+      const { data } = await supabase
+        .from("saved_jobs")
+        .select("job_id")
+        .eq("candidate_id", profile.id)
+        .eq("job_id", id)
+        .single();
+
+      setIsSaved(!!data);
+    } catch (error) {
+      console.error("Error checking saved status:", error);
+    }
+  };
+
+  const fetchSimilarJobs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("jobs")
+        .select("*")
+        .neq("id", id)
+        .eq("is_active", true)
+        .limit(2);
+
+      if (error) throw error;
+      setSimilarJobs(data || []);
+    } catch (error) {
+      console.error("Error fetching similar jobs:", error);
+    }
+  };
+
+  const handleSaveJob = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("candidate_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!profile) {
+        toast({
+          title: "Profile not found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (isSaved) {
+        const { error } = await supabase
+          .from("saved_jobs")
+          .delete()
+          .eq("candidate_id", profile.id)
+          .eq("job_id", id);
+
+        if (error) throw error;
+        setIsSaved(false);
+        toast({ title: "Job removed from saved" });
+      } else {
+        const { error } = await supabase
+          .from("saved_jobs")
+          .insert({ candidate_id: profile.id, job_id: id });
+
+        if (error) throw error;
+        setIsSaved(true);
+        toast({ title: "Job saved successfully" });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const formatSalary = (min: number | null, max: number | null, currency: string) => {
+    if (!min && !max) return "Competitive";
+    if (min && max) return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
+    if (min) return `From $${min.toLocaleString()}`;
+    return `Up to $${max?.toLocaleString()}`;
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const days = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (days === 0) return "Today";
+    if (days === 1) return "Yesterday";
+    if (days < 7) return `${days} days ago`;
+    return `${Math.floor(days / 7)} weeks ago`;
+  };
+
+  const getDaysUntilExpiry = (expiresAt: string | null) => {
+    if (!expiresAt) return "Open";
+    const expiry = new Date(expiresAt);
+    const now = new Date();
+    const days = Math.floor((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (days < 0) return "Expired";
+    if (days === 0) return "Today";
+    if (days === 1) return "1 day";
+    return `${days} days`;
+  };
+
+  const parseTextArray = (text: string | null): string[] => {
+    if (!text) return [];
+    return text.split('\n').filter(line => line.trim() !== '').map(line => line.replace(/^[•\-]\s*/, ''));
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="flex items-center justify-center h-screen">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!job) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen">
@@ -85,19 +252,21 @@ As a Waiter, you will be responsible for providing exceptional dining experience
               <Card className="p-8">
                 <div className="flex items-start gap-4 mb-6">
                   <div className="w-20 h-20 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center text-white font-bold text-2xl flex-shrink-0">
-                    {job.company.substring(0, 2)}
+                    {job.company_name.substring(0, 2)}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <h1 className="text-3xl font-bold text-foreground mb-2">{job.title}</h1>
-                        <p className="text-lg text-muted-foreground">{job.company}</p>
+                        <p className="text-lg text-muted-foreground">{job.company_name}</p>
                       </div>
-                      {job.urgent && (
+                      {job.is_urgent && (
                         <Badge className="bg-gold text-ocean-deep hover:bg-gold/90">Urgent</Badge>
                       )}
                     </div>
-                    <p className="text-secondary font-medium">{job.department}</p>
+                    {job.department && (
+                      <p className="text-secondary font-medium">{job.department}</p>
+                    )}
                   </div>
                 </div>
 
@@ -108,15 +277,17 @@ As a Waiter, you will be responsible for providing exceptional dining experience
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Briefcase className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-foreground">{job.type}</span>
+                    <span className="text-foreground">{job.job_type}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <DollarSign className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-foreground font-medium">{job.salary}</span>
+                    <span className="text-foreground font-medium">
+                      {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-foreground">{job.positions} positions</span>
+                    <span className="text-foreground">{job.positions_available} positions</span>
                   </div>
                 </div>
 
@@ -128,41 +299,47 @@ As a Waiter, you will be responsible for providing exceptional dining experience
                     <p className="text-foreground leading-relaxed whitespace-pre-line">{job.description}</p>
                   </div>
 
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">Responsibilities</h2>
-                    <ul className="space-y-2">
-                      {job.responsibilities.map((item, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <CheckCircle2 className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
-                          <span className="text-foreground">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {job.responsibilities && parseTextArray(job.responsibilities).length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground mb-4">Responsibilities</h2>
+                      <ul className="space-y-2">
+                        {parseTextArray(job.responsibilities).map((item, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                            <span className="text-foreground">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">Requirements</h2>
-                    <ul className="space-y-2">
-                      {job.requirements.map((item, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <CheckCircle2 className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
-                          <span className="text-foreground">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {job.requirements && parseTextArray(job.requirements).length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground mb-4">Requirements</h2>
+                      <ul className="space-y-2">
+                        {parseTextArray(job.requirements).map((item, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                            <span className="text-foreground">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">Benefits</h2>
-                    <ul className="space-y-2">
-                      {job.benefits.map((item, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <CheckCircle2 className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
-                          <span className="text-foreground">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {job.benefits && parseTextArray(job.benefits).length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground mb-4">Benefits</h2>
+                      <ul className="space-y-2">
+                        {parseTextArray(job.benefits).map((item, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                            <span className="text-foreground">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </Card>
             </div>
@@ -175,17 +352,24 @@ As a Waiter, you will be responsible for providing exceptional dining experience
                 <div className="space-y-4 mb-6">
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Posted: {job.postedDate}</span>
+                    <span className="text-muted-foreground">Posted: {getTimeAgo(job.created_at)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Expires in: {job.expiryDate}</span>
+                    <span className="text-muted-foreground">Expires in: {getDaysUntilExpiry(job.expires_at)}</span>
                   </div>
                 </div>
                 <Link to="/login">
                   <Button className="w-full bg-primary hover:bg-primary/90 mb-3">Apply Now</Button>
                 </Link>
-                <Button variant="outline" className="w-full">Save Job</Button>
+                <Button 
+                  variant={isSaved ? "default" : "outline"}
+                  className="w-full"
+                  onClick={handleSaveJob}
+                >
+                  <Bookmark className={`w-4 h-4 mr-2 ${isSaved ? 'fill-current' : ''}`} />
+                  {isSaved ? 'Saved' : 'Save Job'}
+                </Button>
               </Card>
 
               {/* Company Info */}
@@ -197,47 +381,46 @@ As a Waiter, you will be responsible for providing exceptional dining experience
                       <Building2 className="w-4 h-4" />
                       <span>Company</span>
                     </div>
-                    <p className="font-medium text-foreground">{job.company}</p>
+                    <p className="font-medium text-foreground">{job.company_name}</p>
                   </div>
                   <div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                       <Globe className="w-4 h-4" />
                       <span>Industry</span>
                     </div>
-                    <p className="font-medium text-foreground">Cruise Lines & Maritime</p>
+                    <p className="font-medium text-foreground">Maritime & Shipping</p>
                   </div>
                   <div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                      <Mail className="w-4 h-4" />
-                      <span>Contact</span>
+                      <MapPin className="w-4 h-4" />
+                      <span>Location</span>
                     </div>
-                    <p className="font-medium text-foreground">careers@ncl.com</p>
+                    <p className="font-medium text-foreground">{job.location}</p>
                   </div>
-                  <Link to={`/companies/${job.id}`}>
-                    <Button variant="outline" className="w-full mt-4">
-                      View Company Profile
-                    </Button>
-                  </Link>
                 </div>
               </Card>
 
               {/* Similar Jobs */}
-              <Card className="p-6">
-                <h3 className="text-xl font-bold text-foreground mb-4">Similar Jobs</h3>
-                <div className="space-y-4">
-                  {[1, 2].map((i) => (
-                    <Link
-                      key={i}
-                      to={`/jobs/${i + 2}`}
-                      className="block p-3 rounded-lg hover:bg-muted transition-colors"
-                    >
-                      <h4 className="font-medium text-foreground mb-1">Chef de Partie</h4>
-                      <p className="text-sm text-muted-foreground">Norwegian Cruise Line</p>
-                      <p className="text-sm text-secondary font-medium mt-1">$2,500 - $4,000</p>
-                    </Link>
-                  ))}
-                </div>
-              </Card>
+              {similarJobs.length > 0 && (
+                <Card className="p-6">
+                  <h3 className="text-xl font-bold text-foreground mb-4">Similar Jobs</h3>
+                  <div className="space-y-4">
+                    {similarJobs.map((similarJob) => (
+                      <Link
+                        key={similarJob.id}
+                        to={`/jobs/${similarJob.id}`}
+                        className="block p-3 rounded-lg hover:bg-muted transition-colors"
+                      >
+                        <h4 className="font-medium text-foreground mb-1">{similarJob.title}</h4>
+                        <p className="text-sm text-muted-foreground">{similarJob.company_name}</p>
+                        <p className="text-sm text-secondary font-medium mt-1">
+                          {formatSalary(similarJob.salary_min, similarJob.salary_max, similarJob.salary_currency)}
+                        </p>
+                      </Link>
+                    ))}
+                  </div>
+                </Card>
+              )}
             </div>
           </div>
         </div>
