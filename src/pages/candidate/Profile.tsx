@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Profile = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState({
     full_name: "",
     email: "",
@@ -39,6 +43,7 @@ const Profile = () => {
     registration_city: "",
     referral_name: "",
     covid_vaccinated: "",
+    avatar_url: "",
   });
 
   useEffect(() => {
@@ -84,7 +89,9 @@ const Profile = () => {
           registration_city: data.registration_city || "",
           referral_name: data.referral_name || "",
           covid_vaccinated: data.covid_vaccinated || "",
+          avatar_url: data.avatar_url || "",
         });
+        setAvatarPreview(data.avatar_url || "");
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -94,6 +101,91 @@ const Profile = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        toast({
+          title: "File too large",
+          description: "Please select an image under 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setUploading(true);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Delete old avatar if exists
+      if (profile.avatar_url) {
+        const oldPath = profile.avatar_url.split("/").pop();
+        if (oldPath) {
+          await supabase.storage
+            .from("avatars")
+            .remove([`${user.id}/${oldPath}`]);
+        }
+      }
+
+      // Upload new avatar
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from("candidate_profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("user_id", user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile({ ...profile, avatar_url: publicUrl });
+      setAvatarPreview(publicUrl);
+
+      toast({
+        title: "Avatar updated successfully",
+      });
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      toast({
+        title: "Error uploading avatar",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -169,6 +261,50 @@ const Profile = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Avatar Upload Section */}
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold text-foreground mb-4">Profile Photo</h3>
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <Avatar className="w-32 h-32">
+                <AvatarImage src={avatarPreview} alt={profile.full_name} />
+                <AvatarFallback className="text-2xl">
+                  <User className="w-16 h-16" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  id="avatar-upload"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Photo
+                    </>
+                  )}
+                </Button>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Maximum file size: 5MB. Supported formats: JPG, PNG, WEBP
+                </p>
+              </div>
+            </div>
+          </Card>
+
           {/* Personal Information */}
           <Card className="p-6">
             <h3 className="text-xl font-semibold text-foreground mb-4">Personal Information</h3>
