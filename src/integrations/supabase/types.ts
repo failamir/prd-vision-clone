@@ -156,6 +156,7 @@ export type Database = {
           bio: string | null
           city: string | null
           country: string | null
+          covid_vaccinated: string | null
           created_at: string
           date_of_birth: string | null
           email: string
@@ -164,16 +165,23 @@ export type Database = {
           facebook_url: string | null
           full_name: string
           gender: string | null
+          height_cm: number | null
+          how_found_us: string | null
           id: string
           is_profile_public: boolean | null
+          ktp_number: string | null
           linkedin_url: string | null
           phone: string | null
+          place_of_birth: string | null
           professional_title: string | null
+          referral_name: string | null
+          registration_city: string | null
           salary_currency: string | null
           twitter_url: string | null
           updated_at: string
           user_id: string
           website: string | null
+          weight_kg: number | null
         }
         Insert: {
           address?: string | null
@@ -181,6 +189,7 @@ export type Database = {
           bio?: string | null
           city?: string | null
           country?: string | null
+          covid_vaccinated?: string | null
           created_at?: string
           date_of_birth?: string | null
           email: string
@@ -189,16 +198,23 @@ export type Database = {
           facebook_url?: string | null
           full_name: string
           gender?: string | null
+          height_cm?: number | null
+          how_found_us?: string | null
           id?: string
           is_profile_public?: boolean | null
+          ktp_number?: string | null
           linkedin_url?: string | null
           phone?: string | null
+          place_of_birth?: string | null
           professional_title?: string | null
+          referral_name?: string | null
+          registration_city?: string | null
           salary_currency?: string | null
           twitter_url?: string | null
           updated_at?: string
           user_id: string
           website?: string | null
+          weight_kg?: number | null
         }
         Update: {
           address?: string | null
@@ -206,6 +222,7 @@ export type Database = {
           bio?: string | null
           city?: string | null
           country?: string | null
+          covid_vaccinated?: string | null
           created_at?: string
           date_of_birth?: string | null
           email?: string
@@ -214,16 +231,23 @@ export type Database = {
           facebook_url?: string | null
           full_name?: string
           gender?: string | null
+          height_cm?: number | null
+          how_found_us?: string | null
           id?: string
           is_profile_public?: boolean | null
+          ktp_number?: string | null
           linkedin_url?: string | null
           phone?: string | null
+          place_of_birth?: string | null
           professional_title?: string | null
+          referral_name?: string | null
+          registration_city?: string | null
           salary_currency?: string | null
           twitter_url?: string | null
           updated_at?: string
           user_id?: string
           website?: string | null
+          weight_kg?: number | null
         }
         Relationships: []
       }

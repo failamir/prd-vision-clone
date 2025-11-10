@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
@@ -30,6 +31,14 @@ const Profile = () => {
     linkedin_url: "",
     facebook_url: "",
     twitter_url: "",
+    weight_kg: "",
+    height_cm: "",
+    ktp_number: "",
+    place_of_birth: "",
+    how_found_us: "",
+    registration_city: "",
+    referral_name: "",
+    covid_vaccinated: "",
   });
 
   useEffect(() => {
@@ -67,6 +76,14 @@ const Profile = () => {
           linkedin_url: data.linkedin_url || "",
           facebook_url: data.facebook_url || "",
           twitter_url: data.twitter_url || "",
+          weight_kg: data.weight_kg?.toString() || "",
+          height_cm: data.height_cm?.toString() || "",
+          ktp_number: data.ktp_number || "",
+          place_of_birth: data.place_of_birth || "",
+          how_found_us: data.how_found_us || "",
+          registration_city: data.registration_city || "",
+          referral_name: data.referral_name || "",
+          covid_vaccinated: data.covid_vaccinated || "",
         });
       }
     } catch (error) {
@@ -106,6 +123,14 @@ const Profile = () => {
           linkedin_url: profile.linkedin_url,
           facebook_url: profile.facebook_url,
           twitter_url: profile.twitter_url,
+          weight_kg: profile.weight_kg ? parseFloat(profile.weight_kg) : null,
+          height_cm: profile.height_cm ? parseFloat(profile.height_cm) : null,
+          ktp_number: profile.ktp_number,
+          place_of_birth: profile.place_of_birth,
+          how_found_us: profile.how_found_us,
+          registration_city: profile.registration_city,
+          referral_name: profile.referral_name,
+          covid_vaccinated: profile.covid_vaccinated,
         })
         .eq("user_id", user.id);
 
@@ -158,11 +183,74 @@ const Profile = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address *</Label>
-                <Input id="email" type="email" value={profile.email} disabled />
+                <Label htmlFor="ktp_number">KTP *</Label>
+                <Input
+                  id="ktp_number"
+                  value={profile.ktp_number}
+                  onChange={(e) => setProfile({ ...profile, ktp_number: e.target.value })}
+                  placeholder="Indonesian ID Number"
+                />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label>Weight and Height *</Label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <div className="flex">
+                      <Input
+                        type="number"
+                        placeholder="Weight"
+                        value={profile.weight_kg}
+                        onChange={(e) => setProfile({ ...profile, weight_kg: e.target.value })}
+                        className="rounded-r-none"
+                      />
+                      <span className="inline-flex items-center px-3 bg-muted border border-l-0 border-input rounded-r-md text-sm text-muted-foreground">
+                        KG
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex">
+                      <Input
+                        type="number"
+                        placeholder="Height"
+                        value={profile.height_cm}
+                        onChange={(e) => setProfile({ ...profile, height_cm: e.target.value })}
+                        className="rounded-r-none"
+                      />
+                      <span className="inline-flex items-center px-3 bg-muted border border-l-0 border-input rounded-r-md text-sm text-muted-foreground">
+                        CM
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender *</Label>
+                <Select value={profile.gender} onValueChange={(value) => setProfile({ ...profile, gender: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="country">Nationality *</Label>
+                <Input
+                  id="country"
+                  value={profile.country}
+                  onChange={(e) => setProfile({ ...profile, country: e.target.value })}
+                  placeholder="e.g., Indonesia"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Contact No *</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -170,8 +258,41 @@ const Profile = () => {
                   onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="date_of_birth">Date of Birth</Label>
+                <Label htmlFor="email">Email *</Label>
+                <Input id="email" type="email" value={profile.email} disabled />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="address">Address *</Label>
+                <Input
+                  id="address"
+                  value={profile.address}
+                  onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="city">City *</Label>
+                <Input
+                  id="city"
+                  value={profile.city}
+                  onChange={(e) => setProfile({ ...profile, city: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="place_of_birth">Place of Birth *</Label>
+                <Input
+                  id="place_of_birth"
+                  value={profile.place_of_birth}
+                  onChange={(e) => setProfile({ ...profile, place_of_birth: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="date_of_birth">Date Of Birth *</Label>
                 <Input
                   id="date_of_birth"
                   type="date"
@@ -179,37 +300,59 @@ const Profile = () => {
                   onChange={(e) => setProfile({ ...profile, date_of_birth: e.target.value })}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
+                <Label htmlFor="how_found_us">How did you find us ? *</Label>
+                <Select value={profile.how_found_us} onValueChange={(value) => setProfile({ ...profile, how_found_us: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Institution / School / Courses">Institution / School / Courses</SelectItem>
+                    <SelectItem value="Social Media">Social Media</SelectItem>
+                    <SelectItem value="Job Portal">Job Portal</SelectItem>
+                    <SelectItem value="Referral">Referral</SelectItem>
+                    <SelectItem value="Others">Others</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="registration_city">In which city do you register? *</Label>
+                <Select value={profile.registration_city} onValueChange={(value) => setProfile({ ...profile, registration_city: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select city" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Yogyakarta">Yogyakarta</SelectItem>
+                    <SelectItem value="Jakarta">Jakarta</SelectItem>
+                    <SelectItem value="Surabaya">Surabaya</SelectItem>
+                    <SelectItem value="Bandung">Bandung</SelectItem>
+                    <SelectItem value="Others">Others</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="referral_name">Referral Name *</Label>
                 <Input
-                  id="gender"
-                  value={profile.gender}
-                  onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
+                  id="referral_name"
+                  value={profile.referral_name}
+                  onChange={(e) => setProfile({ ...profile, referral_name: e.target.value })}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  value={profile.city}
-                  onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={profile.address}
-                  onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  value={profile.country}
-                  onChange={(e) => setProfile({ ...profile, country: e.target.value })}
-                />
+                <Label htmlFor="covid_vaccinated">Have you been vaccinated against Covid-19? *</Label>
+                <Select value={profile.covid_vaccinated} onValueChange={(value) => setProfile({ ...profile, covid_vaccinated: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </Card>
