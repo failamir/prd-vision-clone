@@ -83,15 +83,18 @@ const AdminSetup = () => {
       if (signUpError) throw signUpError;
       if (!authData.user) throw new Error("User creation failed");
 
-      // Assign admin role
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert({
-          user_id: authData.user.id,
-          role: "admin",
-        });
+      // Wait a moment for the user profile to be created by trigger
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (roleError) throw roleError;
+      // Assign admin role using the security definer function
+      const { error: roleError } = await supabase.rpc('insert_admin_role', {
+        target_user_id: authData.user.id
+      });
+
+      if (roleError) {
+        console.error("Role assignment error:", roleError);
+        throw new Error("Gagal assign admin role: " + roleError.message);
+      }
 
       toast({
         title: "Admin berhasil dibuat!",

@@ -519,6 +519,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      insert_admin_role: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "employer" | "candidate"
