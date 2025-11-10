@@ -17,6 +17,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminJobs from "./pages/admin/Jobs";
 import AdminApplications from "./pages/admin/Applications";
+import AdminSetup from "./pages/admin/Setup";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/admin/AdminRoute";
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/candidate/saved-jobs" element={<ProtectedRoute><CandidateSavedJobs /></ProtectedRoute>} />
           
           {/* Admin Routes */}
+          <Route path="/admin/setup" element={<AdminSetup />} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
           <Route path="/admin/jobs" element={<AdminRoute><AdminJobs /></AdminRoute>} />
