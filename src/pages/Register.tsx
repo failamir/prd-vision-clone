@@ -1,14 +1,94 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const Register = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [userType, setUserType] = useState("candidate");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/candidate/dashboard");
+      }
+    });
+  }, [navigate]);
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Password mismatch",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!agreedToTerms) {
+      toast({
+        title: "Terms required",
+        description: "Please agree to the terms and conditions",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: `${firstName} ${lastName}`,
+            user_type: userType,
+            phone,
+            company: userType === "employer" ? company : null,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Registration successful!",
+        description: "Your account has been created. Redirecting...",
+      });
+
+      navigate("/candidate/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "An error occurred during registration",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ocean-deep via-ocean-blue to-ocean-light p-4">
@@ -21,7 +101,7 @@ const Register = () => {
           <p className="text-muted-foreground">Start your maritime career journey today</p>
         </div>
 
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleRegister}>
           <div>
             <Label className="mb-3 block">I want to register as:</Label>
             <RadioGroup value={userType} onValueChange={setUserType} className="grid grid-cols-2 gap-4">
@@ -57,43 +137,94 @@ const Register = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
-              <Input id="firstName" placeholder="John" />
+              <Input 
+                id="firstName" 
+                placeholder="John"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" placeholder="Doe" />
+              <Input 
+                id="lastName" 
+                placeholder="Doe"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
-            <Input id="email" type="email" placeholder="your@email.com" />
+            <Input 
+              id="email" 
+              type="email" 
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
 
           {userType === "employer" && (
             <div className="space-y-2">
               <Label htmlFor="company">Company Name</Label>
-              <Input id="company" placeholder="Your Company Name" />
+              <Input 
+                id="company" 
+                placeholder="Your Company Name"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                required={userType === "employer"}
+              />
             </div>
           )}
 
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number</Label>
-            <Input id="phone" type="tel" placeholder="+62 xxx xxxx xxxx" />
+            <Input 
+              id="phone" 
+              type="tel" 
+              placeholder="+62 xxx xxxx xxxx"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" placeholder="Create a strong password" />
+            <Input 
+              id="password" 
+              type="password" 
+              placeholder="Create a strong password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input id="confirmPassword" type="password" placeholder="Confirm your password" />
+            <Input 
+              id="confirmPassword" 
+              type="password" 
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+            />
           </div>
 
           <div className="flex items-start space-x-2">
-            <Checkbox id="terms" />
+            <Checkbox 
+              id="terms"
+              checked={agreedToTerms}
+              onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+            />
             <label htmlFor="terms" className="text-sm text-foreground cursor-pointer leading-relaxed">
               I agree to the{" "}
               <Link to="/terms" className="text-secondary hover:underline">
@@ -106,8 +237,20 @@ const Register = () => {
             </label>
           </div>
 
-          <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
-            Create Account
+          <Button 
+            className="w-full bg-primary hover:bg-primary/90" 
+            size="lg"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              "Create Account"
+            )}
           </Button>
         </form>
 

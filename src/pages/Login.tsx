@@ -1,11 +1,60 @@
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/candidate/dashboard");
+      }
+    });
+  }, [navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
+      });
+
+      navigate("/candidate/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Invalid email or password",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ocean-deep via-ocean-blue to-ocean-light p-4">
       <Card className="w-full max-w-md p-8">
@@ -17,10 +66,17 @@ const Login = () => {
           <p className="text-muted-foreground">Sign in to your account</p>
         </div>
 
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleLogin}>
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
-            <Input id="email" type="email" placeholder="your@email.com" />
+            <Input 
+              id="email" 
+              type="email" 
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
 
           <div className="space-y-2">
@@ -30,18 +86,41 @@ const Login = () => {
                 Forgot Password?
               </Link>
             </div>
-            <Input id="password" type="password" placeholder="Enter your password" />
+            <Input 
+              id="password" 
+              type="password" 
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
 
           <div className="flex items-center space-x-2">
-            <Checkbox id="remember" />
+            <Checkbox 
+              id="remember" 
+              checked={rememberMe}
+              onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+            />
             <label htmlFor="remember" className="text-sm text-foreground cursor-pointer">
               Remember me
             </label>
           </div>
 
-          <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
-            Sign In
+          <Button 
+            className="w-full bg-primary hover:bg-primary/90" 
+            size="lg"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </Button>
         </form>
 

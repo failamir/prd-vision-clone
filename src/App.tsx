@@ -14,6 +14,7 @@ import CandidateCVs from "./pages/candidate/CVs";
 import CandidateApplications from "./pages/candidate/Applications";
 import CandidateSavedJobs from "./pages/candidate/SavedJobs";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -29,11 +30,11 @@ const App = () => (
           <Route path="/jobs/:id" element={<JobDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
-          <Route path="/candidate/profile" element={<CandidateProfile />} />
-          <Route path="/candidate/cvs" element={<CandidateCVs />} />
-          <Route path="/candidate/applications" element={<CandidateApplications />} />
-          <Route path="/candidate/saved-jobs" element={<CandidateSavedJobs />} />
+          <Route path="/candidate/dashboard" element={<ProtectedRoute><CandidateDashboard /></ProtectedRoute>} />
+          <Route path="/candidate/profile" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
+          <Route path="/candidate/cvs" element={<ProtectedRoute><CandidateCVs /></ProtectedRoute>} />
+          <Route path="/candidate/applications" element={<ProtectedRoute><CandidateApplications /></ProtectedRoute>} />
+          <Route path="/candidate/saved-jobs" element={<ProtectedRoute><CandidateSavedJobs /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
