@@ -30,11 +30,9 @@ export const Navbar = () => {
             <Link to="/about" className="text-foreground hover:text-primary transition-colors">
               About Us
             </Link>
-            <div className="relative group">
-              <button className="text-foreground hover:text-primary transition-colors">
-                Our Services
-              </button>
-            </div>
+            <Link to="/services" className="text-foreground hover:text-primary transition-colors">
+              Our Services
+            </Link>
             <Link to="/safety" className="text-foreground hover:text-primary transition-colors">
               Safety & Quality
             </Link>
@@ -83,11 +81,17 @@ export const Navbar = () => {
             <Link to="/about" className="text-foreground hover:text-primary transition-colors py-2">
               About Us
             </Link>
-            <Link to="/jobs" className="text-foreground hover:text-primary transition-colors py-2 font-medium">
-              Jobs
+            <Link to="/services" className="text-foreground hover:text-primary transition-colors py-2">
+              Our Services
+            </Link>
+            <Link to="/safety" className="text-foreground hover:text-primary transition-colors py-2">
+              Safety & Quality
             </Link>
             <Link to="/contact" className="text-foreground hover:text-primary transition-colors py-2">
               Contact
+            </Link>
+            <Link to="/jobs" className="text-foreground hover:text-primary transition-colors py-2 font-medium">
+              Jobs
             </Link>
             <div className="flex flex-col space-y-2 pt-2">
               <Link to="/login">

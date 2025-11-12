@@ -21,6 +21,10 @@ import AdminSetup from "./pages/admin/Setup";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/admin/AdminRoute";
+import AboutPage from "./pages/pages/AboutPage";
+import ContactPage from "./pages/pages/ContactPage";
+import SafetyPolicyPage from "./pages/pages/SafetyPolicyPage";
+import ManningServicesPage from "./pages/pages/ManningServicesPage";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +36,10 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/safety" element={<SafetyPolicyPage />} />
+          <Route path="/services" element={<ManningServicesPage />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/jobs/:id" element={<JobDetail />} />
           <Route path="/login" element={<Login />} />

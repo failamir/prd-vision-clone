@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, MapPin, Clock, Briefcase } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Clock, Briefcase, X, Ship, Calendar } from "lucide-react";
 import heroCruise1 from "@/assets/hero-cruise-1.jpg";
 import heroCruise2 from "@/assets/hero-cruise-2.jpg";
 import heroCruise3 from "@/assets/hero-cruise-3.jpg";
@@ -33,21 +33,27 @@ const urgentJobs = [
     id: 1,
     title: "Waiters",
     company: "Norwegian Cruise Line",
-    department: "Hotel Department",
+    department: "hotel",
     location: "International Waters",
     type: "Full-time",
     salary: "$2,000 - $3,500",
     logo: "NCL",
+    urgent: true,
+    datePosted: "10/11/2024",
+    expirationDate: "31/12/2024",
   },
   {
     id: 2,
     title: "Deck Officer",
     company: "SeaChef Maritime",
-    department: "Deck Department",
+    department: "deck",
     location: "International Waters",
     type: "Full-time",
     salary: "$4,000 - $6,000",
     logo: "SC",
+    urgent: true,
+    datePosted: "09/11/2024",
+    expirationDate: "30/12/2024",
   },
 ];
 
@@ -60,8 +66,99 @@ const partners = [
   { name: "Pertamina", abbr: "PTM" },
 ];
 
+// Urgent Jobs Modal Component
+const UrgentJobsModal = ({ isOpen, onClose, jobs, onJobSelect }: any) => {
+  if (!isOpen) return null;
+
+  const urgentJobsList = jobs.filter((job: any) => job.urgent);
+
+  const getDepartmentColor = (department: string) => {
+    switch (department) {
+      case 'deck': return 'bg-blue-100 text-blue-800';
+      case 'engine': return 'bg-red-100 text-red-800';
+      case 'hotel': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-2xl font-bold text-red-600">🚨 Urgent Job Opportunities</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="p-6">
+          <p className="text-gray-600 mb-6">These positions need to be filled immediately. Apply now!</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {urgentJobsList.map((job: any) => (
+              <div
+                key={job.id}
+                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-red-200"
+                onClick={() => {
+                  onJobSelect(job);
+                  onClose();
+                }}
+              >
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{job.title}</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Ship className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm text-gray-600">{job.company}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm text-gray-600">{job.location}</span>
+                      </div>
+                    </div>
+                    <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full animate-pulse">
+                      URGENT
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${getDepartmentColor(job.department)}`}>
+                      {job.department.charAt(0).toUpperCase()}{job.department.slice(1)} Department
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      <span>Posted: {job.datePosted}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      <span>Expires: {job.expirationDate}</span>
+                    </div>
+                  </div>
+
+                  <button className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors font-semibold">
+                    Apply Now - Urgent!
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Index = () => {
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showUrgentJobsModal, setShowUrgentJobsModal] = useState(false);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -70,6 +167,14 @@ const Index = () => {
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   };
+
+  // Show urgent jobs modal after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowUrgentJobsModal(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -161,7 +266,7 @@ const Index = () => {
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-2">{job.title}</h3>
                 <p className="text-muted-foreground mb-1">{job.company}</p>
-                <p className="text-sm text-secondary font-medium mb-4">{job.department}</p>
+                <p className="text-sm text-secondary font-medium mb-4">{job.department.charAt(0).toUpperCase()}{job.department.slice(1)} Department</p>
 
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-sm text-muted-foreground">
@@ -233,6 +338,14 @@ const Index = () => {
       </section>
 
       <Footer />
+
+      {/* Urgent Jobs Modal */}
+      <UrgentJobsModal
+        isOpen={showUrgentJobsModal}
+        onClose={() => setShowUrgentJobsModal(false)}
+        jobs={urgentJobs}
+        onJobSelect={(job: any) => navigate(`/jobs/${job.id}`)}
+      />
     </div>
   );
 };
