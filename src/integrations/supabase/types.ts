@@ -161,7 +161,7 @@ export type Database = {
       candidate_experience: {
         Row: {
           candidate_id: string
-          company: string
+          company: string | null
           created_at: string
           description: string | null
           end_date: string | null
@@ -182,7 +182,7 @@ export type Database = {
         }
         Insert: {
           candidate_id: string
-          company: string
+          company?: string | null
           created_at?: string
           description?: string | null
           end_date?: string | null
@@ -203,7 +203,7 @@ export type Database = {
         }
         Update: {
           candidate_id?: string
-          company?: string
+          company?: string | null
           created_at?: string
           description?: string | null
           end_date?: string | null
