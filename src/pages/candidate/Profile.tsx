@@ -353,7 +353,7 @@ const Profile = () => {
         filePath = `${user.id}/medical-tests/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-          .from("documents")
+          .from("candidate-documents")
           .upload(filePath, newTest.file);
 
         if (uploadError) throw uploadError;
@@ -394,7 +394,7 @@ const Profile = () => {
   const handleDeleteTest = async (testId: string, filePath: string | null) => {
     try {
       if (filePath) {
-        await supabase.storage.from("documents").remove([filePath]);
+        await supabase.storage.from("candidate-documents").remove([filePath]);
       }
 
       const { error } = await supabase
@@ -418,7 +418,7 @@ const Profile = () => {
   };
 
   const getFileUrl = (filePath: string) => {
-    const { data } = supabase.storage.from("documents").getPublicUrl(filePath);
+    const { data } = supabase.storage.from("candidate-documents").getPublicUrl(filePath);
     return data.publicUrl;
   };
 
@@ -471,7 +471,7 @@ const Profile = () => {
         fileName = `${Date.now()}.${ext}`;
         filePath = `${user.id}/deck-experiences/${fileName}`;
         const { error: uploadError } = await supabase.storage
-          .from("documents")
+          .from("candidate-documents")
           .upload(filePath, newDeck.file);
         if (uploadError) throw uploadError;
       }
@@ -517,7 +517,7 @@ const Profile = () => {
   const handleDeleteDeck = async (id: string, file_path: string | null) => {
     try {
       if (file_path) {
-        await supabase.storage.from("documents").remove([file_path]);
+        await supabase.storage.from("candidate-documents").remove([file_path]);
       }
       const { error } = await supabase
         .from("candidate_experience" as any)
