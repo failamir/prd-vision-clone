@@ -35,6 +35,20 @@ const Profile = () => {
   });
   const [uploadingTest, setUploadingTest] = useState(false);
   const [candidateId, setCandidateId] = useState<string | null>(null);
+  const [deckExperiences, setDeckExperiences] = useState<any[]>([]);
+  const [loadingDeck, setLoadingDeck] = useState(false);
+  const [uploadingDeck, setUploadingDeck] = useState(false);
+  const [newDeck, setNewDeck] = useState({
+    vessel_name_type: "",
+    gt_loa: "",
+    route: "",
+    position: "",
+    start_date: "",
+    end_date: "",
+    reason: "",
+    job_description: "",
+    file: null as File | null,
+  });
   const [profile, setProfile] = useState({
     full_name: "",
     email: "",
@@ -72,6 +86,12 @@ const Profile = () => {
       fetchMedicalTests();
     }
   }, [candidateId, currentStep]);
+
+  useEffect(() => {
+    if (candidateId && currentStep === 3 && screeningTab === "deck_experience") {
+      fetchDeckExperiences();
+    }
+  }, [candidateId, currentStep, screeningTab]);
 
   const fetchProfile = async () => {
     try {
@@ -262,7 +282,7 @@ const Profile = () => {
 
   const fetchMedicalTests = async () => {
     if (!candidateId) return;
-    
+
     setLoadingTests(true);
     try {
       const { data, error } = await supabase
@@ -402,6 +422,116 @@ const Profile = () => {
     return data.publicUrl;
   };
 
+  const fetchDeckExperiences = async () => {
+    if (!candidateId) return;
+    setLoadingDeck(true);
+    try {
+      const { data, error } = await supabase
+        .from("candidate_experience" as any)
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setDeckExperiences(data || []);
+    } catch (error) {
+      console.error("Error fetching deck experiences:", error);
+      toast({ title: "Error loading deck experience", variant: "destructive" });
+    } finally {
+      setLoadingDeck(false);
+    }
+  };
+
+  const handleDeckFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (!file) return;
+    const maxSize = 8 * 1024 * 1024; // 8MB
+    if (file.size > maxSize || file.type !== "application/pdf") {
+      toast({ title: "Invalid file", description: "PDF max 8MB", variant: "destructive" });
+      return;
+    }
+    setNewDeck({ ...newDeck, file });
+  };
+
+  const handleAddDeck = async () => {
+    if (!candidateId) return;
+    if (!newDeck.vessel_name_type || !newDeck.gt_loa || !newDeck.position || !newDeck.start_date || !newDeck.reason) {
+      toast({ title: "Please fill required fields", variant: "destructive" });
+      return;
+    }
+
+    setUploadingDeck(true);
+    try {
+      let filePath: string | null = null;
+      let fileName: string | null = null;
+      if (newDeck.file) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const ext = newDeck.file.name.split(".").pop();
+        fileName = `${Date.now()}.${ext}`;
+        filePath = `${user.id}/deck-experiences/${fileName}`;
+        const { error: uploadError } = await supabase.storage
+          .from("documents")
+          .upload(filePath, newDeck.file);
+        if (uploadError) throw uploadError;
+      }
+
+      const { error } = await supabase
+        .from("candidate_experience" as any)
+        .insert({
+          candidate_id: candidateId,
+          vessel_name_type: newDeck.vessel_name_type,
+          gt_loa: newDeck.gt_loa,
+          route: newDeck.route,
+          position: newDeck.position,
+          start_date: newDeck.start_date || null,
+          end_date: newDeck.end_date || null,
+          reason: newDeck.reason,
+          job_description: newDeck.job_description,
+          file_path: filePath,
+          file_name: fileName,
+        });
+      if (error) throw error;
+
+      toast({ title: "Deck experience added" });
+      setNewDeck({
+        vessel_name_type: "",
+        gt_loa: "",
+        route: "",
+        position: "",
+        start_date: "",
+        end_date: "",
+        reason: "",
+        job_description: "",
+        file: null,
+      });
+      fetchDeckExperiences();
+    } catch (error) {
+      console.error("Error adding deck experience:", error);
+      toast({ title: "Error adding deck experience", variant: "destructive" });
+    } finally {
+      setUploadingDeck(false);
+    }
+  };
+
+  const handleDeleteDeck = async (id: string, file_path: string | null) => {
+    try {
+      if (file_path) {
+        await supabase.storage.from("documents").remove([file_path]);
+      }
+      const { error } = await supabase
+        .from("candidate_experience" as any)
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      toast({ title: "Deck experience deleted" });
+      fetchDeckExperiences();
+    } catch (error) {
+      console.error("Error deleting deck experience:", error);
+      toast({ title: "Error deleting deck experience", variant: "destructive" });
+    }
+  };
+
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   const renderStepContent = () => {
@@ -410,7 +540,7 @@ const Profile = () => {
         return (
           <Card className="p-6">
             <h3 className="text-xl font-semibold text-foreground mb-6">Personal Detail</h3>
-            
+
             {/* Avatar Upload */}
             <div className="flex flex-col items-center gap-4 mb-6 pb-6 border-b">
               <Avatar className="w-32 h-32">
@@ -462,7 +592,7 @@ const Profile = () => {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="ktp_number">KTP Number *</Label>
                 <Input
@@ -743,7 +873,141 @@ const Profile = () => {
               </TabsList>
 
               <TabsContent value="deck_experience" className="mt-6">
-                <p className="text-muted-foreground">Deck Experience content coming soon...</p>
+                {loadingDeck ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <>
+                    {deckExperiences.length > 0 && (
+                      <div className="mb-6 border rounded-lg overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>ID</TableHead>
+                              <TableHead>Vessel Name / Type</TableHead>
+                              <TableHead>GT / LOA</TableHead>
+                              <TableHead>Vessel Route</TableHead>
+                              <TableHead>Position</TableHead>
+                              <TableHead>Approve</TableHead>
+                              <TableHead>Start Date</TableHead>
+                              <TableHead>End Date</TableHead>
+                              <TableHead>Job</TableHead>
+                              <TableHead className="w-[100px]"></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {deckExperiences.map((row) => (
+                              <TableRow key={row.id}>
+                                <TableCell>{row.id}</TableCell>
+                                <TableCell>{row.vessel_name_type}</TableCell>
+                                <TableCell>{row.gt_loa}</TableCell>
+                                <TableCell>{row.route}</TableCell>
+                                <TableCell>{row.position}</TableCell>
+                                <TableCell>
+                                  {row.file_path ? (
+                                    <a
+                                      href={getFileUrl(row.file_path)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-primary hover:underline inline-flex items-center gap-1"
+                                    >
+                                      View File <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  ) : (
+                                    <span className="text-muted-foreground">-</span>
+                                  )}
+                                </TableCell>
+                                <TableCell>{row.start_date ? new Date(row.start_date).toLocaleDateString() : "-"}</TableCell>
+                                <TableCell>{row.end_date ? new Date(row.end_date).toLocaleDateString() : "-"}</TableCell>
+                                <TableCell className="max-w-[240px] truncate" title={row.job_description || ""}>
+                                  {row.job_description || "-"}
+                                </TableCell>
+                                <TableCell>
+                                  <Button size="sm" variant="destructive" className="h-8 px-3" onClick={() => handleDeleteDeck(row.id, row.file_path)}>
+                                    Delete
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-2">
+                        <Label>Vessel Name / Type*</Label>
+                        <Input value={newDeck.vessel_name_type} onChange={(e) => setNewDeck({ ...newDeck, vessel_name_type: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>GT / LOA (Length Over All)*</Label>
+                        <Input value={newDeck.gt_loa} onChange={(e) => setNewDeck({ ...newDeck, gt_loa: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Vessel Route*</Label>
+                        <Select value={newDeck.route} onValueChange={(v) => setNewDeck({ ...newDeck, route: v })}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Please select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Foreign Going">Foreign Going</SelectItem>
+                            <SelectItem value="Domestic">Domestic</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Position*</Label>
+                        <Input value={newDeck.position} onChange={(e) => setNewDeck({ ...newDeck, position: e.target.value })} />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Start Date*</Label>
+                          <Input type="date" value={newDeck.start_date} onChange={(e) => setNewDeck({ ...newDeck, start_date: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>End Date</Label>
+                          <Input type="date" value={newDeck.end_date} onChange={(e) => setNewDeck({ ...newDeck, end_date: e.target.value })} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Reason for leaving or current status*</Label>
+                        <Select value={newDeck.reason} onValueChange={(v) => setNewDeck({ ...newDeck, reason: v })}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Please select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Finished Contract">Finished Contract</SelectItem>
+                            <SelectItem value="Resign">Resign</SelectItem>
+                            <SelectItem value="Terminated">Terminated</SelectItem>
+                            <SelectItem value="Onboard">Onboard</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Job Description (minimum 3)</Label>
+                        <Textarea value={newDeck.job_description} onChange={(e) => setNewDeck({ ...newDeck, job_description: e.target.value })} />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Approve</Label>
+                        <Input type="file" accept=".pdf" onChange={handleDeckFileChange} />
+                        <p className="text-sm text-muted-foreground">Filetype: Pdf, Max 8 MB</p>
+                      </div>
+
+                      <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck}>
+                        {uploadingDeck ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Add"
+                        )}
+                      </Button>
+                    </div>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="deck_certificate" className="mt-6">
