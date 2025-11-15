@@ -169,11 +169,16 @@ export type Database = {
           file_path: string | null
           file_size: number | null
           file_type: string | null
+          gt_loa: string | null
           id: string
           is_current: boolean | null
+          job_description: string | null
           location: string | null
           position: string
+          reason: string | null
+          route: string | null
           start_date: string | null
+          vessel_name_type: string | null
         }
         Insert: {
           candidate_id: string
@@ -185,11 +190,16 @@ export type Database = {
           file_path?: string | null
           file_size?: number | null
           file_type?: string | null
+          gt_loa?: string | null
           id?: string
           is_current?: boolean | null
+          job_description?: string | null
           location?: string | null
           position: string
+          reason?: string | null
+          route?: string | null
           start_date?: string | null
+          vessel_name_type?: string | null
         }
         Update: {
           candidate_id?: string
@@ -201,11 +211,16 @@ export type Database = {
           file_path?: string | null
           file_size?: number | null
           file_type?: string | null
+          gt_loa?: string | null
           id?: string
           is_current?: boolean | null
+          job_description?: string | null
           location?: string | null
           position?: string
+          reason?: string | null
+          route?: string | null
           start_date?: string | null
+          vessel_name_type?: string | null
         }
         Relationships: [
           {
