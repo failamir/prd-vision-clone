@@ -165,6 +165,10 @@ export type Database = {
           created_at: string
           description: string | null
           end_date: string | null
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
           id: string
           is_current: boolean | null
           location: string | null
@@ -177,6 +181,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
           is_current?: boolean | null
           location?: string | null
@@ -189,6 +197,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
           is_current?: boolean | null
           location?: string | null
