@@ -385,6 +385,50 @@ export type Database = {
           },
         ]
       }
+      candidate_next_of_kin: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          date_of_birth: string | null
+          full_name: string
+          id: string
+          place_of_birth: string | null
+          relationship: string
+          signature: string | null
+          updated_at: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          date_of_birth?: string | null
+          full_name: string
+          id?: string
+          place_of_birth?: string | null
+          relationship: string
+          signature?: string | null
+          updated_at?: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          date_of_birth?: string | null
+          full_name?: string
+          id?: string
+          place_of_birth?: string | null
+          relationship?: string
+          signature?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_next_of_kin_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_profiles: {
         Row: {
           address: string | null

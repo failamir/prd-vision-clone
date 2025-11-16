@@ -73,7 +73,7 @@ const Profile = () => {
   });
   const [nextOfKins, setNextOfKins] = useState<any[]>([]);
   const [newNextOfKin, setNewNextOfKin] = useState({
-    name: "",
+    full_name: "",
     relationship: "",
     place_of_birth: "",
     date_of_birth: "",
@@ -998,28 +998,44 @@ const Profile = () => {
     }
   };
 
-  const handleAddNextOfKin = () => {
-    if (!newNextOfKin.name || !newNextOfKin.relationship) {
+  const handleAddNextOfKin = async () => {
+    if (!candidateId) return;
+    if (!newNextOfKin.full_name || !newNextOfKin.relationship) {
       toast({ title: "Please fill required fields", variant: "destructive" });
       return;
     }
 
-    const newItem = {
-      id: Date.now(),
-      ...newNextOfKin,
-    };
+    try {
+      const { data, error } = await supabase
+        .from("candidate_next_of_kin")
+        .insert({
+          candidate_id: candidateId,
+          full_name: newNextOfKin.full_name,
+          relationship: newNextOfKin.relationship,
+          place_of_birth: newNextOfKin.place_of_birth || null,
+          date_of_birth: newNextOfKin.date_of_birth || null,
+          signature: newNextOfKin.signature || null,
+        })
+        .select()
+        .single();
 
-    setNextOfKins([newItem, ...nextOfKins]);
-    setNewNextOfKin({
-      name: "",
-      relationship: "",
-      place_of_birth: "",
-      date_of_birth: "",
-      signature: "",
-    });
+      if (error) throw error;
+
+      setNextOfKins([data, ...nextOfKins]);
+      setNewNextOfKin({
+        full_name: "",
+        relationship: "",
+        place_of_birth: "",
+        date_of_birth: "",
+        signature: "",
+      });
+      toast({ title: "Next of kin added successfully" });
+    } catch (error: any) {
+      toast({ title: "Error adding next of kin", description: error.message, variant: "destructive" });
+    }
   };
 
-  const handleDeleteNextOfKin = (id: number) => {
+  const handleDeleteNextOfKin = async (id: string) => {
     setNextOfKins(nextOfKins.filter((item) => item.id !== id));
   };
 
@@ -2111,7 +2127,7 @@ const Profile = () => {
                         {nextOfKins.map((row) => (
                           <TableRow key={row.id}>
                             <TableCell>{row.id}</TableCell>
-                            <TableCell>{row.name}</TableCell>
+                            <TableCell>{row.full_name}</TableCell>
                             <TableCell>{row.relationship}</TableCell>
                             <TableCell>{row.place_of_birth}</TableCell>
                             <TableCell>{row.date_of_birth}</TableCell>
