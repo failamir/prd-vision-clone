@@ -281,7 +281,7 @@ export default function Messages() {
                       </SelectTrigger>
                       <SelectContent>
                         {admins.length === 0 ? (
-                          <SelectItem value="" disabled>No admins available</SelectItem>
+                          <SelectItem value="no_admins" disabled>No admins available</SelectItem>
                         ) : (
                           admins.map((a) => (
                             <SelectItem key={a.user_id} value={a.user_id}>Admin ({shorten(a.user_id)})</SelectItem>
