@@ -13,6 +13,11 @@ import CandidateProfile from "./pages/candidate/Profile";
 import CandidateCVs from "./pages/candidate/CVs";
 import CandidateApplications from "./pages/candidate/Applications";
 import CandidateSavedJobs from "./pages/candidate/SavedJobs";
+import CandidateInterviewSchedule from "./pages/candidate/InterviewSchedule";
+import CandidateDepartureSchedule from "./pages/candidate/DepartureSchedule";
+import CandidateMessages from "./pages/candidate/Messages";
+import CandidateTestimonials from "./pages/candidate/Testimonials";
+import CandidateChangePassword from "./pages/candidate/ChangePassword";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminJobs from "./pages/admin/Jobs";
@@ -49,6 +54,11 @@ const App = () => (
           <Route path="/candidate/cvs" element={<ProtectedRoute><CandidateCVs /></ProtectedRoute>} />
           <Route path="/candidate/applications" element={<ProtectedRoute><CandidateApplications /></ProtectedRoute>} />
           <Route path="/candidate/saved-jobs" element={<ProtectedRoute><CandidateSavedJobs /></ProtectedRoute>} />
+          <Route path="/candidate/interview-schedule" element={<ProtectedRoute><CandidateInterviewSchedule /></ProtectedRoute>} />
+          <Route path="/candidate/departure-schedule" element={<ProtectedRoute><CandidateDepartureSchedule /></ProtectedRoute>} />
+          <Route path="/candidate/messages" element={<ProtectedRoute><CandidateMessages /></ProtectedRoute>} />
+          <Route path="/candidate/testimonials" element={<ProtectedRoute><CandidateTestimonials /></ProtectedRoute>} />
+          <Route path="/candidate/change-password" element={<ProtectedRoute><CandidateChangePassword /></ProtectedRoute>} />
           
           {/* Admin Routes */}
           <Route path="/admin/setup" element={<AdminSetup />} />
