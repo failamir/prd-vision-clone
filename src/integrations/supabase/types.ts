@@ -214,6 +214,62 @@ export type Database = {
           },
         ]
       }
+      candidate_emergency_contacts: {
+        Row: {
+          address: string | null
+          alternative_phone: string | null
+          candidate_id: string
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          is_primary: boolean | null
+          phone: string
+          relationship: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          alternative_phone?: string | null
+          candidate_id: string
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          is_primary?: boolean | null
+          phone: string
+          relationship: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          alternative_phone?: string | null
+          candidate_id?: string
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_primary?: boolean | null
+          phone?: string
+          relationship?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_emergency_contacts_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_experience: {
         Row: {
           candidate_id: string
@@ -460,6 +516,68 @@ export type Database = {
             columns: ["skill_id"]
             isOneToOne: false
             referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidate_travel_documents: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          document_number: string | null
+          document_type: string
+          expiry_date: string | null
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
+          id: string
+          issue_date: string | null
+          issuing_authority: string | null
+          issuing_country: string | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          document_number?: string | null
+          document_type: string
+          expiry_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          issue_date?: string | null
+          issuing_authority?: string | null
+          issuing_country?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          document_number?: string | null
+          document_type?: string
+          expiry_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          issue_date?: string | null
+          issuing_authority?: string | null
+          issuing_country?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_travel_documents_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_profiles"
             referencedColumns: ["id"]
           },
         ]
