@@ -558,6 +558,24 @@ const Profile = () => {
     return data.publicUrl;
   };
 
+  const handleViewFile = async (filePath: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from("candidate-documents")
+        .createSignedUrl(filePath, 3600); // URL valid for 1 hour
+      
+      if (error) throw error;
+      
+      window.open(data.signedUrl, '_blank');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const fetchDeckExperiences = async () => {
     if (!candidateId) return;
     setLoadingDeck(true);
@@ -1247,14 +1265,14 @@ const Profile = () => {
                             <TableCell>{test.score}</TableCell>
                             <TableCell>
                               {test.file_path ? (
-                                <a
-                                  href={getFileUrl(test.file_path)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline inline-flex items-center gap-1"
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => handleViewFile(test.file_path)}
+                                  className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
                                 >
                                   View File <ExternalLink className="w-3 h-3" />
-                                </a>
+                                </Button>
                               ) : (
                                 <span className="text-muted-foreground">-</span>
                               )}
@@ -1403,14 +1421,14 @@ const Profile = () => {
                                 <TableCell>{row.position}</TableCell>
                                 <TableCell>
                                   {row.file_path ? (
-                                    <a
-                                      href={getFileUrl(row.file_path)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-primary hover:underline inline-flex items-center gap-1"
+                                    <Button
+                                      variant="link"
+                                      size="sm"
+                                      onClick={() => handleViewFile(row.file_path)}
+                                      className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
                                     >
                                       View File <ExternalLink className="w-3 h-3" />
-                                    </a>
+                                    </Button>
                                   ) : (
                                     <span className="text-muted-foreground">-</span>
                                   )}
@@ -1543,14 +1561,14 @@ const Profile = () => {
                                 </TableCell>
                                 <TableCell>
                                   {row.file_path ? (
-                                    <a
-                                      href={getFileUrl(row.file_path)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-primary hover:underline inline-flex items-center gap-1"
+                                    <Button
+                                      variant="link"
+                                      size="sm"
+                                      onClick={() => handleViewFile(row.file_path)}
+                                      className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
                                     >
                                       View File <ExternalLink className="w-3 h-3" />
-                                    </a>
+                                    </Button>
                                   ) : (
                                     <span className="text-muted-foreground">-</span>
                                   )}
@@ -1699,14 +1717,14 @@ const Profile = () => {
                                 </TableCell>
                                 <TableCell>
                                   {row.file_path ? (
-                                    <a
-                                      href={getFileUrl(row.file_path)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-primary hover:underline inline-flex items-center gap-1"
+                                    <Button
+                                      variant="link"
+                                      size="sm"
+                                      onClick={() => handleViewFile(row.file_path)}
+                                      className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
                                     >
                                       View File <ExternalLink className="w-3 h-3" />
-                                    </a>
+                                    </Button>
                                   ) : (
                                     <span className="text-muted-foreground">-</span>
                                   )}
