@@ -17,6 +17,21 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Application {
   id: string;
@@ -78,6 +93,49 @@ const AdminApplications = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
+  const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);
+  const [activeApplication, setActiveApplication] = useState<Application | null>(null);
+  const [selectedRemark, setSelectedRemark] = useState("");
+
+  const remarkOptions = [
+    "step3:screening",
+    "step2:pre-screening",
+    "profile completion",
+    "Interview",
+    "approved",
+  ];
+
+  const openRemarksDialog = (app: Application) => {
+    setActiveApplication(app);
+    setSelectedRemark(app.remarks || app.status || "");
+    setRemarksDialogOpen(true);
+  };
+
+  const handleSaveRemarks = async () => {
+    if (!activeApplication) return;
+
+    const value = selectedRemark.trim();
+    if (!value) {
+      toast({ title: "Remarks cannot be empty", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("job_applications")
+        .update({ remarks: value })
+        .eq("id", activeApplication.id);
+
+      if (error) throw error;
+
+      toast({ title: "Remarks updated" });
+      setRemarksDialogOpen(false);
+      setActiveApplication(null);
+      fetchApplications();
+    } catch (error) {
+      toast({ title: "Error updating remarks", variant: "destructive" });
+    }
+  };
 
   useEffect(() => {
     fetchApplications();
@@ -224,6 +282,53 @@ const AdminApplications = () => {
 
   return (
     <AdminLayout>
+      <Dialog open={remarksDialogOpen} onOpenChange={setRemarksDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Remarks / Status</DialogTitle>
+            <DialogDescription>
+              {activeApplication
+                ? `Update status for ${activeApplication.candidate.full_name}`
+                : "Select a status for this application."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Status / Remarks</label>
+              <Select
+                value={selectedRemark}
+                onValueChange={setSelectedRemark}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {remarkOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setRemarksDialogOpen(false);
+                setActiveApplication(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleSaveRemarks}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="space-y-4">
         {/* Search Filter Section */}
         <Card className="p-4">
@@ -374,7 +479,12 @@ const AdminApplications = () => {
                           <Badge variant="secondary" className="text-xs">
                             {app.remarks || app.status}
                           </Badge>
-                          <Button variant="link" size="sm" className="h-auto p-0 text-xs">
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openRemarksDialog(app)}
+                          >
                             Update Remarks
                           </Button>
                         </div>
