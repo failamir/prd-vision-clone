@@ -80,7 +80,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <span className="text-white font-bold text-xl">CWT</span>
               </div>
               <div>
-                <div className="font-bold text-foreground">Wira Manning</div>
+                <div className="font-bold text-foreground">Cipta Wira Tirta</div>
                 <div className="text-xs text-muted-foreground">Candidate Dashboard</div>
               </div>
             </Link>
