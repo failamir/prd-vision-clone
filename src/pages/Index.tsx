@@ -243,55 +243,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Urgent Jobs Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-foreground">Urgent Jobs</h2>
-            <Link to="/jobs?filter=urgent">
-              <Button variant="link" className="text-secondary">
-                View All
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {urgentJobs.map((job) => (
-              <Card key={job.id} className="p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                    {job.logo}
-                  </div>
-                  <Badge className="bg-gold text-ocean-deep hover:bg-gold/90">Urgent</Badge>
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">{job.title}</h3>
-                <p className="text-muted-foreground mb-1">{job.company}</p>
-                <p className="text-sm text-secondary font-medium mb-4">{job.department.charAt(0).toUpperCase()}{job.department.slice(1)} Department</p>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    {job.location}
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Briefcase className="w-4 h-4 mr-2" />
-                    {job.type}
-                  </div>
-                  <div className="flex items-center text-sm text-foreground font-medium">
-                    <Clock className="w-4 h-4 mr-2" />
-                    {job.salary}
-                  </div>
-                </div>
-
-                <Link to={`/jobs/${job.id}`}>
-                  <Button className="w-full bg-primary hover:bg-primary/90">View Details</Button>
-                </Link>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Partners Section */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
