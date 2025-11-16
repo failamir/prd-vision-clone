@@ -1212,11 +1212,30 @@ const Profile = () => {
                     <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-2">
                         <Label>Type Certificates*</Label>
-                        <Input
+                          <Select
                           value={newCertificate.type_certificate}
-                          onChange={(e) => setNewCertificate({ ...newCertificate, type_certificate: e.target.value })}
-                          placeholder="Please select or type"
-                        />
+                            onValueChange={(v) => setNewCertificate({ ...newCertificate, type_certificate: v })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Please select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="BASIC SAFETY TRAINING (BST)">BASIC SAFETY TRAINING (BST)</SelectItem>
+                              <SelectItem value="ADVANCE FIRE FIGHTING (AFF)">ADVANCE FIRE FIGHTING (AFF)</SelectItem>
+                              <SelectItem value="MEDICAL FIRST AID (MFA)">MEDICAL FIRST AID (MFA)</SelectItem>
+                              <SelectItem value="PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS">PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS</SelectItem>
+                              <SelectItem value="CRISIS MANAGEMENT AND HUMAN BEHAVIOUR">CRISIS MANAGEMENT AND HUMAN BEHAVIOUR</SelectItem>
+                              <SelectItem value="CROWD MANAGEMENT">CROWD MANAGEMENT</SelectItem>
+                              <SelectItem value="SECURITY AWARENESS TRAINING">SECURITY AWARENESS TRAINING</SelectItem>
+                              <SelectItem value="SEAFARERS WITH DESIGNATED SECURITY DUTIES">SEAFARERS WITH DESIGNATED SECURITY DUTIES</SelectItem>
+                              <SelectItem value="RATING ABLE">RATING ABLE</SelectItem>
+                              <SelectItem value="RATING WATCHKEEPING">RATING WATCHKEEPING</SelectItem>
+                              <SelectItem value="COC">COC</SelectItem>
+                              <SelectItem value="ELECTRO TECHNICAL RATING">ELECTRO TECHNICAL RATING</SelectItem>
+                              <SelectItem value="ELECTRO TECHNICAL OFFICER">ELECTRO TECHNICAL OFFICER</SelectItem>
+                              <SelectItem value="SHIP SECURITY OFFICER">SHIP SECURITY OFFICER</SelectItem>
+                            </SelectContent>
+                          </Select>
                       </div>
                       <div className="space-y-2">
                         <Label>Institution*</Label>
