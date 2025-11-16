@@ -64,16 +64,16 @@ const Profile = () => {
   const [loadingTravel, setLoadingTravel] = useState(false);
   const [uploadingTravel, setUploadingTravel] = useState(false);
   const [newTravel, setNewTravel] = useState({
-    type_document: "",
-    number: "",
-    place_of_issuance: "",
-    date_of_issuance: "",
-    date_of_expiry: "",
+    document_type: "",
+    document_number: "",
+    issuing_authority: "",
+    issue_date: "",
+    expiry_date: "",
     file: null as File | null,
   });
   const [nextOfKins, setNextOfKins] = useState<any[]>([]);
   const [newNextOfKin, setNewNextOfKin] = useState({
-    name: "",
+    full_name: "",
     relationship: "",
     place_of_birth: "",
     date_of_birth: "",
@@ -89,17 +89,21 @@ const Profile = () => {
   });
   const [references, setReferences] = useState<any[]>([]);
   const [newReference, setNewReference] = useState({
-    previous_employer_name: "",
-    recommendation_role: "",
-    contact_details: "",
+    full_name: "",
+    company: "",
+    position: "",
+    phone: "",
+    email: "",
+    relationship: "",
   });
   const [emergencyContacts, setEmergencyContacts] = useState<any[]>([]);
   const [loadingEmergencyContacts, setLoadingEmergencyContacts] = useState(false);
   const [newEmergencyContact, setNewEmergencyContact] = useState({
-    name: "",
+    full_name: "",
     relationship: "",
-    contact_number: "",
+    phone: "",
     email: "",
+    address: "",
   });
   const [profile, setProfile] = useState({
     full_name: "",
@@ -160,6 +164,18 @@ const Profile = () => {
   useEffect(() => {
     if (candidateId && currentStep === 3 && screeningTab === "formal_education") {
       fetchEducation();
+    }
+  }, [candidateId, currentStep, screeningTab]);
+
+  useEffect(() => {
+    if (candidateId && currentStep === 3 && screeningTab === "references") {
+      fetchReferences();
+    }
+  }, [candidateId, currentStep, screeningTab]);
+
+  useEffect(() => {
+    if (candidateId && currentStep === 3 && screeningTab === "next_of_kin") {
+      fetchNextOfKin();
     }
   }, [candidateId, currentStep, screeningTab]);
 
@@ -558,6 +574,24 @@ const Profile = () => {
     return data.publicUrl;
   };
 
+  const handleViewFile = async (filePath: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from("candidate-documents")
+        .createSignedUrl(filePath, 3600); // URL valid for 1 hour
+      
+      if (error) throw error;
+      
+      window.open(data.signedUrl, '_blank');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const fetchDeckExperiences = async () => {
     if (!candidateId) return;
     setLoadingDeck(true);
@@ -829,35 +863,77 @@ const Profile = () => {
     }
   };
 
-  const handleAddReference = () => {
-    if (!newReference.previous_employer_name || !newReference.recommendation_role || !newReference.contact_details) {
+  // This function is replaced by the async version above at line ~850
+
+  const handleDeleteReference = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("candidate_references")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setReferences(references.filter((ref) => ref.id !== id));
+      toast({ title: "Reference deleted successfully" });
+      fetchReferences();
+    } catch (error: any) {
+      toast({
+        title: "Error deleting reference",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddReference = async () => {
+    if (!candidateId) return;
+    if (!newReference.full_name || !newReference.phone) {
       toast({ title: "Please fill required fields", variant: "destructive" });
       return;
     }
 
-    const nextId = references.length + 1;
-    const newItem = {
-      id: nextId,
-      previous_employer_name: newReference.previous_employer_name,
-      recommendation_role: newReference.recommendation_role,
-      contact_details: newReference.contact_details,
-    };
+    try {
+      const { data, error } = await supabase
+        .from("candidate_references")
+        .insert({
+          candidate_id: candidateId,
+          full_name: newReference.full_name,
+          company: newReference.company || null,
+          position: newReference.position || null,
+          phone: newReference.phone,
+          email: newReference.email || null,
+          relationship: newReference.relationship || null,
+        })
+        .select()
+        .single();
 
-    setReferences([...references, newItem]);
-    setNewReference({
-      previous_employer_name: "",
-      recommendation_role: "",
-      contact_details: "",
-    });
-  };
+      if (error) throw error;
 
-  const handleDeleteReference = (id: number) => {
-    setReferences(references.filter((ref) => ref.id !== id));
+      setReferences([...references, data]);
+      setNewReference({
+        full_name: "",
+        company: "",
+        position: "",
+        phone: "",
+        email: "",
+        relationship: "",
+      });
+
+      toast({ title: "Reference added successfully" });
+      fetchReferences();
+    } catch (error: any) {
+      toast({
+        title: "Error adding reference",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAddTravel = async () => {
     if (!candidateId) return;
-    if (!newTravel.type_document || !newTravel.number || !newTravel.place_of_issuance || !newTravel.date_of_issuance || !newTravel.date_of_expiry) {
+    if (!newTravel.document_type || !newTravel.document_number || !newTravel.issue_date || !newTravel.expiry_date) {
       toast({ title: "Please fill required fields", variant: "destructive" });
       return;
     }
@@ -886,11 +962,11 @@ const Profile = () => {
         .from("candidate_travel_documents" as any)
         .insert({
           candidate_id: candidateId,
-          type_document: newTravel.type_document,
-          number: newTravel.number,
-          place_of_issuance: newTravel.place_of_issuance,
-          date_of_issuance: newTravel.date_of_issuance || null,
-          date_of_expiry: newTravel.date_of_expiry || null,
+          document_type: newTravel.document_type,
+          document_number: newTravel.document_number || null,
+          issuing_authority: newTravel.issuing_authority || null,
+          issue_date: newTravel.issue_date || null,
+          expiry_date: newTravel.expiry_date || null,
           file_path: filePath,
           file_name: fileName,
         });
@@ -899,11 +975,11 @@ const Profile = () => {
 
       toast({ title: "Travel document added" });
       setNewTravel({
-        type_document: "",
-        number: "",
-        place_of_issuance: "",
-        date_of_issuance: "",
-        date_of_expiry: "",
+        document_type: "",
+        document_number: "",
+        issuing_authority: "",
+        issue_date: "",
+        expiry_date: "",
         file: null,
       });
       fetchTravelDocuments();
@@ -936,29 +1012,97 @@ const Profile = () => {
     }
   };
 
-  const handleAddNextOfKin = () => {
-    if (!newNextOfKin.name || !newNextOfKin.relationship) {
+  const handleAddNextOfKin = async () => {
+    if (!candidateId) return;
+    if (!newNextOfKin.full_name || !newNextOfKin.relationship) {
       toast({ title: "Please fill required fields", variant: "destructive" });
       return;
     }
 
-    const newItem = {
-      id: Date.now(),
-      ...newNextOfKin,
-    };
+    try {
+      const { data, error } = await supabase
+        .from("candidate_next_of_kin")
+        .insert({
+          candidate_id: candidateId,
+          full_name: newNextOfKin.full_name,
+          relationship: newNextOfKin.relationship,
+          place_of_birth: newNextOfKin.place_of_birth || null,
+          date_of_birth: newNextOfKin.date_of_birth || null,
+          signature: newNextOfKin.signature || null,
+        })
+        .select()
+        .single();
 
-    setNextOfKins([newItem, ...nextOfKins]);
-    setNewNextOfKin({
-      name: "",
-      relationship: "",
-      place_of_birth: "",
-      date_of_birth: "",
-      signature: "",
-    });
+      if (error) throw error;
+
+      setNextOfKins([data, ...nextOfKins]);
+      setNewNextOfKin({
+        full_name: "",
+        relationship: "",
+        place_of_birth: "",
+        date_of_birth: "",
+        signature: "",
+      });
+      toast({ title: "Next of kin added successfully" });
+      fetchNextOfKin();
+    } catch (error: any) {
+      toast({ title: "Error adding next of kin", description: error.message, variant: "destructive" });
+    }
   };
 
-  const handleDeleteNextOfKin = (id: number) => {
-    setNextOfKins(nextOfKins.filter((item) => item.id !== id));
+  const handleDeleteNextOfKin = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("candidate_next_of_kin")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setNextOfKins(nextOfKins.filter((item) => item.id !== id));
+      toast({ title: "Next of kin deleted successfully" });
+      fetchNextOfKin();
+    } catch (error: any) {
+      toast({
+        title: "Error deleting next of kin",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchReferences = async () => {
+    if (!candidateId) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_references")
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setReferences(data || []);
+    } catch (error) {
+      console.error("Error fetching references:", error);
+      toast({ title: "Error loading references", variant: "destructive" });
+    }
+  };
+
+  const fetchNextOfKin = async () => {
+    if (!candidateId) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_next_of_kin")
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setNextOfKins(data || []);
+    } catch (error) {
+      console.error("Error fetching next of kin:", error);
+      toast({ title: "Error loading next of kin", variant: "destructive" });
+    }
   };
 
   const handleDeleteEducation = async (id: string) => {
@@ -980,7 +1124,7 @@ const Profile = () => {
 
   const handleAddEmergencyContact = async () => {
     if (!candidateId) return;
-    if (!newEmergencyContact.name || !newEmergencyContact.relationship || !newEmergencyContact.contact_number) {
+    if (!newEmergencyContact.full_name || !newEmergencyContact.relationship || !newEmergencyContact.phone) {
       toast({ title: "Please fill required fields", variant: "destructive" });
       return;
     }
@@ -990,20 +1134,22 @@ const Profile = () => {
         .from("candidate_emergency_contacts" as any)
         .insert({
           candidate_id: candidateId,
-          name: newEmergencyContact.name,
+          full_name: newEmergencyContact.full_name,
           relationship: newEmergencyContact.relationship,
-          contact_number: newEmergencyContact.contact_number,
+          phone: newEmergencyContact.phone,
           email: newEmergencyContact.email || null,
+          address: newEmergencyContact.address || null,
         });
 
       if (error) throw error;
 
       toast({ title: "Emergency contact added" });
       setNewEmergencyContact({
-        name: "",
+        full_name: "",
         relationship: "",
-        contact_number: "",
+        phone: "",
         email: "",
+        address: "",
       });
       fetchEmergencyContacts();
     } catch (error) {
@@ -1247,14 +1393,14 @@ const Profile = () => {
                             <TableCell>{test.score}</TableCell>
                             <TableCell>
                               {test.file_path ? (
-                                <a
-                                  href={getFileUrl(test.file_path)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline inline-flex items-center gap-1"
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => handleViewFile(test.file_path)}
+                                  className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
                                 >
                                   View File <ExternalLink className="w-3 h-3" />
-                                </a>
+                                </Button>
                               ) : (
                                 <span className="text-muted-foreground">-</span>
                               )}
@@ -1403,14 +1549,14 @@ const Profile = () => {
                                 <TableCell>{row.position}</TableCell>
                                 <TableCell>
                                   {row.file_path ? (
-                                    <a
-                                      href={getFileUrl(row.file_path)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-primary hover:underline inline-flex items-center gap-1"
+                                    <Button
+                                      variant="link"
+                                      size="sm"
+                                      onClick={() => handleViewFile(row.file_path)}
+                                      className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
                                     >
                                       View File <ExternalLink className="w-3 h-3" />
-                                    </a>
+                                    </Button>
                                   ) : (
                                     <span className="text-muted-foreground">-</span>
                                   )}
@@ -1543,14 +1689,14 @@ const Profile = () => {
                                 </TableCell>
                                 <TableCell>
                                   {row.file_path ? (
-                                    <a
-                                      href={getFileUrl(row.file_path)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-primary hover:underline inline-flex items-center gap-1"
+                                    <Button
+                                      variant="link"
+                                      size="sm"
+                                      onClick={() => handleViewFile(row.file_path)}
+                                      className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
                                     >
                                       View File <ExternalLink className="w-3 h-3" />
-                                    </a>
+                                    </Button>
                                   ) : (
                                     <span className="text-muted-foreground">-</span>
                                   )}
@@ -1684,29 +1830,29 @@ const Profile = () => {
                             {travelDocuments.map((row) => (
                               <TableRow key={row.id}>
                                 <TableCell>{row.id}</TableCell>
-                                <TableCell>{row.type_document}</TableCell>
-                                <TableCell>{row.number}</TableCell>
-                                <TableCell>{row.place_of_issuance}</TableCell>
+                                <TableCell>{row.document_type}</TableCell>
+                                <TableCell>{row.document_number}</TableCell>
+                                <TableCell>{row.issuing_authority}</TableCell>
                                 <TableCell>
-                                  {row.date_of_issuance
-                                    ? new Date(row.date_of_issuance).toLocaleDateString()
+                                  {row.issue_date
+                                    ? new Date(row.issue_date).toLocaleDateString()
                                     : "-"}
                                 </TableCell>
                                 <TableCell>
-                                  {row.date_of_expiry
-                                    ? new Date(row.date_of_expiry).toLocaleDateString()
+                                  {row.expiry_date
+                                    ? new Date(row.expiry_date).toLocaleDateString()
                                     : "-"}
                                 </TableCell>
                                 <TableCell>
                                   {row.file_path ? (
-                                    <a
-                                      href={getFileUrl(row.file_path)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-primary hover:underline inline-flex items-center gap-1"
+                                    <Button
+                                      variant="link"
+                                      size="sm"
+                                      onClick={() => handleViewFile(row.file_path)}
+                                      className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
                                     >
                                       View File <ExternalLink className="w-3 h-3" />
-                                    </a>
+                                    </Button>
                                   ) : (
                                     <span className="text-muted-foreground">-</span>
                                   )}
@@ -1732,8 +1878,8 @@ const Profile = () => {
                       <div className="space-y-2">
                         <Label>Type Of Document*</Label>
                         <Select
-                          value={newTravel.type_document}
-                          onValueChange={(v) => setNewTravel({ ...newTravel, type_document: v })}
+                          value={newTravel.document_type}
+                          onValueChange={(v) => setNewTravel({ ...newTravel, document_type: v })}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Please select" />
@@ -1749,41 +1895,41 @@ const Profile = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Number*</Label>
+                        <Label>Document Number*</Label>
                         <Input
-                          value={newTravel.number}
-                          onChange={(e) => setNewTravel({ ...newTravel, number: e.target.value })}
+                          value={newTravel.document_number}
+                          onChange={(e) => setNewTravel({ ...newTravel, document_number: e.target.value })}
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Place Of Issuance*</Label>
+                        <Label>Issuing Authority</Label>
                         <Input
-                          value={newTravel.place_of_issuance}
+                          value={newTravel.issuing_authority}
                           onChange={(e) =>
-                            setNewTravel({ ...newTravel, place_of_issuance: e.target.value })
+                            setNewTravel({ ...newTravel, issuing_authority: e.target.value })
                           }
                         />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Date Of Issuance*</Label>
+                          <Label>Issue Date*</Label>
                           <Input
                             type="date"
-                            value={newTravel.date_of_issuance}
+                            value={newTravel.issue_date}
                             onChange={(e) =>
-                              setNewTravel({ ...newTravel, date_of_issuance: e.target.value })
+                              setNewTravel({ ...newTravel, issue_date: e.target.value })
                             }
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label>Date Of Expiry*</Label>
+                          <Label>Expiry Date*</Label>
                           <Input
                             type="date"
-                            value={newTravel.date_of_expiry}
+                            value={newTravel.expiry_date}
                             onChange={(e) =>
-                              setNewTravel({ ...newTravel, date_of_expiry: e.target.value })
+                              setNewTravel({ ...newTravel, expiry_date: e.target.value })
                             }
                           />
                         </div>
@@ -1935,11 +2081,11 @@ const Profile = () => {
                         {references.map((row) => (
                           <TableRow key={row.id}>
                             <TableCell>{row.id}</TableCell>
-                            <TableCell>{row.previous_employer_name}</TableCell>
-                            <TableCell className="max-w-[260px] whitespace-pre-line">
-                              {row.contact_details}
-                            </TableCell>
-                            <TableCell>{row.recommendation_role}</TableCell>
+                            <TableCell>{row.full_name}</TableCell>
+                            <TableCell>{row.company || "-"}</TableCell>
+                            <TableCell>{row.position || "-"}</TableCell>
+                            <TableCell>{row.phone}</TableCell>
+                            <TableCell>{row.email || "-"}</TableCell>
                             <TableCell>
                               <Button
                                 size="sm"
@@ -1958,49 +2104,69 @@ const Profile = () => {
                   </div>
                 )}
 
+
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Previous Employers Name</Label>
+                    <Label>Full Name*</Label>
                     <Input
-                      value={newReference.previous_employer_name}
+                      value={newReference.full_name}
                       onChange={(e) =>
-                        setNewReference({ ...newReference, previous_employer_name: e.target.value })
+                        setNewReference({ ...newReference, full_name: e.target.value })
                       }
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Recommendation/role</Label>
-                    <Select
-                      value={newReference.recommendation_role}
-                      onValueChange={(v) => setNewReference({ ...newReference, recommendation_role: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Please select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Supervisor">Supervisor</SelectItem>
-                        <SelectItem value="HR">HR</SelectItem>
-                        <SelectItem value="Agency">Agency</SelectItem>
-                        <SelectItem value="Owner">Owner</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>Company</Label>
+                    <Input
+                      value={newReference.company}
+                      onChange={(e) => setNewReference({ ...newReference, company: e.target.value })}
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Address And Email / Contact Number</Label>
-                    <Textarea
-                      value={newReference.contact_details}
+                    <Label>Position</Label>
+                    <Input
+                      value={newReference.position}
+                      onChange={(e) => setNewReference({ ...newReference, position: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Phone*</Label>
+                    <Input
+                      value={newReference.phone}
                       onChange={(e) =>
-                        setNewReference({ ...newReference, contact_details: e.target.value })
+                        setNewReference({ ...newReference, phone: e.target.value })
                       }
-                      rows={4}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={newReference.email}
+                      onChange={(e) =>
+                        setNewReference({ ...newReference, email: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Relationship</Label>
+                    <Input
+                      value={newReference.relationship}
+                      onChange={(e) =>
+                        setNewReference({ ...newReference, relationship: e.target.value })
+                      }
                     />
                   </div>
 
                   <Button
                     type="button"
                     onClick={handleAddReference}
+                    disabled={!newReference.full_name || !newReference.phone}
                     className="bg-destructive hover:bg-destructive/90"
                   >
                     Save
@@ -2027,7 +2193,7 @@ const Profile = () => {
                         {nextOfKins.map((row) => (
                           <TableRow key={row.id}>
                             <TableCell>{row.id}</TableCell>
-                            <TableCell>{row.name}</TableCell>
+                            <TableCell>{row.full_name}</TableCell>
                             <TableCell>{row.relationship}</TableCell>
                             <TableCell>{row.place_of_birth}</TableCell>
                             <TableCell>{row.date_of_birth}</TableCell>
@@ -2053,8 +2219,8 @@ const Profile = () => {
                   <div className="space-y-2">
                     <Label>Name*</Label>
                     <Input
-                      value={newNextOfKin.name}
-                      onChange={(e) => setNewNextOfKin({ ...newNextOfKin, name: e.target.value })}
+                      value={newNextOfKin.full_name}
+                      onChange={(e) => setNewNextOfKin({ ...newNextOfKin, full_name: e.target.value })}
                     />
                   </div>
 
@@ -2145,10 +2311,10 @@ const Profile = () => {
                             {emergencyContacts.map((row) => (
                               <TableRow key={row.id}>
                                 <TableCell>{row.id}</TableCell>
-                                <TableCell>{row.name}</TableCell>
+                                <TableCell>{row.full_name}</TableCell>
                                 <TableCell>{row.relationship}</TableCell>
-                                <TableCell>{row.contact_number}</TableCell>
-                                <TableCell>{row.email}</TableCell>
+                                <TableCell>{row.phone}</TableCell>
+                                <TableCell>{row.email || "-"}</TableCell>
                                 <TableCell>
                                   <Button
                                     size="sm"
@@ -2169,11 +2335,11 @@ const Profile = () => {
 
                     <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-2">
-                        <Label>Name*</Label>
+                        <Label>Full Name*</Label>
                         <Input
-                          value={newEmergencyContact.name}
+                          value={newEmergencyContact.full_name}
                           onChange={(e) =>
-                            setNewEmergencyContact({ ...newEmergencyContact, name: e.target.value })
+                            setNewEmergencyContact({ ...newEmergencyContact, full_name: e.target.value })
                           }
                           placeholder="Name of Wife/Husband/Mother/Father"
                         />
@@ -2204,13 +2370,13 @@ const Profile = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Contact Number*</Label>
+                        <Label>Phone*</Label>
                         <Input
-                          value={newEmergencyContact.contact_number}
+                          value={newEmergencyContact.phone}
                           onChange={(e) =>
                             setNewEmergencyContact({
                               ...newEmergencyContact,
-                              contact_number: e.target.value,
+                              phone: e.target.value,
                             })
                           }
                           placeholder="Phone Number +62 83"

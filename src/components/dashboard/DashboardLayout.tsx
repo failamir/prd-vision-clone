@@ -6,6 +6,11 @@ import {
   FileText,
   Briefcase,
   Bookmark,
+  Calendar,
+  Plane,
+  Mail,
+  MessageSquare,
+  Key,
   LogOut,
   Menu,
 } from "lucide-react";
@@ -22,9 +27,11 @@ interface DashboardLayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/candidate/dashboard", icon: LayoutDashboard },
   { name: "My Profile", href: "/candidate/profile", icon: User },
-  { name: "My CVs", href: "/candidate/cvs", icon: FileText },
-  { name: "Applications", href: "/candidate/applications", icon: Briefcase },
-  { name: "Saved Jobs", href: "/candidate/saved-jobs", icon: Bookmark },
+  { name: "Interview Schedule", href: "/candidate/interview-schedule", icon: Calendar },
+  { name: "Departure Schedule", href: "/candidate/departure-schedule", icon: Plane },
+  { name: "Messages", href: "/candidate/messages", icon: Mail },
+  { name: "Testimoni", href: "/candidate/testimonials", icon: MessageSquare },
+  { name: "Change password", href: "/candidate/change-password", icon: Key },
 ];
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
