@@ -168,6 +168,18 @@ const Profile = () => {
   }, [candidateId, currentStep, screeningTab]);
 
   useEffect(() => {
+    if (candidateId && currentStep === 3 && screeningTab === "references") {
+      fetchReferences();
+    }
+  }, [candidateId, currentStep, screeningTab]);
+
+  useEffect(() => {
+    if (candidateId && currentStep === 3 && screeningTab === "next_of_kin") {
+      fetchNextOfKin();
+    }
+  }, [candidateId, currentStep, screeningTab]);
+
+  useEffect(() => {
     if (candidateId && currentStep === 3 && screeningTab === "emergency_contact") {
       fetchEmergencyContacts();
     }
@@ -864,6 +876,7 @@ const Profile = () => {
 
       setReferences(references.filter((ref) => ref.id !== id));
       toast({ title: "Reference deleted successfully" });
+      fetchReferences();
     } catch (error: any) {
       toast({
         title: "Error deleting reference",
@@ -908,6 +921,7 @@ const Profile = () => {
       });
 
       toast({ title: "Reference added successfully" });
+      fetchReferences();
     } catch (error: any) {
       toast({
         title: "Error adding reference",
@@ -1030,13 +1044,65 @@ const Profile = () => {
         signature: "",
       });
       toast({ title: "Next of kin added successfully" });
+      fetchNextOfKin();
     } catch (error: any) {
       toast({ title: "Error adding next of kin", description: error.message, variant: "destructive" });
     }
   };
 
   const handleDeleteNextOfKin = async (id: string) => {
-    setNextOfKins(nextOfKins.filter((item) => item.id !== id));
+    try {
+      const { error } = await supabase
+        .from("candidate_next_of_kin")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setNextOfKins(nextOfKins.filter((item) => item.id !== id));
+      toast({ title: "Next of kin deleted successfully" });
+      fetchNextOfKin();
+    } catch (error: any) {
+      toast({
+        title: "Error deleting next of kin",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchReferences = async () => {
+    if (!candidateId) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_references")
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setReferences(data || []);
+    } catch (error) {
+      console.error("Error fetching references:", error);
+      toast({ title: "Error loading references", variant: "destructive" });
+    }
+  };
+
+  const fetchNextOfKin = async () => {
+    if (!candidateId) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_next_of_kin")
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setNextOfKins(data || []);
+    } catch (error) {
+      console.error("Error fetching next of kin:", error);
+      toast({ title: "Error loading next of kin", variant: "destructive" });
+    }
   };
 
   const handleDeleteEducation = async (id: string) => {
@@ -2153,8 +2219,8 @@ const Profile = () => {
                   <div className="space-y-2">
                     <Label>Name*</Label>
                     <Input
-                      value={newNextOfKin.name}
-                      onChange={(e) => setNewNextOfKin({ ...newNextOfKin, name: e.target.value })}
+                      value={newNextOfKin.full_name}
+                      onChange={(e) => setNewNextOfKin({ ...newNextOfKin, full_name: e.target.value })}
                     />
                   </div>
 
