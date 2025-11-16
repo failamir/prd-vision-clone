@@ -18,11 +18,43 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const redirectBasedOnRole = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        navigate("/candidate/dashboard");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .in("role", ["admin", "staff"]);
+
+      if (error) {
+        console.error("Error fetching user roles:", error);
+        navigate("/candidate/dashboard");
+        return;
+      }
+
+      if (data && data.length > 0) {
+        navigate("/admin");
+      } else {
+        navigate("/candidate/dashboard");
+      }
+    } catch (err) {
+      console.error("Error determining redirect based on role:", err);
+      navigate("/candidate/dashboard");
+    }
+  };
+
   useEffect(() => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/candidate/dashboard");
+        redirectBasedOnRole();
       }
     });
   }, [navigate]);
@@ -44,7 +76,7 @@ const Login = () => {
         description: "You have successfully logged in.",
       });
 
-      navigate("/candidate/dashboard");
+      await redirectBasedOnRole();
     } catch (error: any) {
       toast({
         title: "Login failed",
