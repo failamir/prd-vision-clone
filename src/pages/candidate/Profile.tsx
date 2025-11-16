@@ -60,6 +60,47 @@ const Profile = () => {
     date_of_issue: "",
     file: null as File | null,
   });
+  const [travelDocuments, setTravelDocuments] = useState<any[]>([]);
+  const [loadingTravel, setLoadingTravel] = useState(false);
+  const [uploadingTravel, setUploadingTravel] = useState(false);
+  const [newTravel, setNewTravel] = useState({
+    type_document: "",
+    number: "",
+    place_of_issuance: "",
+    date_of_issuance: "",
+    date_of_expiry: "",
+    file: null as File | null,
+  });
+  const [nextOfKins, setNextOfKins] = useState<any[]>([]);
+  const [newNextOfKin, setNewNextOfKin] = useState({
+    name: "",
+    relationship: "",
+    place_of_birth: "",
+    date_of_birth: "",
+    signature: "",
+  });
+  const [educations, setEducations] = useState<any[]>([]);
+  const [loadingEducation, setLoadingEducation] = useState(false);
+  const [newEducation, setNewEducation] = useState({
+    institution: "",
+    start_date: "",
+    end_date: "",
+    degree: "",
+  });
+  const [references, setReferences] = useState<any[]>([]);
+  const [newReference, setNewReference] = useState({
+    previous_employer_name: "",
+    recommendation_role: "",
+    contact_details: "",
+  });
+  const [emergencyContacts, setEmergencyContacts] = useState<any[]>([]);
+  const [loadingEmergencyContacts, setLoadingEmergencyContacts] = useState(false);
+  const [newEmergencyContact, setNewEmergencyContact] = useState({
+    name: "",
+    relationship: "",
+    contact_number: "",
+    email: "",
+  });
   const [profile, setProfile] = useState({
     full_name: "",
     email: "",
@@ -107,6 +148,24 @@ const Profile = () => {
   useEffect(() => {
     if (candidateId && currentStep === 3 && screeningTab === "deck_certificate") {
       fetchDeckCertificates();
+    }
+  }, [candidateId, currentStep, screeningTab]);
+
+  useEffect(() => {
+    if (candidateId && currentStep === 3 && screeningTab === "travel_document") {
+      fetchTravelDocuments();
+    }
+  }, [candidateId, currentStep, screeningTab]);
+
+  useEffect(() => {
+    if (candidateId && currentStep === 3 && screeningTab === "formal_education") {
+      fetchEducation();
+    }
+  }, [candidateId, currentStep, screeningTab]);
+
+  useEffect(() => {
+    if (candidateId && currentStep === 3 && screeningTab === "emergency_contact") {
+      fetchEmergencyContacts();
     }
   }, [candidateId, currentStep, screeningTab]);
 
@@ -539,6 +598,66 @@ const Profile = () => {
     }
   };
 
+  const fetchTravelDocuments = async () => {
+    if (!candidateId) return;
+    setLoadingTravel(true);
+    try {
+      const { data, error } = await supabase
+        .from("candidate_travel_documents" as any)
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setTravelDocuments(data || []);
+    } catch (error) {
+      console.error("Error fetching travel documents:", error);
+      toast({ title: "Error loading travel documents", variant: "destructive" });
+    } finally {
+      setLoadingTravel(false);
+    }
+  };
+
+  const fetchEducation = async () => {
+    if (!candidateId) return;
+    setLoadingEducation(true);
+    try {
+      const { data, error } = await supabase
+        .from("candidate_education" as any)
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setEducations(data || []);
+    } catch (error) {
+      console.error("Error fetching education:", error);
+      toast({ title: "Error loading education", variant: "destructive" });
+    } finally {
+      setLoadingEducation(false);
+    }
+  };
+
+  const fetchEmergencyContacts = async () => {
+    if (!candidateId) return;
+    setLoadingEmergencyContacts(true);
+    try {
+      const { data, error } = await supabase
+        .from("candidate_emergency_contacts" as any)
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setEmergencyContacts(data || []);
+    } catch (error) {
+      console.error("Error fetching emergency contacts:", error);
+      toast({ title: "Error loading emergency contacts", variant: "destructive" });
+    } finally {
+      setLoadingEmergencyContacts(false);
+    }
+  };
+
   const handleDeckFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (!file) return;
@@ -561,6 +680,53 @@ const Profile = () => {
     }
 
     setNewCertificate({ ...newCertificate, file });
+  };
+
+  const handleTravelFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (!file) return;
+
+    const maxSize = 8 * 1024 * 1024; // 8MB
+    if (file.size > maxSize || file.type !== "application/pdf") {
+      toast({ title: "Invalid file", description: "PDF max 8MB", variant: "destructive" });
+      return;
+    }
+
+    setNewTravel({ ...newTravel, file });
+  };
+
+  const handleAddEducation = async () => {
+    if (!candidateId) return;
+    if (!newEducation.institution || !newEducation.start_date || !newEducation.end_date || !newEducation.degree) {
+      toast({ title: "Please fill required fields", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("candidate_education" as any)
+        .insert({
+          candidate_id: candidateId,
+          institution: newEducation.institution,
+          start_date: newEducation.start_date || null,
+          end_date: newEducation.end_date || null,
+          degree: newEducation.degree,
+        });
+
+      if (error) throw error;
+
+      toast({ title: "Education added" });
+      setNewEducation({
+        institution: "",
+        start_date: "",
+        end_date: "",
+        degree: "",
+      });
+      fetchEducation();
+    } catch (error) {
+      console.error("Error adding education:", error);
+      toast({ title: "Error adding education", variant: "destructive" });
+    }
   };
 
   const handleAddDeck = async () => {
@@ -660,6 +826,206 @@ const Profile = () => {
     } catch (error) {
       console.error("Error deleting deck certificate:", error);
       toast({ title: "Error deleting deck certificate", variant: "destructive" });
+    }
+  };
+
+  const handleAddReference = () => {
+    if (!newReference.previous_employer_name || !newReference.recommendation_role || !newReference.contact_details) {
+      toast({ title: "Please fill required fields", variant: "destructive" });
+      return;
+    }
+
+    const nextId = references.length + 1;
+    const newItem = {
+      id: nextId,
+      previous_employer_name: newReference.previous_employer_name,
+      recommendation_role: newReference.recommendation_role,
+      contact_details: newReference.contact_details,
+    };
+
+    setReferences([...references, newItem]);
+    setNewReference({
+      previous_employer_name: "",
+      recommendation_role: "",
+      contact_details: "",
+    });
+  };
+
+  const handleDeleteReference = (id: number) => {
+    setReferences(references.filter((ref) => ref.id !== id));
+  };
+
+  const handleAddTravel = async () => {
+    if (!candidateId) return;
+    if (!newTravel.type_document || !newTravel.number || !newTravel.place_of_issuance || !newTravel.date_of_issuance || !newTravel.date_of_expiry) {
+      toast({ title: "Please fill required fields", variant: "destructive" });
+      return;
+    }
+
+    setUploadingTravel(true);
+    try {
+      let filePath: string | null = null;
+      let fileName: string | null = null;
+
+      if (newTravel.file) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const ext = newTravel.file.name.split(".").pop();
+        fileName = `${Date.now()}.${ext}`;
+        filePath = `${user.id}/travel-documents/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("candidate-documents")
+          .upload(filePath, newTravel.file);
+
+        if (uploadError) throw uploadError;
+      }
+
+      const { error } = await supabase
+        .from("candidate_travel_documents" as any)
+        .insert({
+          candidate_id: candidateId,
+          type_document: newTravel.type_document,
+          number: newTravel.number,
+          place_of_issuance: newTravel.place_of_issuance,
+          date_of_issuance: newTravel.date_of_issuance || null,
+          date_of_expiry: newTravel.date_of_expiry || null,
+          file_path: filePath,
+          file_name: fileName,
+        });
+
+      if (error) throw error;
+
+      toast({ title: "Travel document added" });
+      setNewTravel({
+        type_document: "",
+        number: "",
+        place_of_issuance: "",
+        date_of_issuance: "",
+        date_of_expiry: "",
+        file: null,
+      });
+      fetchTravelDocuments();
+    } catch (error) {
+      console.error("Error adding travel document:", error);
+      toast({ title: "Error adding travel document", variant: "destructive" });
+    } finally {
+      setUploadingTravel(false);
+    }
+  };
+
+  const handleDeleteTravel = async (id: string, file_path: string | null) => {
+    try {
+      if (file_path) {
+        await supabase.storage.from("candidate-documents").remove([file_path]);
+      }
+
+      const { error } = await supabase
+        .from("candidate_travel_documents" as any)
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast({ title: "Travel document deleted" });
+      fetchTravelDocuments();
+    } catch (error) {
+      console.error("Error deleting travel document:", error);
+      toast({ title: "Error deleting travel document", variant: "destructive" });
+    }
+  };
+
+  const handleAddNextOfKin = () => {
+    if (!newNextOfKin.name || !newNextOfKin.relationship) {
+      toast({ title: "Please fill required fields", variant: "destructive" });
+      return;
+    }
+
+    const newItem = {
+      id: Date.now(),
+      ...newNextOfKin,
+    };
+
+    setNextOfKins([newItem, ...nextOfKins]);
+    setNewNextOfKin({
+      name: "",
+      relationship: "",
+      place_of_birth: "",
+      date_of_birth: "",
+      signature: "",
+    });
+  };
+
+  const handleDeleteNextOfKin = (id: number) => {
+    setNextOfKins(nextOfKins.filter((item) => item.id !== id));
+  };
+
+  const handleDeleteEducation = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("candidate_education" as any)
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast({ title: "Education deleted" });
+      fetchEducation();
+    } catch (error) {
+      console.error("Error deleting education:", error);
+      toast({ title: "Error deleting education", variant: "destructive" });
+    }
+  };
+
+  const handleAddEmergencyContact = async () => {
+    if (!candidateId) return;
+    if (!newEmergencyContact.name || !newEmergencyContact.relationship || !newEmergencyContact.contact_number) {
+      toast({ title: "Please fill required fields", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("candidate_emergency_contacts" as any)
+        .insert({
+          candidate_id: candidateId,
+          name: newEmergencyContact.name,
+          relationship: newEmergencyContact.relationship,
+          contact_number: newEmergencyContact.contact_number,
+          email: newEmergencyContact.email || null,
+        });
+
+      if (error) throw error;
+
+      toast({ title: "Emergency contact added" });
+      setNewEmergencyContact({
+        name: "",
+        relationship: "",
+        contact_number: "",
+        email: "",
+      });
+      fetchEmergencyContacts();
+    } catch (error) {
+      console.error("Error adding emergency contact:", error);
+      toast({ title: "Error adding emergency contact", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteEmergencyContact = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("candidate_emergency_contacts" as any)
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast({ title: "Emergency contact deleted" });
+      fetchEmergencyContacts();
+    } catch (error) {
+      console.error("Error deleting emergency contact:", error);
+      toast({ title: "Error deleting emergency contact", variant: "destructive" });
     }
   };
 
@@ -1293,23 +1659,586 @@ const Profile = () => {
               </TabsContent>
 
               <TabsContent value="travel_document" className="mt-6">
-                <p className="text-muted-foreground">Travel Document content coming soon...</p>
+                {loadingTravel ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <>
+                    {travelDocuments.length > 0 && (
+                      <div className="mb-6 border rounded-lg overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>ID</TableHead>
+                              <TableHead>Type Of Document</TableHead>
+                              <TableHead>Number</TableHead>
+                              <TableHead>Place Of Issuance</TableHead>
+                              <TableHead>Date Of Issuance</TableHead>
+                              <TableHead>Date Of Expiry</TableHead>
+                              <TableHead>File</TableHead>
+                              <TableHead className="w-[100px]"></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {travelDocuments.map((row) => (
+                              <TableRow key={row.id}>
+                                <TableCell>{row.id}</TableCell>
+                                <TableCell>{row.type_document}</TableCell>
+                                <TableCell>{row.number}</TableCell>
+                                <TableCell>{row.place_of_issuance}</TableCell>
+                                <TableCell>
+                                  {row.date_of_issuance
+                                    ? new Date(row.date_of_issuance).toLocaleDateString()
+                                    : "-"}
+                                </TableCell>
+                                <TableCell>
+                                  {row.date_of_expiry
+                                    ? new Date(row.date_of_expiry).toLocaleDateString()
+                                    : "-"}
+                                </TableCell>
+                                <TableCell>
+                                  {row.file_path ? (
+                                    <a
+                                      href={getFileUrl(row.file_path)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-primary hover:underline inline-flex items-center gap-1"
+                                    >
+                                      View File <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  ) : (
+                                    <span className="text-muted-foreground">-</span>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    className="h-8 px-3"
+                                    onClick={() => handleDeleteTravel(row.id, row.file_path)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-2">
+                        <Label>Type Of Document*</Label>
+                        <Select
+                          value={newTravel.type_document}
+                          onValueChange={(v) => setNewTravel({ ...newTravel, type_document: v })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Please select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PASSPORT">PASSPORT</SelectItem>
+                            <SelectItem value="SEAMAN BOOK">SEAMAN BOOK</SelectItem>
+                            <SelectItem value="VISA (US / LIBERIA / PANAMA )">VISA (US / LIBERIA / PANAMA )</SelectItem>
+                            <SelectItem value="Vaccination YF">Vaccination YF</SelectItem>
+                            <SelectItem value="Vaccination Covid19">Vaccination Covid19</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Number*</Label>
+                        <Input
+                          value={newTravel.number}
+                          onChange={(e) => setNewTravel({ ...newTravel, number: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Place Of Issuance*</Label>
+                        <Input
+                          value={newTravel.place_of_issuance}
+                          onChange={(e) =>
+                            setNewTravel({ ...newTravel, place_of_issuance: e.target.value })
+                          }
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Date Of Issuance*</Label>
+                          <Input
+                            type="date"
+                            value={newTravel.date_of_issuance}
+                            onChange={(e) =>
+                              setNewTravel({ ...newTravel, date_of_issuance: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Date Of Expiry*</Label>
+                          <Input
+                            type="date"
+                            value={newTravel.date_of_expiry}
+                            onChange={(e) =>
+                              setNewTravel({ ...newTravel, date_of_expiry: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>File*</Label>
+                        <Input type="file" accept=".pdf" onChange={handleTravelFileChange} />
+                        <p className="text-sm text-destructive">Filetype: Pdf, Max 8 MB</p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={handleAddTravel}
+                        disabled={uploadingTravel}
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        {uploadingTravel ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Save"
+                        )}
+                      </Button>
+                    </div>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="formal_education" className="mt-6">
-                <p className="text-muted-foreground">Formal Education Background content coming soon...</p>
+                {loadingEducation ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <>
+                    {educations.length > 0 && (
+                      <div className="mb-6 border rounded-lg overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>ID</TableHead>
+                              <TableHead>School Academy</TableHead>
+                              <TableHead>From Date</TableHead>
+                              <TableHead>To Date</TableHead>
+                              <TableHead>Qualification Attained</TableHead>
+                              <TableHead className="w-[100px]"></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {educations.map((row) => (
+                              <TableRow key={row.id}>
+                                <TableCell>{row.id}</TableCell>
+                                <TableCell>{row.institution}</TableCell>
+                                <TableCell>
+                                  {row.start_date
+                                    ? new Date(row.start_date).toLocaleDateString()
+                                    : "-"}
+                                </TableCell>
+                                <TableCell>
+                                  {row.end_date
+                                    ? new Date(row.end_date).toLocaleDateString()
+                                    : "-"}
+                                </TableCell>
+                                <TableCell>{row.degree}</TableCell>
+                                <TableCell>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    className="h-8 px-3"
+                                    onClick={() => handleDeleteEducation(row.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-2">
+                        <Label>School Academy*</Label>
+                        <Input
+                          value={newEducation.institution}
+                          onChange={(e) =>
+                            setNewEducation({ ...newEducation, institution: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>From Date*</Label>
+                          <Input
+                            type="date"
+                            value={newEducation.start_date}
+                            onChange={(e) =>
+                              setNewEducation({ ...newEducation, start_date: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>To Date*</Label>
+                          <Input
+                            type="date"
+                            value={newEducation.end_date}
+                            onChange={(e) =>
+                              setNewEducation({ ...newEducation, end_date: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Qualification Attained*</Label>
+                        <Input
+                          value={newEducation.degree}
+                          onChange={(e) =>
+                            setNewEducation({ ...newEducation, degree: e.target.value })
+                          }
+                        />
+                      </div>
+
+                      <Button type="button" onClick={handleAddEducation}>
+                        Save
+                      </Button>
+                    </div>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="references" className="mt-6">
-                <p className="text-muted-foreground">References content coming soon...</p>
+                {references.length > 0 && (
+                  <div className="mb-6 border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Previous Employers Name</TableHead>
+                          <TableHead>Address And Email / Contact Number</TableHead>
+                          <TableHead>Recommendation</TableHead>
+                          <TableHead className="w-[100px]"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {references.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell>{row.id}</TableCell>
+                            <TableCell>{row.previous_employer_name}</TableCell>
+                            <TableCell className="max-w-[260px] whitespace-pre-line">
+                              {row.contact_details}
+                            </TableCell>
+                            <TableCell>{row.recommendation_role}</TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="h-8 px-3"
+                                type="button"
+                                onClick={() => handleDeleteReference(row.id)}
+                              >
+                                Delete
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Previous Employers Name</Label>
+                    <Input
+                      value={newReference.previous_employer_name}
+                      onChange={(e) =>
+                        setNewReference({ ...newReference, previous_employer_name: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Recommendation/role</Label>
+                    <Select
+                      value={newReference.recommendation_role}
+                      onValueChange={(v) => setNewReference({ ...newReference, recommendation_role: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Please select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Supervisor">Supervisor</SelectItem>
+                        <SelectItem value="HR">HR</SelectItem>
+                        <SelectItem value="Agency">Agency</SelectItem>
+                        <SelectItem value="Owner">Owner</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Address And Email / Contact Number</Label>
+                    <Textarea
+                      value={newReference.contact_details}
+                      onChange={(e) =>
+                        setNewReference({ ...newReference, contact_details: e.target.value })
+                      }
+                      rows={4}
+                    />
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleAddReference}
+                    className="bg-destructive hover:bg-destructive/90"
+                  >
+                    Save
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="next_of_kin" className="mt-6">
-                <p className="text-muted-foreground">Next Of Kin content coming soon...</p>
+                {nextOfKins.length > 0 && (
+                  <div className="mb-6 border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Relationship</TableHead>
+                          <TableHead>Place Birth</TableHead>
+                          <TableHead>Date of Birth</TableHead>
+                          <TableHead>Signature</TableHead>
+                          <TableHead className="w-[100px]"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {nextOfKins.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell>{row.id}</TableCell>
+                            <TableCell>{row.name}</TableCell>
+                            <TableCell>{row.relationship}</TableCell>
+                            <TableCell>{row.place_of_birth}</TableCell>
+                            <TableCell>{row.date_of_birth}</TableCell>
+                            <TableCell>{row.signature}</TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="h-8 px-3"
+                                onClick={() => handleDeleteNextOfKin(row.id)}
+                              >
+                                Delete
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label>Name*</Label>
+                    <Input
+                      value={newNextOfKin.name}
+                      onChange={(e) => setNewNextOfKin({ ...newNextOfKin, name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Relationship*</Label>
+                    <Select
+                      value={newNextOfKin.relationship}
+                      onValueChange={(v) => setNewNextOfKin({ ...newNextOfKin, relationship: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Please select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Wife">Wife</SelectItem>
+                        <SelectItem value="Husband">Husband</SelectItem>
+                        <SelectItem value="Mother">Mother</SelectItem>
+                        <SelectItem value="Father">Father</SelectItem>
+                        <SelectItem value="Son">Son</SelectItem>
+                        <SelectItem value="Daughter">Daughter</SelectItem>
+                        <SelectItem value="Uncle">Uncle</SelectItem>
+                        <SelectItem value="Aunty">Aunty</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Place Birth</Label>
+                    <Input
+                      value={newNextOfKin.place_of_birth}
+                      onChange={(e) =>
+                        setNewNextOfKin({ ...newNextOfKin, place_of_birth: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Date of Birth</Label>
+                    <Input
+                      type="date"
+                      value={newNextOfKin.date_of_birth}
+                      onChange={(e) =>
+                        setNewNextOfKin({ ...newNextOfKin, date_of_birth: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Signature</Label>
+                    <Input
+                      value={newNextOfKin.signature}
+                      onChange={(e) =>
+                        setNewNextOfKin({ ...newNextOfKin, signature: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleAddNextOfKin}
+                    className="bg-destructive hover:bg-destructive/90"
+                  >
+                    Save
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="emergency_contact" className="mt-6">
-                <p className="text-muted-foreground">Emergency Contact Details content coming soon...</p>
+                {loadingEmergencyContacts ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <>
+                    {emergencyContacts.length > 0 && (
+                      <div className="mb-6 border rounded-lg overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>ID</TableHead>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Relationship</TableHead>
+                              <TableHead>Contact Number</TableHead>
+                              <TableHead>E Mail Address</TableHead>
+                              <TableHead className="w-[100px]"></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {emergencyContacts.map((row) => (
+                              <TableRow key={row.id}>
+                                <TableCell>{row.id}</TableCell>
+                                <TableCell>{row.name}</TableCell>
+                                <TableCell>{row.relationship}</TableCell>
+                                <TableCell>{row.contact_number}</TableCell>
+                                <TableCell>{row.email}</TableCell>
+                                <TableCell>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    className="h-8 px-3"
+                                    type="button"
+                                    onClick={() => handleDeleteEmergencyContact(row.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-2">
+                        <Label>Name*</Label>
+                        <Input
+                          value={newEmergencyContact.name}
+                          onChange={(e) =>
+                            setNewEmergencyContact({ ...newEmergencyContact, name: e.target.value })
+                          }
+                          placeholder="Name of Wife/Husband/Mother/Father"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Relationship*</Label>
+                        <Select
+                          value={newEmergencyContact.relationship}
+                          onValueChange={(v) =>
+                            setNewEmergencyContact({ ...newEmergencyContact, relationship: v })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Please select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Wife">Wife</SelectItem>
+                            <SelectItem value="Husband">Husband</SelectItem>
+                            <SelectItem value="Mother">Mother</SelectItem>
+                            <SelectItem value="Father">Father</SelectItem>
+                            <SelectItem value="Son">Son</SelectItem>
+                            <SelectItem value="Daughter">Daughter</SelectItem>
+                            <SelectItem value="Uncle">Uncle</SelectItem>
+                            <SelectItem value="Aunty">Aunty</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Contact Number*</Label>
+                        <Input
+                          value={newEmergencyContact.contact_number}
+                          onChange={(e) =>
+                            setNewEmergencyContact({
+                              ...newEmergencyContact,
+                              contact_number: e.target.value,
+                            })
+                          }
+                          placeholder="Phone Number +62 83"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>E Mail Address</Label>
+                        <Input
+                          type="email"
+                          value={newEmergencyContact.email}
+                          onChange={(e) =>
+                            setNewEmergencyContact({ ...newEmergencyContact, email: e.target.value })
+                          }
+                          placeholder="Ignore if not there"
+                        />
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={handleAddEmergencyContact}
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </>
+                )}
               </TabsContent>
             </Tabs>
           </Card>
