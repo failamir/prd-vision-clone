@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      candidate_certificates: {
+        Row: {
+          candidate_id: string
+          cert_number: string | null
+          created_at: string
+          date_of_issue: string | null
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
+          id: string
+          institution: string | null
+          place: string | null
+          type_certificate: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_id: string
+          cert_number?: string | null
+          created_at?: string
+          date_of_issue?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          institution?: string | null
+          place?: string | null
+          type_certificate: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_id?: string
+          cert_number?: string | null
+          created_at?: string
+          date_of_issue?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          institution?: string | null
+          place?: string | null
+          type_certificate?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_certificates_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_cvs: {
         Row: {
           candidate_id: string
