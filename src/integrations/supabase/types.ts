@@ -487,6 +487,68 @@ export type Database = {
         }
         Relationships: []
       }
+      candidate_references: {
+        Row: {
+          address: string | null
+          candidate_id: string
+          city: string | null
+          company: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string
+          position: string | null
+          relationship: string | null
+          updated_at: string
+          years_known: number | null
+        }
+        Insert: {
+          address?: string | null
+          candidate_id: string
+          city?: string | null
+          company?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone: string
+          position?: string | null
+          relationship?: string | null
+          updated_at?: string
+          years_known?: number | null
+        }
+        Update: {
+          address?: string | null
+          candidate_id?: string
+          city?: string | null
+          company?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string
+          position?: string | null
+          relationship?: string | null
+          updated_at?: string
+          years_known?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_references_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_skills: {
         Row: {
           candidate_id: string
