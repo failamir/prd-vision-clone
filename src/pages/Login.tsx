@@ -60,7 +60,7 @@ const Login = () => {
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">CW</span>
+            <span className="text-white font-bold text-2xl">CWT</span>
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Welcome Back</h1>
           <p className="text-muted-foreground">Sign in to your account</p>

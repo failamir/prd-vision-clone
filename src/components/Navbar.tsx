@@ -14,10 +14,10 @@ export const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">CW</span>
+              <span className="text-white font-bold text-xl">CWT</span>
             </div>
             <div className="hidden sm:block">
-              <div className="font-bold text-foreground">Wira Manning Services</div>
+              <div className="font-bold text-foreground">Cipta Wira Tirta</div>
               <div className="text-xs text-muted-foreground">PT. Cipta Wira Tirta</div>
             </div>
           </Link>

@@ -95,7 +95,7 @@ const Register = () => {
       <Card className="w-full max-w-2xl p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">CW</span>
+            <span className="text-white font-bold text-2xl">CWT</span>
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Create Your Account</h1>
           <p className="text-muted-foreground">Start your maritime career journey today</p>

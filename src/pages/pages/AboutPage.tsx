@@ -80,7 +80,7 @@ const AboutPage: React.FC = () => {
             </p>
             <p>
               In the year 2008, Wilhelmsen Ship Management made significant changes. The cruise ship crewing management 
-              was not part of their future plans. Wira Manning Services continues to serve the existing clients with similar quality of 
+              was not part of their future plans. Cipta Wira Tirta continues to serve the existing clients with similar quality of 
               services.
             </p>
             <p>

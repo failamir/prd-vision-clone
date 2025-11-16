@@ -70,7 +70,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <div className="p-6 border-b border-border">
             <Link to="/" className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">CW</span>
+                <span className="text-white font-bold text-xl">CWT</span>
               </div>
               <div>
                 <div className="font-bold text-foreground">Wira Manning</div>
