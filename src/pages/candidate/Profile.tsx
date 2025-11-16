@@ -2070,22 +2070,24 @@ const Profile = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>ID</TableHead>
                           <TableHead>Previous Employers Name</TableHead>
-                          <TableHead>Address And Email / Contact Number</TableHead>
-                          <TableHead>Recommendation</TableHead>
+                          <TableHead>Company</TableHead>
+                          <TableHead>Position</TableHead>
+                          <TableHead>Contact Number</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Relationship</TableHead>
                           <TableHead className="w-[100px]"></TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {references.map((row) => (
                           <TableRow key={row.id}>
-                            <TableCell>{row.id}</TableCell>
                             <TableCell>{row.full_name}</TableCell>
                             <TableCell>{row.company || "-"}</TableCell>
                             <TableCell>{row.position || "-"}</TableCell>
                             <TableCell>{row.phone}</TableCell>
                             <TableCell>{row.email || "-"}</TableCell>
+                            <TableCell>{row.relationship || "-"}</TableCell>
                             <TableCell>
                               <Button
                                 size="sm"
