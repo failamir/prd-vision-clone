@@ -5,28 +5,78 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, Star } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Testimonials() {
   const [testimonial, setTestimonial] = useState("");
   const [rating, setRating] = useState(5);
   const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [candidateId, setCandidateId] = useState<string | null>(null);
+  const [myTestimonials, setMyTestimonials] = useState<Array<{ id: string; testimonial: string; rating: number; is_approved: boolean; created_at: string }>>([]);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: profile, error } = await supabase
+          .from("candidate_profiles")
+          .select("id")
+          .eq("user_id", user.id)
+          .single();
+        if (error) throw error;
+        if (!profile) return;
+        setCandidateId(profile.id);
+        await fetchMyTestimonials(profile.id);
+      } catch (error: any) {
+        toast({ title: "Failed to load testimonials", description: error.message, variant: "destructive" });
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, []);
+
+  const fetchMyTestimonials = async (cid: string) => {
+    const { data, error } = await supabase
+      .from("testimonials")
+      .select("id, testimonial, rating, is_approved, created_at")
+      .eq("candidate_id", cid)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    setMyTestimonials(data || []);
+  };
+
+  const handleSubmit = async () => {
     if (!testimonial.trim()) {
-      toast({
-        title: "Please write a testimonial",
-        variant: "destructive",
-      });
+      toast({ title: "Please write a testimonial", variant: "destructive" });
+      return;
+    }
+    if (!candidateId) {
+      toast({ title: "Complete your profile first", description: "We couldn't find your candidate profile.", variant: "destructive" });
       return;
     }
 
-    toast({
-      title: "Thank you for your testimonial!",
-      description: "Your feedback has been submitted successfully.",
-    });
-    
-    setTestimonial("");
-    setRating(5);
+    try {
+      setSubmitting(true);
+      const { error } = await supabase.from("testimonials").insert({
+        candidate_id: candidateId,
+        rating,
+        testimonial: testimonial.trim(),
+      });
+      if (error) throw error;
+      toast({ title: "Thank you for your testimonial!", description: "Pending admin approval." });
+      setTestimonial("");
+      setRating(5);
+      await fetchMyTestimonials(candidateId);
+    } catch (error: any) {
+      toast({ title: "Failed to submit", description: error.message, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -75,7 +125,7 @@ export default function Testimonials() {
                 Your Testimonial
               </label>
               <Textarea
-                placeholder="Share your experience working with Wira Manning Services..."
+                placeholder="Share your experience working with Cipta Wira Tirta Services..."
                 value={testimonial}
                 onChange={(e) => setTestimonial(e.target.value)}
                 rows={6}
@@ -83,21 +133,41 @@ export default function Testimonials() {
               />
             </div>
 
-            <Button onClick={handleSubmit} className="w-full">
-              Submit Testimonial
+            <Button onClick={handleSubmit} className="w-full" disabled={submitting || loading}>
+              {submitting ? "Submitting..." : "Submit Testimonial"}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Why Your Testimonial Matters</CardTitle>
+            <CardTitle>My Testimonials</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
-              Your testimonial helps us improve our services and assists other candidates
-              in making informed decisions about their career opportunities with Wira Manning Services.
-            </p>
+            {loading ? (
+              <p className="text-muted-foreground">Loading...</p>
+            ) : myTestimonials.length === 0 ? (
+              <p className="text-muted-foreground">You haven't submitted any testimonials yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {myTestimonials.map((t) => (
+                  <div key={t.id} className="border rounded-md p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} className={`w-4 h-4 ${i < t.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
+                        ))}
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded ${t.is_approved ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                        {t.is_approved ? "Approved" : "Pending"}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm whitespace-pre-wrap">{t.testimonial}</p>
+                    <div className="text-xs text-muted-foreground mt-2">{new Date(t.created_at).toLocaleString()}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
