@@ -16,9 +16,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useDatabase } from "@/contexts/DatabaseContext";
+import { DatabaseToggle } from "@/components/DatabaseToggle";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -39,6 +40,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { supabase } = useDatabase();
 
   const handleLogout = async () => {
     try {
@@ -107,6 +109,11 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               );
             })}
           </nav>
+
+          {/* Database Toggle */}
+          <div className="p-4 border-t border-border">
+            <DatabaseToggle />
+          </div>
 
           {/* Logout Button */}
           <div className="p-4 border-t border-border">
