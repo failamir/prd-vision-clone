@@ -49,6 +49,17 @@ const Profile = () => {
     job_description: "",
     file: null as File | null,
   });
+  const [deckCertificates, setDeckCertificates] = useState<any[]>([]);
+  const [loadingCertificate, setLoadingCertificate] = useState(false);
+  const [uploadingCertificate, setUploadingCertificate] = useState(false);
+  const [newCertificate, setNewCertificate] = useState({
+    type_certificate: "",
+    institution: "",
+    place: "",
+    cert_number: "",
+    date_of_issue: "",
+    file: null as File | null,
+  });
   const [profile, setProfile] = useState({
     full_name: "",
     email: "",
@@ -90,6 +101,12 @@ const Profile = () => {
   useEffect(() => {
     if (candidateId && currentStep === 3 && screeningTab === "deck_experience") {
       fetchDeckExperiences();
+    }
+  }, [candidateId, currentStep, screeningTab]);
+
+  useEffect(() => {
+    if (candidateId && currentStep === 3 && screeningTab === "deck_certificate") {
+      fetchDeckCertificates();
     }
   }, [candidateId, currentStep, screeningTab]);
 
@@ -145,6 +162,66 @@ const Profile = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddCertificate = async () => {
+    if (!candidateId) return;
+    if (!newCertificate.type_certificate || !newCertificate.institution || !newCertificate.cert_number || !newCertificate.date_of_issue) {
+      toast({ title: "Please fill required fields", variant: "destructive" });
+      return;
+    }
+
+    setUploadingCertificate(true);
+    try {
+      let filePath: string | null = null;
+      let fileName: string | null = null;
+
+      if (newCertificate.file) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const ext = newCertificate.file.name.split(".").pop();
+        fileName = `${Date.now()}.${ext}`;
+        filePath = `${user.id}/deck-certificates/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("candidate-documents")
+          .upload(filePath, newCertificate.file);
+
+        if (uploadError) throw uploadError;
+      }
+
+      const { error } = await supabase
+        .from("candidate_certificates" as any)
+        .insert({
+          candidate_id: candidateId,
+          type_certificate: newCertificate.type_certificate,
+          institution: newCertificate.institution,
+          place: newCertificate.place,
+          cert_number: newCertificate.cert_number,
+          date_of_issue: newCertificate.date_of_issue || null,
+          file_path: filePath,
+          file_name: fileName,
+        });
+
+      if (error) throw error;
+
+      toast({ title: "Deck certificate added" });
+      setNewCertificate({
+        type_certificate: "",
+        institution: "",
+        place: "",
+        cert_number: "",
+        date_of_issue: "",
+        file: null,
+      });
+      fetchDeckCertificates();
+    } catch (error) {
+      console.error("Error adding deck certificate:", error);
+      toast({ title: "Error adding deck certificate", variant: "destructive" });
+    } finally {
+      setUploadingCertificate(false);
     }
   };
 
@@ -442,6 +519,26 @@ const Profile = () => {
     }
   };
 
+  const fetchDeckCertificates = async () => {
+    if (!candidateId) return;
+    setLoadingCertificate(true);
+    try {
+      const { data, error } = await supabase
+        .from("candidate_certificates" as any)
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setDeckCertificates(data || []);
+    } catch (error) {
+      console.error("Error fetching deck certificates:", error);
+      toast({ title: "Error loading deck certificates", variant: "destructive" });
+    } finally {
+      setLoadingCertificate(false);
+    }
+  };
+
   const handleDeckFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (!file) return;
@@ -451,6 +548,19 @@ const Profile = () => {
       return;
     }
     setNewDeck({ ...newDeck, file });
+  };
+
+  const handleCertificateFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (!file) return;
+
+    const maxSize = 8 * 1024 * 1024; // 8MB
+    if (file.size > maxSize || file.type !== "application/pdf") {
+      toast({ title: "Invalid file", description: "PDF max 8MB", variant: "destructive" });
+      return;
+    }
+
+    setNewCertificate({ ...newCertificate, file });
   };
 
   const handleAddDeck = async () => {
@@ -529,6 +639,27 @@ const Profile = () => {
     } catch (error) {
       console.error("Error deleting deck experience:", error);
       toast({ title: "Error deleting deck experience", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteCertificate = async (id: string, file_path: string | null) => {
+    try {
+      if (file_path) {
+        await supabase.storage.from("candidate-documents").remove([file_path]);
+      }
+
+      const { error } = await supabase
+        .from("candidate_certificates" as any)
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast({ title: "Deck certificate deleted" });
+      fetchDeckCertificates();
+    } catch (error) {
+      console.error("Error deleting deck certificate:", error);
+      toast({ title: "Error deleting deck certificate", variant: "destructive" });
     }
   };
 
@@ -1011,7 +1142,135 @@ const Profile = () => {
               </TabsContent>
 
               <TabsContent value="deck_certificate" className="mt-6">
-                <p className="text-muted-foreground">Deck Certificate content coming soon...</p>
+                {loadingCertificate ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <>
+                    {deckCertificates.length > 0 && (
+                      <div className="mb-6 border rounded-lg overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>ID</TableHead>
+                              <TableHead>Institution</TableHead>
+                              <TableHead>Place</TableHead>
+                              <TableHead>Cert. Number</TableHead>
+                              <TableHead>Date Of Issue</TableHead>
+                              <TableHead>File</TableHead>
+                              <TableHead>Type Certificates</TableHead>
+                              <TableHead className="w-[100px]"></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {deckCertificates.map((row) => (
+                              <TableRow key={row.id}>
+                                <TableCell>{row.id}</TableCell>
+                                <TableCell>{row.institution}</TableCell>
+                                <TableCell>{row.place}</TableCell>
+                                <TableCell>{row.cert_number}</TableCell>
+                                <TableCell>
+                                  {row.date_of_issue
+                                    ? new Date(row.date_of_issue).toLocaleDateString()
+                                    : "-"}
+                                </TableCell>
+                                <TableCell>
+                                  {row.file_path ? (
+                                    <a
+                                      href={getFileUrl(row.file_path)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-primary hover:underline inline-flex items-center gap-1"
+                                    >
+                                      View File <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  ) : (
+                                    <span className="text-muted-foreground">-</span>
+                                  )}
+                                </TableCell>
+                                <TableCell className="max-w-[260px] truncate" title={row.type_certificate || ""}>
+                                  {row.type_certificate || "-"}
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    className="h-8 px-3"
+                                    onClick={() => handleDeleteCertificate(row.id, row.file_path)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-2">
+                        <Label>Type Certificates*</Label>
+                        <Input
+                          value={newCertificate.type_certificate}
+                          onChange={(e) => setNewCertificate({ ...newCertificate, type_certificate: e.target.value })}
+                          placeholder="Please select or type"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Institution*</Label>
+                        <Input
+                          value={newCertificate.institution}
+                          onChange={(e) => setNewCertificate({ ...newCertificate, institution: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Place</Label>
+                        <Input
+                          value={newCertificate.place}
+                          onChange={(e) => setNewCertificate({ ...newCertificate, place: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Cert. Number*</Label>
+                        <Input
+                          value={newCertificate.cert_number}
+                          onChange={(e) => setNewCertificate({ ...newCertificate, cert_number: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Date Of Issue*</Label>
+                        <Input
+                          type="date"
+                          value={newCertificate.date_of_issue}
+                          onChange={(e) => setNewCertificate({ ...newCertificate, date_of_issue: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>File*</Label>
+                        <Input type="file" accept=".pdf" onChange={handleCertificateFileChange} />
+                        <p className="text-sm text-destructive">Filetype: Pdf, Max 8 MB</p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={handleAddCertificate}
+                        disabled={uploadingCertificate}
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        {uploadingCertificate ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Save"
+                        )}
+                      </Button>
+                    </div>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="travel_document" className="mt-6">
