@@ -31,7 +31,7 @@ const Login = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .in("role", ["admin", "staff"]);
+        .eq("role", "admin");
 
       if (error) {
         console.error("Error fetching user roles:", error);

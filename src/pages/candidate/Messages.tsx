@@ -93,11 +93,15 @@ export default function Messages() {
         .select("user_id")
         .eq("role", "admin");
       if (error) throw error;
+      console.log("Admin users found:", data);
       setAdmins((data as AdminUser[]) || []);
       if (data && data.length > 0) {
         setComposeReceiver(data[0].user_id);
+      } else {
+        console.warn("No admin users found in database");
       }
     } catch (error: any) {
+      console.error("Error fetching admins:", error);
       toast({ title: "Failed to load admins", description: error.message, variant: "destructive" });
     }
   };
