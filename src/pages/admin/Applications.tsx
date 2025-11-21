@@ -69,6 +69,7 @@ interface Application {
   employment_offer: string;
   eo_acceptance: string;
   applied_at: string;
+  candidate_id?: string;
   candidate: {
     full_name: string;
     email: string;
@@ -96,6 +97,9 @@ const AdminApplications = () => {
   const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);
   const [activeApplication, setActiveApplication] = useState<Application | null>(null);
   const [selectedRemark, setSelectedRemark] = useState("");
+  const [referenceDialogOpen, setReferenceDialogOpen] = useState(false);
+  const [referenceLoading, setReferenceLoading] = useState(false);
+  const [latestReference, setLatestReference] = useState<any | null>(null);
 
   const remarkOptions = [
     "step3:screening",
@@ -109,6 +113,34 @@ const AdminApplications = () => {
     setActiveApplication(app);
     setSelectedRemark(app.remarks || app.status || "");
     setRemarksDialogOpen(true);
+  };
+
+  const fetchLatestReference = async (candidateId: string) => {
+    setReferenceLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("candidate_references")
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      setLatestReference(data?.[0] || null);
+    } catch (error) {
+      toast({ title: "Error loading reference", variant: "destructive" });
+    } finally {
+      setReferenceLoading(false);
+    }
+  };
+
+  const openReferenceDialog = (app: Application) => {
+    setActiveApplication(app);
+    setLatestReference(null);
+    setReferenceDialogOpen(true);
+    if (app.candidate_id) {
+      fetchLatestReference(app.candidate_id);
+    }
   };
 
   const handleSaveRemarks = async () => {
@@ -329,6 +361,35 @@ const AdminApplications = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Dialog open={referenceDialogOpen} onOpenChange={setReferenceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Candidate Reference</DialogTitle>
+            <DialogDescription>
+              Latest reference from candidate{activeApplication ? `: ${activeApplication.candidate.full_name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {referenceLoading ? (
+              <p className="text-sm text-muted-foreground">Loading...</p>
+            ) : latestReference ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                <div><span className="font-medium">Full Name:</span> {latestReference.full_name}</div>
+                <div><span className="font-medium">Company:</span> {latestReference.company || "-"}</div>
+                <div><span className="font-medium">Position:</span> {latestReference.position || "-"}</div>
+                <div><span className="font-medium">Phone:</span> {latestReference.phone}</div>
+                <div><span className="font-medium">Email:</span> {latestReference.email || "-"}</div>
+                <div><span className="font-medium">Relationship:</span> {latestReference.relationship || "-"}</div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No reference found.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setReferenceDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="space-y-4">
         {/* Search Filter Section */}
         <Card className="p-4">
@@ -507,7 +568,7 @@ const AdminApplications = () => {
                           : "-"}
                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">Reference</Button>
+                        <Button variant="outline" size="sm" onClick={() => openReferenceDialog(app)}>View Reference</Button>
                       </TableCell>
                       <TableCell>{app.ship_experience || "-"}</TableCell>
                       <TableCell>{formatDate(app.c1d_expiry_date)}</TableCell>
