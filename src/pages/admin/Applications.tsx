@@ -283,22 +283,119 @@ const AdminApplications = () => {
   };
 
   const exportToExcel = () => {
-    // Basic CSV export
-    const headers = ["Name", "Email", "Position", "Status", "Date"];
-    const rows = applications.map(app => [
-      app.candidate.full_name,
-      app.candidate.email,
-      app.job.title,
-      app.status,
-      formatDate(app.applied_at)
-    ]);
-    
-    const csv = [headers, ...rows].map(row => row.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    // Enhanced CSV export to include ALL fields with proper formatting and URLs for file fields
+    const dash = (v: any) => (v === undefined || v === null || v === "" ? "-" : v);
+    const safe = (v: any) => {
+      const val = dash(v);
+      // CSV escape (wrap in quotes and double any quotes inside)
+      return `"${String(val).replace(/"/g, '""')}"`;
+    };
+
+    const headers = [
+      "Remarks/Record",
+      "Crew Code",
+      "First Name",
+      "Last Name",
+      "Office Registered",
+      "Date of Entry",
+      "Source",
+      "Position",
+      "Department",
+      "Second Position",
+      "Gender",
+      "DOB",
+      "Age",
+      "Weight/Height",
+      "Ship Experience",
+      "C1D Expiry Date",
+      "Previous Experience",
+      "Education Background",
+      "Contact No",
+      "Email",
+      "Emergency Contact",
+      "Photo URL",
+      "CV URL",
+      "Letter Form URL",
+      "Vaccin Covid Booster",
+      "BST/CC",
+      "Suitable",
+      "Interview By",
+      "Interview Date",
+      "Interview Result",
+      "Interview Result Notes",
+      "Approved Position",
+      "Marlin / English Score",
+      "Neha/CES Test",
+      "Test Result",
+      "Principal Interview By",
+      "Principal Interview Date",
+      "Principal Interview Result",
+      "Approved As",
+      "Notes",
+      "Employment Offer",
+      "EO Acceptance",
+      "Applied At",
+      "Company",
+    ];
+
+    const rows = applications.map((app) => {
+      const firstName = app.candidate?.full_name ? app.candidate.full_name.split(" ")[0] : "";
+      const lastName = app.candidate?.full_name ? app.candidate.full_name.split(" ").slice(1).join(" ") : "";
+
+      return [
+        safe(app.remarks || app.status),
+        safe(app.crew_code),
+        safe(firstName),
+        safe(lastName),
+        safe(app.office_registered),
+        safe(app.date_of_entry ? formatDate(app.date_of_entry) : "-"),
+        safe(app.source),
+        safe(app.job?.title),
+        safe(app.job?.department),
+        safe(app.second_position),
+        safe(app.candidate?.gender),
+        safe(app.candidate?.date_of_birth ? formatDate(app.candidate.date_of_birth) : "-"),
+        safe(app.candidate?.date_of_birth ? calculateAge(app.candidate.date_of_birth) : "-"),
+        safe(app.candidate?.weight_kg && app.candidate?.height_cm ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}` : "-"),
+        safe(app.ship_experience),
+        safe(app.c1d_expiry_date ? formatDate(app.c1d_expiry_date) : "-"),
+        safe(app.previous_experience),
+        safe(app.education_background),
+        safe(app.contact_no),
+        safe(app.candidate?.email),
+        safe(app.emergency_contact),
+        safe(app.photo_url),
+        safe(app.cv_url),
+        safe(app.letter_form_url),
+        safe(app.vaccin_covid_booster ? "Yes" : "-"),
+        safe(app.bst_cc),
+        safe(app.suitable),
+        safe(app.interview_by),
+        safe(app.interview_date ? formatDate(app.interview_date) : "-"),
+        safe(app.interview_result),
+        safe(app.interview_result_notes),
+        safe(app.approved_position),
+        safe(app.marlin_english_score),
+        safe(app.neha_ces_test),
+        safe(app.test_result),
+        safe(app.principal_interview_by),
+        safe(app.principal_interview_date ? formatDate(app.principal_interview_date) : "-"),
+        safe(app.principal_interview_result),
+        safe(app.approved_as),
+        safe(app.status),
+        safe(app.employment_offer),
+        safe(app.eo_acceptance),
+        safe(app.applied_at ? formatDate(app.applied_at) : "-"),
+        safe(app.job?.company_name),
+      ];
+    });
+
+    const csv = [headers.map(safe).join(","), ...rows.map((row) => row.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "applications.csv";
+    a.download = "sgp-applications.csv";
     a.click();
   };
 
