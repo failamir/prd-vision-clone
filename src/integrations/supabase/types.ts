@@ -885,6 +885,7 @@ export type Database = {
           job_type: string
           location: string
           positions_available: number | null
+          principal: string | null
           requirements: string | null
           responsibilities: string | null
           salary_currency: string | null
@@ -911,6 +912,7 @@ export type Database = {
           job_type: string
           location: string
           positions_available?: number | null
+          principal?: string | null
           requirements?: string | null
           responsibilities?: string | null
           salary_currency?: string | null
@@ -937,6 +939,7 @@ export type Database = {
           job_type?: string
           location?: string
           positions_available?: number | null
+          principal?: string | null
           requirements?: string | null
           responsibilities?: string | null
           salary_currency?: string | null
