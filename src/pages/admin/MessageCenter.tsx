@@ -36,6 +36,7 @@ type Conversation = {
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
+  subject?: string;
 };
 
 export default function AdminMessageCenter() {
@@ -44,10 +45,15 @@ export default function AdminMessageCenter() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [replyMessage, setReplyMessage] = useState('');
+  const [composeMessage, setComposeMessage] = useState('');
   const [mode, setMode] = useState<'reply' | 'compose'>('reply');
   const [composeRecipient, setComposeRecipient] = useState<string>('');
-  const [profilesById, setProfilesById] = useState<Record<string, { full_name: string; email?: string; avatar_url?: string }>>({});
+  const [profilesById, setProfilesById] = useState<Record<string, { full_name: string; email?: string; avatar_url?: string; role?: 'User' | 'Candidate' | 'Reviewer' }>>({});
+  const [currentSubject, setCurrentSubject] = useState<string>('');
+  const [composeSubject, setComposeSubject] = useState<string>('');
+  const [recipientQuery, setRecipientQuery] = useState<string>('');
+  const [recipientResults, setRecipientResults] = useState<Array<{ id: string; full_name: string; email?: string; avatar_url?: string; role?: 'User' | 'Candidate' }>>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -139,6 +145,7 @@ export default function AdminMessageCenter() {
         if (lastMessage) {
           conv.lastMessage = (lastMessage as any).content ?? (lastMessage as any).message ?? '';
           conv.lastMessageTime = lastMessage.created_at;
+          (conv as any).subject = (lastMessage as any).subject || '';
         }
 
         const { count } = await supabase
@@ -220,17 +227,25 @@ export default function AdminMessageCenter() {
             .select('id, full_name, email, avatar_url')
             .in('id', ids);
         };
-        let map: Record<string, { full_name: string; email?: string; avatar_url?: string }> = {};
+        let map: Record<string, { full_name: string; email?: string; avatar_url?: string; role?: 'User' | 'Candidate' | 'Reviewer' }> = {};
         const a = await fetchProfiles('profiles');
         if (!a.error && a.data) {
-          map = Object.fromEntries((a.data as any[]).map(p => [p.id, { full_name: p.full_name ?? 'Unknown', email: p.email, avatar_url: p.avatar_url }]));
+          map = Object.fromEntries((a.data as any[]).map(p => [p.id, { full_name: p.full_name ?? 'Unknown', email: p.email, avatar_url: p.avatar_url, role: 'User' }]));
         } else {
           const b = await fetchProfiles('candidate_profiles');
           if (!b.error && b.data) {
-            map = Object.fromEntries((b.data as any[]).map(p => [p.id, { full_name: p.full_name ?? 'Unknown', email: p.email, avatar_url: p.avatar_url }]));
+            map = Object.fromEntries((b.data as any[]).map(p => [p.id, { full_name: p.full_name ?? 'Unknown', email: p.email, avatar_url: p.avatar_url, role: 'Candidate' }]));
           }
         }
         setProfilesById(map);
+      }
+
+      // Determine latest subject for this conversation (if any)
+      if (messagesData && messagesData.length > 0) {
+        const last = messagesData[messagesData.length - 1] as any;
+        setCurrentSubject(last?.subject || '');
+      } else {
+        setCurrentSubject('');
       }
       
       // Mark messages as read if they're from the other user
@@ -266,7 +281,8 @@ export default function AdminMessageCenter() {
   // Send a new message
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !user) return;
+    const body = mode === 'reply' ? replyMessage : composeMessage;
+    if (!body.trim() || !user) return;
     // decide target recipient atomically to avoid setState race
     const targetRecipient = mode === 'compose' ? (composeRecipient || selectedConversation) : selectedConversation;
     if (!targetRecipient) return;
@@ -276,10 +292,10 @@ export default function AdminMessageCenter() {
         .from('messages')
         .insert([
           {
-            message: newMessage,
+            message: body,
             sender_id: user.id,
             receiver_id: targetRecipient,
-            subject: '',
+            subject: (mode === 'reply') ? (currentSubject ? `Re: ${currentSubject}` : 'Re:') : (composeSubject || ''),
             is_read: false,
           },
         ])
@@ -306,13 +322,18 @@ export default function AdminMessageCenter() {
         };
         
         setMessages([...messages, newMsg]);
-        setNewMessage('');
+        if (mode === 'reply') {
+          setReplyMessage('');
+        } else {
+          setComposeMessage('');
+        }
         if (mode === 'compose') {
           setComposeRecipient('');
+          setComposeSubject('');
         }
         
         // Update last message in conversations
-        updateLastMessage(targetRecipient, newMessage, new Date().toISOString());
+        updateLastMessage(targetRecipient, body, new Date().toISOString());
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -407,6 +428,32 @@ export default function AdminMessageCenter() {
     }
   }, [selectedConversation]);
 
+  // Search recipients for compose mode
+  useEffect(() => {
+    const run = async () => {
+      if (!recipientQuery || mode !== 'compose') { setRecipientResults([]); return; }
+      const q = `%${recipientQuery}%`;
+      // profiles
+      const p = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url')
+        .ilike('full_name', q);
+      // candidate_profiles fallback
+      const c = await supabase
+        .from('candidate_profiles')
+        .select('id, full_name, email, avatar_url')
+        .ilike('full_name', q);
+      const arr: any[] = [];
+      if (p.data) arr.push(...p.data.map((x: any) => ({ ...x, role: 'User' as const })));
+      if (c.data) arr.push(...c.data.map((x: any) => ({ ...x, role: 'Candidate' as const })));
+      // de-dup by id
+      const uniq = Array.from(new Map(arr.map(i => [i.id, i])).values());
+      setRecipientResults(uniq);
+    };
+    const t = setTimeout(run, 250);
+    return () => clearTimeout(t);
+  }, [recipientQuery, mode]);
+
   // Filter conversations based on search query
   const filteredConversations = conversations.filter(conv => 
     conv.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -434,23 +481,8 @@ export default function AdminMessageCenter() {
       <div className="flex h-[calc(100vh-200px)] border rounded-lg overflow-hidden">
         {/* Sidebar with conversations */}
         <div className="w-80 border-r flex flex-col">
-          <div className="p-4 border-b">
-            <h2 className="text-xl font-semibold mb-4">Conversations</h2>
-            <Input 
-              placeholder="Search users..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="mb-4"
-            />
-          </div>
-        
-        <div className="flex-1 overflow-y-auto">
-          {filteredConversations.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              {searchQuery ? 'No matching conversations' : 'No conversations yet'}
-            </div>
-          ) : (
-            filteredConversations.map((conv) => (
+          {/* Conversations list */}
+          {filteredConversations.map((conv) => (
               <div
                 key={conv.userId}
                 className={`p-4 border-b hover:bg-gray-50 cursor-pointer flex items-center ${
@@ -481,13 +513,11 @@ export default function AdminMessageCenter() {
                   </span>
                 )}
               </div>
-            ))
-          )}
+            ))}
         </div>
-      </div>
 
-      {/* Main chat area */}
-      <div className="flex-1 flex flex-col">
+        {/* Main chat area */}
+        <div className="flex-1 flex flex-col">
         {selectedConversation ? (
           <>
             {/* Chat header */}
@@ -500,8 +530,13 @@ export default function AdminMessageCenter() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-medium">{currentConversation?.userName || selectedConversation}</h3>
-                <p className="text-xs text-muted-foreground">Conversation: <span className="font-medium">Admin (You)</span> ↔ <span className="font-medium">{currentConversation?.userName || 'User'}</span></p>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium">{profilesById[selectedConversation || '']?.full_name || currentConversation?.userName || selectedConversation}</h3>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                    {(profilesById[selectedConversation || '']?.role) || 'User'}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">Conversation: <span className="font-medium">Admin (You)</span> ↔ <span className="font-medium">{profilesById[selectedConversation || '']?.full_name || currentConversation?.userName || 'User'}</span>{currentSubject ? ` • Subject: ${currentSubject}` : ''}</p>
                 {currentConversation?.userEmail && (
                   <p className="text-sm text-gray-500">{currentConversation.userEmail}</p>
                 )}
@@ -558,36 +593,67 @@ export default function AdminMessageCenter() {
             {/* Message input */}
             <form onSubmit={(e) => {
               e.preventDefault();
-              if (mode === 'compose') {
-                // temporarily switch selected conversation to composeRecipient to reuse sender flow
-                if (composeRecipient) {
-                  setSelectedConversation(composeRecipient);
-                }
-              }
+              // Do NOT change selectedConversation when composing; sendMessage computes targetRecipient
               sendMessage(e as any);
             }} className="p-4 border-t space-y-2">
               {mode === 'reply' && (
                 <div className="text-xs text-muted-foreground">
-                  Replying to: <span className="font-medium">{currentConversation?.userName || selectedConversation}</span>
+                  Replying to: <span className="font-medium">{profilesById[selectedConversation || '']?.full_name || currentConversation?.userName || selectedConversation}</span>{profilesById[selectedConversation || '']?.role ? ` (${profilesById[selectedConversation || '']?.role})` : ''}{currentSubject ? ` • Subject: ${currentSubject}` : ''}
                 </div>
               )}
               {mode === 'compose' && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={recipientQuery}
+                      onChange={(e) => setRecipientQuery(e.target.value)}
+                      placeholder="Search recipient by name..."
+                      className="flex-1"
+                    />
+                    <Input
+                      value={composeRecipient}
+                      onChange={(e) => setComposeRecipient(e.target.value)}
+                      placeholder="Or paste user id"
+                      className="w-[300px]"
+                    />
+                  </div>
+                  {recipientResults.length > 0 && (
+                    <div className="max-h-40 overflow-y-auto border rounded-md divide-y">
+                      {recipientResults.map(r => (
+                        <button
+                          type="button"
+                          key={r.id}
+                          onClick={() => { setComposeRecipient(r.id); setRecipientQuery(r.full_name); }}
+                          className="w-full text-left p-2 hover:bg-slate-50 flex items-center gap-2"
+                        >
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={r.avatar_url} />
+                            <AvatarFallback>{r.full_name?.charAt(0) || 'U'}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium">{r.full_name} <span className="text-[10px] ml-1 px-1.5 py-0.5 rounded bg-slate-100 border text-slate-600">{r.role || 'User'}</span></div>
+                            <div className="text-xs text-muted-foreground">{r.email}</div>
+                            <div className="text-[10px] text-muted-foreground">{r.id}</div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <Input
-                    value={composeRecipient}
-                    onChange={(e) => setComposeRecipient(e.target.value)}
-                    placeholder="Recipient user id"
+                    value={composeSubject}
+                    onChange={(e) => setComposeSubject(e.target.value)}
+                    placeholder="Subject"
                   />
                 </div>
               )}
               <div className="flex space-x-2">
                 <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  value={mode === 'compose' ? composeMessage : replyMessage}
+                  onChange={(e) => (mode === 'compose' ? setComposeMessage(e.target.value) : setReplyMessage(e.target.value))}
                   placeholder={mode === 'compose' ? 'Type a new message...' : 'Type your reply...'}
                   className="flex-1"
                 />
-                <Button type="submit" disabled={!newMessage.trim() || (mode === 'compose' && !composeRecipient.trim())}>
+                <Button type="submit" disabled={!(mode === 'compose' ? composeMessage.trim() : replyMessage.trim()) || (mode === 'compose' && !composeRecipient.trim())}>
                   {mode === 'compose' ? 'Send Message' : 'Send Reply'}
                 </Button>
               </div>
@@ -598,19 +664,8 @@ export default function AdminMessageCenter() {
             Select a conversation to start messaging
           </div>
         )}
+        </div>
       </div>
     </div>
-    
-    {/* Empty state - only show when there are no conversations */}
-    {conversations.length === 0 && !loading && (
-      <div className="flex flex-col items-center justify-center p-8 text-center border rounded-lg mt-4">
-        <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium">No conversations yet</h3>
-        <p className="text-muted-foreground mt-2">
-          When users send you messages, they'll appear here.
-        </p>
-      </div>
-    )}
-  </div>
   );
 }

@@ -35,6 +35,31 @@ type ThreadMessage = {
   created_at: string;
 };
 
+// Generate a UUID in environments where crypto.randomUUID might not exist
+const genUUID = (): string => {
+  const c: any = (globalThis as any).crypto;
+  if (c && typeof c.randomUUID === "function") {
+    return c.randomUUID();
+  }
+  if (c && typeof c.getRandomValues === "function") {
+    const buf = new Uint8Array(16);
+    c.getRandomValues(buf);
+    // RFC 4122 compliance: set version and variant bits
+    buf[6] = (buf[6] & 0x0f) | 0x40;
+    buf[8] = (buf[8] & 0x3f) | 0x80;
+    const hex = Array.from(buf, (b) => b.toString(16).padStart(2, "0"));
+    return (
+      `${hex.slice(0, 4).join("")}-` +
+      `${hex.slice(4, 6).join("")}-` +
+      `${hex.slice(6, 8).join("")}-` +
+      `${hex.slice(8, 10).join("")}-` +
+      `${hex.slice(10, 16).join("")}`
+    );
+  }
+  // Last-resort fallback: sufficiently unique for optimistic UI usage
+  return `id-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
+};
+
 export default function AdminMessages() {
   const { toast } = useToast();
   const { user } = useUser();
@@ -149,7 +174,7 @@ export default function AdminMessages() {
       // Refresh list
       fetchRows();
       // Push to thread locally
-      const newMsg: ThreadMessage = { id: crypto.randomUUID(), sender_id: user.id, receiver_id: recipient_id, message: text, created_at: new Date().toISOString() };
+      const newMsg: ThreadMessage = { id: genUUID(), sender_id: user.id, receiver_id: recipient_id, message: text, created_at: new Date().toISOString() };
       setThreads(prev => ({ ...prev, [row.id]: [...(prev[row.id] || []), newMsg] }));
     } catch (e: any) {
       toast({ title: "Failed to send reply", description: e.message, variant: "destructive" });
