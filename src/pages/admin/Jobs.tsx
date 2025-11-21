@@ -55,6 +55,8 @@ interface Job {
   id: string;
   title: string;
   company_name: string;
+  department: string | null;
+  principal: string | null;
   location: string;
   job_type: string;
   salary_min: number | null;
@@ -84,6 +86,8 @@ const AdminJobs = () => {
 
   const [formTitle, setFormTitle] = useState("");
   const [formCompany, setFormCompany] = useState("");
+  const [formDepartment, setFormDepartment] = useState("");
+  const [formPrincipal, setFormPrincipal] = useState("");
   const [formLocation, setFormLocation] = useState("");
   const [formJobType, setFormJobType] = useState("");
   const [formSalaryMin, setFormSalaryMin] = useState<string>("");
@@ -126,6 +130,8 @@ const AdminJobs = () => {
     setEditingJob(null);
     setFormTitle("");
     setFormCompany("");
+    setFormDepartment("");
+    setFormPrincipal("");
     setFormLocation("");
     setFormJobType("");
     setFormSalaryMin("");
@@ -142,6 +148,8 @@ const AdminJobs = () => {
     setEditingJob(job);
     setFormTitle(job.title || "");
     setFormCompany(job.company_name || "");
+    setFormDepartment(job.department || "");
+    setFormPrincipal(job.principal || "");
     setFormLocation(job.location || "");
     setFormJobType(job.job_type || "");
     setFormSalaryMin(job.salary_min != null ? String(job.salary_min) : "");
@@ -168,6 +176,8 @@ const AdminJobs = () => {
       const payload = {
         title: formTitle,
         company_name: formCompany,
+        department: formDepartment || null,
+        principal: formPrincipal || null,
         location: formLocation,
         job_type: formJobType,
         salary_min: formSalaryMin ? Number(formSalaryMin) : null,
@@ -567,6 +577,41 @@ const AdminJobs = () => {
                     onChange={(e) => setFormJobType(e.target.value)}
                     placeholder="e.g. Full-time"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Department</p>
+                  <Select value={formDepartment} onValueChange={setFormDepartment}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">-- Please Select --</SelectItem>
+                      <SelectItem value="Hotel Department">Hotel Department</SelectItem>
+                      <SelectItem value="Engine Department">Engine Department</SelectItem>
+                      <SelectItem value="Deck Department">Deck Department</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Principal</p>
+                  <Select value={formPrincipal} onValueChange={setFormPrincipal}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Principal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Norwegian Cruise Line">Norwegian Cruise Line</SelectItem>
+                      <SelectItem value="NYK Shipmanagement">NYK Shipmanagement</SelectItem>
+                      <SelectItem value="FredOlsen">FredOlsen</SelectItem>
+                      <SelectItem value="SeaChef">SeaChef</SelectItem>
+                      <SelectItem value="SeaQuest">SeaQuest</SelectItem>
+                      <SelectItem value="Alpha Adriatic">Alpha Adriatic</SelectItem>
+                      <SelectItem value="Pertamina International Shipping">Pertamina International Shipping</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
