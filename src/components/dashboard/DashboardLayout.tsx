@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useDatabase } from "@/contexts/DatabaseContext";
-import { DatabaseToggle } from "@/components/DatabaseToggle";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -109,11 +108,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               );
             })}
           </nav>
-
-          {/* Database Toggle */}
-          <div className="p-4 border-t border-border">
-            <DatabaseToggle />
-          </div>
 
           {/* Logout Button */}
           <div className="p-4 border-t border-border">

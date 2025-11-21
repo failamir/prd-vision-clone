@@ -10,9 +10,14 @@ import {
   FileText, 
   LogOut,
   Menu,
-  X
+  X,
+  Calendar,
+  Plane,
+  Mail,
+  MessageSquare
 } from "lucide-react";
 import { useState } from "react";
+import { DatabaseToggle } from "@/components/DatabaseToggle";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -29,6 +34,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     { name: "Users", href: "/admin/users", icon: Users },
     { name: "Jobs", href: "/admin/jobs", icon: Briefcase },
     { name: "Applications", href: "/admin/applications", icon: FileText },
+    { name: "Interview Schedule", href: "/admin/interviews", icon: Calendar },
+    { name: "Departure Schedule", href: "/admin/departures", icon: Plane },
+    { name: "Messages", href: "/admin/messages", icon: Mail },
+    { name: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
   ];
 
   const handleLogout = async () => {
@@ -95,6 +104,11 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               );
             })}
           </nav>
+
+          {/* Database Toggle (Admin only) */}
+          <div className="p-4 border-t">
+            <DatabaseToggle />
+          </div>
 
           <div className="p-4 border-t">
             <Button
