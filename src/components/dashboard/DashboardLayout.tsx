@@ -27,6 +27,8 @@ interface DashboardLayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/candidate/dashboard", icon: LayoutDashboard },
   { name: "My Profile", href: "/candidate/profile", icon: User },
+  { name: "Applications", href: "/candidate/applications", icon: FileText },
+  { name: "Saved Jobs", href: "/candidate/saved-jobs", icon: Bookmark },
   { name: "Interview Schedule", href: "/candidate/interview-schedule", icon: Calendar },
   { name: "Departure Schedule", href: "/candidate/departure-schedule", icon: Plane },
   { name: "Messages", href: "/candidate/messages", icon: Mail },
