@@ -585,10 +585,9 @@ const AdminJobs = () => {
                   <p className="text-sm font-medium">Department</p>
                   <Select value={formDepartment} onValueChange={setFormDepartment}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Department" />
+                      <SelectValue placeholder="Select Department" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">-- Please Select --</SelectItem>
                       <SelectItem value="Hotel Department">Hotel Department</SelectItem>
                       <SelectItem value="Engine Department">Engine Department</SelectItem>
                       <SelectItem value="Deck Department">Deck Department</SelectItem>
