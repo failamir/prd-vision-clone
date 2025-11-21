@@ -21,7 +21,7 @@ export default function RolePermissions() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const roles = ["admin", "employer", "candidate", "manajer", "staff", "interviewer"];
+  const roles = ["admin", "employer", "candidate", "manajer", "staff", "interviewer", "interviewer_principal"];
 
   useEffect(() => {
     fetchRolePermissions();
@@ -78,6 +78,8 @@ export default function RolePermissions() {
         return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
       case "interviewer":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "interviewer_principal":
+        return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200";
       case "staff":
         return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
       case "employer":
@@ -101,6 +103,8 @@ export default function RolePermissions() {
         return "Can access staff functions";
       case "interviewer":
         return "Can conduct interviews and assessments";
+      case "interviewer_principal":
+        return "Can conduct principal interviews";
       default:
         return "";
     }
