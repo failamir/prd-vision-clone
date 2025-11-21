@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { DatabaseProvider } from "@/contexts/DatabaseContext";
+import { UserProvider } from "@/contexts/UserContext";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
@@ -35,12 +36,14 @@ import AdminInterviews from "./pages/admin/Interviews";
 import AdminDepartures from "./pages/admin/Departures";
 import AdminMessages from "./pages/admin/Messages";
 import AdminTestimonials from "./pages/admin/Testimonials";
+import AdminMessageCenter from "./pages/admin/MessageCenter";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <DatabaseProvider>
+      <UserProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -75,13 +78,15 @@ const App = () => (
             <Route path="/admin/interviews" element={<AdminRoute><AdminInterviews /></AdminRoute>} />
             <Route path="/admin/departures" element={<AdminRoute><AdminDepartures /></AdminRoute>} />
             <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
+            <Route path="/admin/message-center" element={<AdminRoute><AdminMessageCenter /></AdminRoute>} />
             <Route path="/admin/testimonials" element={<AdminRoute><AdminTestimonials /></AdminRoute>} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
-    </TooltipProvider>
+      </TooltipProvider>
+      </UserProvider>
     </DatabaseProvider>
   </QueryClientProvider>
 );
