@@ -47,7 +47,7 @@ export const RoleManagementDialog = ({
     role: string;
   } | null>(null);
 
-  const availableRoles = ["admin", "employer", "candidate"];
+  const availableRoles = ["admin", "employer", "candidate", "manajer", "staff", "interviewer"];
 
   const handleRoleAction = async (action: "add" | "remove", role: string) => {
     setPendingAction({ type: action, role });
@@ -165,6 +165,9 @@ export const RoleManagementDialog = ({
                           {role === "admin" && "Full system access"}
                           {role === "employer" && "Can post and manage jobs"}
                           {role === "candidate" && "Can apply to jobs"}
+                          {role === "manajer" && "Can manage teams and operations"}
+                          {role === "staff" && "Can access staff functions"}
+                          {role === "interviewer" && "Can conduct interviews"}
                         </span>
                       </div>
                       {hasRole ? (
