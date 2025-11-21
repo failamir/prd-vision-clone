@@ -26,6 +26,7 @@ const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const testFileInputRef = useRef<HTMLInputElement>(null);
   const [screeningTab, setScreeningTab] = useState("deck_experience");
+  const [department, setDepartment] = useState<string>("Deck Department"); // Default to Deck
   const [medicalTests, setMedicalTests] = useState<any[]>([]);
   const [loadingTests, setLoadingTests] = useState(false);
   const [newTest, setNewTest] = useState({
@@ -228,6 +229,20 @@ const Profile = () => {
           avatar_url: data.avatar_url || "",
         });
         setAvatarPreview(data.avatar_url || "");
+        
+        // Fetch candidate's job application to determine department
+        const { data: applicationData } = await supabase
+          .from("job_applications")
+          .select("jobs(department)")
+          .eq("candidate_id", data.id)
+          .order("applied_at", { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (applicationData?.jobs) {
+          const jobDept = (applicationData.jobs as any).department;
+          setDepartment(jobDept || "Deck Department");
+        }
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -1493,10 +1508,10 @@ const Profile = () => {
             <Tabs value={screeningTab} onValueChange={setScreeningTab}>
               <TabsList className="w-full justify-start h-auto flex-wrap gap-2 bg-transparent border-b rounded-none pb-2">
                 <TabsTrigger value="deck_experience" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  Deck Experience
+                  {department === "Hotel Department" ? "Hotel Experience" : "Deck Experience"}
                 </TabsTrigger>
                 <TabsTrigger value="deck_certificate" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  Deck Certificate
+                  {department === "Hotel Department" ? "Hotel Certificate" : "Deck Certificate"}
                 </TabsTrigger>
                 <TabsTrigger value="travel_document" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   Travel Document
@@ -1528,14 +1543,28 @@ const Profile = () => {
                           <TableHeader>
                             <TableRow>
                               <TableHead>ID</TableHead>
-                              <TableHead>Vessel Name / Type</TableHead>
-                              <TableHead>GT / LOA</TableHead>
-                              <TableHead>Vessel Route</TableHead>
-                              <TableHead>Position</TableHead>
-                              <TableHead>Approve</TableHead>
-                              <TableHead>Start Date</TableHead>
-                              <TableHead>End Date</TableHead>
-                              <TableHead>Job</TableHead>
+                              {department === "Hotel Department" ? (
+                                <>
+                                  <TableHead>Hotel Name</TableHead>
+                                  <TableHead>Position</TableHead>
+                                  <TableHead>Start Date</TableHead>
+                                  <TableHead>End Date</TableHead>
+                                  <TableHead>Reason</TableHead>
+                                  <TableHead>Job</TableHead>
+                                  <TableHead>Description</TableHead>
+                                </>
+                              ) : (
+                                <>
+                                  <TableHead>Vessel Name / Type</TableHead>
+                                  <TableHead>GT / LOA</TableHead>
+                                  <TableHead>Vessel Route</TableHead>
+                                  <TableHead>Position</TableHead>
+                                  <TableHead>Approve</TableHead>
+                                  <TableHead>Start Date</TableHead>
+                                  <TableHead>End Date</TableHead>
+                                  <TableHead>Job</TableHead>
+                                </>
+                              )}
                               <TableHead className="w-[100px]"></TableHead>
                             </TableRow>
                           </TableHeader>
@@ -1543,29 +1572,47 @@ const Profile = () => {
                             {deckExperiences.map((row) => (
                               <TableRow key={row.id}>
                                 <TableCell>{row.id}</TableCell>
-                                <TableCell>{row.vessel_name_type}</TableCell>
-                                <TableCell>{row.gt_loa}</TableCell>
-                                <TableCell>{row.route}</TableCell>
-                                <TableCell>{row.position}</TableCell>
-                                <TableCell>
-                                  {row.file_path ? (
-                                    <Button
-                                      variant="link"
-                                      size="sm"
-                                      onClick={() => handleViewFile(row.file_path)}
-                                      className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
-                                    >
-                                      View File <ExternalLink className="w-3 h-3" />
-                                    </Button>
-                                  ) : (
-                                    <span className="text-muted-foreground">-</span>
-                                  )}
-                                </TableCell>
-                                <TableCell>{row.start_date ? new Date(row.start_date).toLocaleDateString() : "-"}</TableCell>
-                                <TableCell>{row.end_date ? new Date(row.end_date).toLocaleDateString() : "-"}</TableCell>
-                                <TableCell className="max-w-[240px] truncate" title={row.job_description || ""}>
-                                  {row.job_description || "-"}
-                                </TableCell>
+                                {department === "Hotel Department" ? (
+                                  <>
+                                    <TableCell>{row.company}</TableCell>
+                                    <TableCell>{row.position}</TableCell>
+                                    <TableCell>{row.start_date ? new Date(row.start_date).toLocaleDateString() : "-"}</TableCell>
+                                    <TableCell>{row.end_date ? new Date(row.end_date).toLocaleDateString() : "-"}</TableCell>
+                                    <TableCell>{row.reason}</TableCell>
+                                    <TableCell className="max-w-[240px] truncate" title={row.job_description || ""}>
+                                      {row.job_description || "-"}
+                                    </TableCell>
+                                    <TableCell className="max-w-[240px] truncate" title={row.description || ""}>
+                                      {row.description || "-"}
+                                    </TableCell>
+                                  </>
+                                ) : (
+                                  <>
+                                    <TableCell>{row.vessel_name_type}</TableCell>
+                                    <TableCell>{row.gt_loa}</TableCell>
+                                    <TableCell>{row.route}</TableCell>
+                                    <TableCell>{row.position}</TableCell>
+                                    <TableCell>
+                                      {row.file_path ? (
+                                        <Button
+                                          variant="link"
+                                          size="sm"
+                                          onClick={() => handleViewFile(row.file_path)}
+                                          className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
+                                        >
+                                          View File <ExternalLink className="w-3 h-3" />
+                                        </Button>
+                                      ) : (
+                                        <span className="text-muted-foreground">-</span>
+                                      )}
+                                    </TableCell>
+                                    <TableCell>{row.start_date ? new Date(row.start_date).toLocaleDateString() : "-"}</TableCell>
+                                    <TableCell>{row.end_date ? new Date(row.end_date).toLocaleDateString() : "-"}</TableCell>
+                                    <TableCell className="max-w-[240px] truncate" title={row.job_description || ""}>
+                                      {row.job_description || "-"}
+                                    </TableCell>
+                                  </>
+                                )}
                                 <TableCell>
                                   <Button size="sm" variant="destructive" className="h-8 px-3" onClick={() => handleDeleteDeck(row.id, row.file_path)}>
                                     Delete
@@ -1579,64 +1626,111 @@ const Profile = () => {
                     )}
 
                     <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-2">
-                        <Label>Vessel Name / Type*</Label>
-                        <Input value={newDeck.vessel_name_type} onChange={(e) => setNewDeck({ ...newDeck, vessel_name_type: e.target.value })} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>GT / LOA (Length Over All)*</Label>
-                        <Input value={newDeck.gt_loa} onChange={(e) => setNewDeck({ ...newDeck, gt_loa: e.target.value })} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Vessel Route*</Label>
-                        <Select value={newDeck.route} onValueChange={(v) => setNewDeck({ ...newDeck, route: v })}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Please select" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Foreign Going">Foreign Going</SelectItem>
-                            <SelectItem value="Domestic">Domestic</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Position*</Label>
-                        <Input value={newDeck.position} onChange={(e) => setNewDeck({ ...newDeck, position: e.target.value })} />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Start Date*</Label>
-                          <Input type="date" value={newDeck.start_date} onChange={(e) => setNewDeck({ ...newDeck, start_date: e.target.value })} />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>End Date</Label>
-                          <Input type="date" value={newDeck.end_date} onChange={(e) => setNewDeck({ ...newDeck, end_date: e.target.value })} />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Reason for leaving or current status*</Label>
-                        <Select value={newDeck.reason} onValueChange={(v) => setNewDeck({ ...newDeck, reason: v })}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Please select" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Finished Contract">Finished Contract</SelectItem>
-                            <SelectItem value="Resign">Resign</SelectItem>
-                            <SelectItem value="Terminated">Terminated</SelectItem>
-                            <SelectItem value="Onboard">Onboard</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Job Description (minimum 3)</Label>
-                        <Textarea value={newDeck.job_description} onChange={(e) => setNewDeck({ ...newDeck, job_description: e.target.value })} />
-                      </div>
+                      {department === "Hotel Department" ? (
+                        <>
+                          <div className="space-y-2">
+                            <Label>Hotel Name*</Label>
+                            <Input value={newDeck.vessel_name_type} onChange={(e) => setNewDeck({ ...newDeck, vessel_name_type: e.target.value })} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Position*</Label>
+                            <Input value={newDeck.position} onChange={(e) => setNewDeck({ ...newDeck, position: e.target.value })} />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Start Date*</Label>
+                              <Input type="date" value={newDeck.start_date} onChange={(e) => setNewDeck({ ...newDeck, start_date: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>End Date</Label>
+                              <Input type="date" value={newDeck.end_date} onChange={(e) => setNewDeck({ ...newDeck, end_date: e.target.value })} />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Reason*</Label>
+                            <Select value={newDeck.reason} onValueChange={(v) => setNewDeck({ ...newDeck, reason: v })}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Please select" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Finished Contract">Finished Contract</SelectItem>
+                                <SelectItem value="Resign">Resign</SelectItem>
+                                <SelectItem value="Terminated">Terminated</SelectItem>
+                                <SelectItem value="Onboard">Onboard</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Job*</Label>
+                            <Input value={newDeck.job_description} onChange={(e) => setNewDeck({ ...newDeck, job_description: e.target.value })} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Description</Label>
+                            <Textarea value={newDeck.route} onChange={(e) => setNewDeck({ ...newDeck, route: e.target.value })} />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="space-y-2">
+                            <Label>Vessel Name / Type*</Label>
+                            <Input value={newDeck.vessel_name_type} onChange={(e) => setNewDeck({ ...newDeck, vessel_name_type: e.target.value })} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>GT / LOA (Length Over All)*</Label>
+                            <Input value={newDeck.gt_loa} onChange={(e) => setNewDeck({ ...newDeck, gt_loa: e.target.value })} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Vessel Route*</Label>
+                            <Select value={newDeck.route} onValueChange={(v) => setNewDeck({ ...newDeck, route: v })}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Please select" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Foreign Going">Foreign Going</SelectItem>
+                                <SelectItem value="Domestic">Domestic</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Position*</Label>
+                            <Input value={newDeck.position} onChange={(e) => setNewDeck({ ...newDeck, position: e.target.value })} />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Start Date*</Label>
+                              <Input type="date" value={newDeck.start_date} onChange={(e) => setNewDeck({ ...newDeck, start_date: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>End Date</Label>
+                              <Input type="date" value={newDeck.end_date} onChange={(e) => setNewDeck({ ...newDeck, end_date: e.target.value })} />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Reason for leaving or current status*</Label>
+                            <Select value={newDeck.reason} onValueChange={(v) => setNewDeck({ ...newDeck, reason: v })}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Please select" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Finished Contract">Finished Contract</SelectItem>
+                                <SelectItem value="Resign">Resign</SelectItem>
+                                <SelectItem value="Terminated">Terminated</SelectItem>
+                                <SelectItem value="Onboard">Onboard</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Job Description (minimum 3)</Label>
+                            <Textarea value={newDeck.job_description} onChange={(e) => setNewDeck({ ...newDeck, job_description: e.target.value })} />
+                          </div>
 
-                      <div className="space-y-2">
-                        <Label>Approve</Label>
-                        <Input type="file" accept=".pdf" onChange={handleDeckFileChange} />
-                        <p className="text-sm text-muted-foreground">Filetype: Pdf, Max 8 MB</p>
-                      </div>
+                          <div className="space-y-2">
+                            <Label>Approve</Label>
+                            <Input type="file" accept=".pdf" onChange={handleDeckFileChange} />
+                            <p className="text-sm text-muted-foreground">Filetype: Pdf, Max 8 MB</p>
+                          </div>
+                        </>
+                      )}
 
                       <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck}>
                         {uploadingDeck ? (
@@ -1732,20 +1826,35 @@ const Profile = () => {
                               <SelectValue placeholder="Please select" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="BASIC SAFETY TRAINING (BST)">BASIC SAFETY TRAINING (BST)</SelectItem>
-                              <SelectItem value="ADVANCE FIRE FIGHTING (AFF)">ADVANCE FIRE FIGHTING (AFF)</SelectItem>
-                              <SelectItem value="MEDICAL FIRST AID (MFA)">MEDICAL FIRST AID (MFA)</SelectItem>
-                              <SelectItem value="PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS">PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS</SelectItem>
-                              <SelectItem value="CRISIS MANAGEMENT AND HUMAN BEHAVIOUR">CRISIS MANAGEMENT AND HUMAN BEHAVIOUR</SelectItem>
-                              <SelectItem value="CROWD MANAGEMENT">CROWD MANAGEMENT</SelectItem>
-                              <SelectItem value="SECURITY AWARENESS TRAINING">SECURITY AWARENESS TRAINING</SelectItem>
-                              <SelectItem value="SEAFARERS WITH DESIGNATED SECURITY DUTIES">SEAFARERS WITH DESIGNATED SECURITY DUTIES</SelectItem>
-                              <SelectItem value="RATING ABLE">RATING ABLE</SelectItem>
-                              <SelectItem value="RATING WATCHKEEPING">RATING WATCHKEEPING</SelectItem>
-                              <SelectItem value="COC">COC</SelectItem>
-                              <SelectItem value="ELECTRO TECHNICAL RATING">ELECTRO TECHNICAL RATING</SelectItem>
-                              <SelectItem value="ELECTRO TECHNICAL OFFICER">ELECTRO TECHNICAL OFFICER</SelectItem>
-                              <SelectItem value="SHIP SECURITY OFFICER">SHIP SECURITY OFFICER</SelectItem>
+                              {department === "Hotel Department" ? (
+                                <>
+                                  <SelectItem value="Basic Safety Training (BST)">Basic Safety Training (BST)</SelectItem>
+                                  <SelectItem value="Crowd Management">Crowd Management</SelectItem>
+                                  <SelectItem value="Crisis Management">Crisis Management</SelectItem>
+                                  <SelectItem value="CID">CID</SelectItem>
+                                  <SelectItem value="COC">COC</SelectItem>
+                                  <SelectItem value="Rating Able">Rating Able</SelectItem>
+                                  <SelectItem value="CCM">CCM</SelectItem>
+                                  <SelectItem value="ETC.">ETC.</SelectItem>
+                                </>
+                              ) : (
+                                <>
+                                  <SelectItem value="BASIC SAFETY TRAINING (BST)">BASIC SAFETY TRAINING (BST)</SelectItem>
+                                  <SelectItem value="ADVANCE FIRE FIGHTING (AFF)">ADVANCE FIRE FIGHTING (AFF)</SelectItem>
+                                  <SelectItem value="MEDICAL FIRST AID (MFA)">MEDICAL FIRST AID (MFA)</SelectItem>
+                                  <SelectItem value="PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS">PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS</SelectItem>
+                                  <SelectItem value="CRISIS MANAGEMENT AND HUMAN BEHAVIOUR">CRISIS MANAGEMENT AND HUMAN BEHAVIOUR</SelectItem>
+                                  <SelectItem value="CROWD MANAGEMENT">CROWD MANAGEMENT</SelectItem>
+                                  <SelectItem value="SECURITY AWARENESS TRAINING">SECURITY AWARENESS TRAINING</SelectItem>
+                                  <SelectItem value="SEAFARERS WITH DESIGNATED SECURITY DUTIES">SEAFARERS WITH DESIGNATED SECURITY DUTIES</SelectItem>
+                                  <SelectItem value="RATING ABLE">RATING ABLE</SelectItem>
+                                  <SelectItem value="RATING WATCHKEEPING">RATING WATCHKEEPING</SelectItem>
+                                  <SelectItem value="COC">COC</SelectItem>
+                                  <SelectItem value="ELECTRO TECHNICAL RATING">ELECTRO TECHNICAL RATING</SelectItem>
+                                  <SelectItem value="ELECTRO TECHNICAL OFFICER">ELECTRO TECHNICAL OFFICER</SelectItem>
+                                  <SelectItem value="SHIP SECURITY OFFICER">SHIP SECURITY OFFICER</SelectItem>
+                                </>
+                              )}
                             </SelectContent>
                           </Select>
                       </div>
