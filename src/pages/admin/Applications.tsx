@@ -73,6 +73,7 @@ interface Application {
   candidate: {
     full_name: string;
     email: string;
+    phone?: string;
     date_of_birth: string;
     gender: string;
     height_cm: number;
@@ -100,6 +101,8 @@ const AdminApplications = () => {
   const [referenceDialogOpen, setReferenceDialogOpen] = useState(false);
   const [referenceLoading, setReferenceLoading] = useState(false);
   const [latestReference, setLatestReference] = useState<any | null>(null);
+  const [latestExperienceByCandidate, setLatestExperienceByCandidate] = useState<Record<string, any>>({});
+  const [latestEducationByCandidate, setLatestEducationByCandidate] = useState<Record<string, any>>({});
 
   const remarkOptions = [
     "step3:screening",
@@ -181,7 +184,8 @@ const AdminApplications = () => {
           *,
           candidate:candidate_profiles!job_applications_candidate_id_fkey(
             full_name, 
-            email, 
+            email,
+            phone,
             date_of_birth, 
             gender,
             height_cm,
@@ -192,7 +196,37 @@ const AdminApplications = () => {
         .order("applied_at", { ascending: false });
 
       if (error) throw error;
-      setApplications(data as any || []);
+      const apps = (data as any) || [];
+      const candidateIds = apps.map((d: any) => d.candidate_id).filter(Boolean);
+
+      if (candidateIds.length > 0) {
+        const { data: travelDocs, error: travelError } = await supabase
+          .from("candidate_travel_documents" as any)
+          .select("candidate_id, expiry_date, document_type")
+          .in("candidate_id", Array.from(new Set(candidateIds)))
+          .ilike("document_type", "%VISA%")
+          .order("expiry_date", { ascending: false });
+
+        if (travelError) throw travelError;
+
+        const latestVisaByCandidate: Record<string, string | null> = {};
+        (travelDocs || []).forEach((row: any) => {
+          if (latestVisaByCandidate[row.candidate_id] === undefined) {
+            latestVisaByCandidate[row.candidate_id] = row.expiry_date;
+          }
+        });
+
+        const merged = apps.map((a: any) => ({
+          ...a,
+          c1d_expiry_date: latestVisaByCandidate[a.candidate_id] ?? a.c1d_expiry_date ?? null,
+        }));
+
+        setApplications(merged);
+      } else {
+        setApplications(apps);
+      }
+      await fetchLatestExperiences(candidateIds as any);
+      await fetchLatestEducations(candidateIds as any);
     } catch (error) {
       console.error("Error fetching applications:", error);
       toast({
@@ -204,6 +238,47 @@ const AdminApplications = () => {
     }
   };
 
+  const fetchLatestExperiences = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_experience" as any)
+        .select("candidate_id, company, position, vessel_name_type, start_date, end_date, is_current, created_at")
+        .in("candidate_id", candidateIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setLatestExperienceByCandidate(map);
+    } catch (e) { }
+  };
+
+  const fetchLatestEducations = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_education" as any)
+        .select("candidate_id, institution, degree, start_date, end_date, created_at")
+        .in("candidate_id", candidateIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setLatestEducationByCandidate(map);
+    } catch (e) { }
+  };
+
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -211,6 +286,28 @@ const AdminApplications = () => {
       month: "short",
       day: "numeric",
     });
+  };
+
+  const getLatestExperienceText = (candidateId?: string, fallback?: string) => {
+    if (!candidateId) return fallback || "-";
+    const exp = latestExperienceByCandidate[candidateId];
+    if (!exp) return fallback || "-";
+    const parts = [exp.position, exp.company, exp.vessel_name_type].filter(Boolean).join(" / ");
+    const start = exp.start_date ? formatDate(exp.start_date) : "";
+    const end = exp.is_current ? "Present" : (exp.end_date ? formatDate(exp.end_date) : "");
+    const period = (start || end) ? ` (${[start, end].filter(Boolean).join(" - ")})` : "";
+    return `${parts}${period}`;
+  };
+
+  const getLatestEducationText = (candidateId?: string, fallback?: string) => {
+    if (!candidateId) return fallback || "-";
+    const edu = latestEducationByCandidate[candidateId];
+    if (!edu) return fallback || "-";
+    const title = [edu.degree, edu.institution].filter(Boolean).join(" @ ");
+    const start = edu.start_date ? formatDate(edu.start_date) : "";
+    const end = edu.end_date ? formatDate(edu.end_date) : "";
+    const period = (start || end) ? ` (${[start, end].filter(Boolean).join(" - ")})` : "";
+    return `${title}${period}`;
   };
 
   const calculateAge = (dob: string) => {
@@ -491,9 +588,8 @@ const AdminApplications = () => {
                   <TableHead className="min-w-[60px]">Age</TableHead>
                   <TableHead className="min-w-[110px]">Weight/Height</TableHead>
                   <TableHead className="min-w-[100px]">Reference</TableHead>
-                  <TableHead className="min-w-[130px]">Ship Experience</TableHead>
+                  <TableHead className="min-w-[130px]">Experience</TableHead>
                   <TableHead className="min-w-[130px]">C1D Expiry Date</TableHead>
-                  <TableHead className="min-w-[150px]">Previous Experience</TableHead>
                   <TableHead className="min-w-[160px]">Education Background</TableHead>
                   <TableHead className="min-w-[120px]">Contact No</TableHead>
                   <TableHead className="min-w-[180px]">Email</TableHead>
@@ -570,11 +666,10 @@ const AdminApplications = () => {
                       <TableCell>
                         <Button variant="outline" size="sm" onClick={() => openReferenceDialog(app)}>View Reference</Button>
                       </TableCell>
-                      <TableCell>{app.ship_experience || "-"}</TableCell>
+                      <TableCell>{getLatestExperienceText(app.candidate_id, app.ship_experience)}</TableCell>
                       <TableCell>{formatDate(app.c1d_expiry_date)}</TableCell>
-                      <TableCell>{app.previous_experience || "-"}</TableCell>
-                      <TableCell>{app.education_background || "-"}</TableCell>
-                      <TableCell>{app.contact_no || "-"}</TableCell>
+                      <TableCell>{getLatestEducationText(app.candidate_id, app.education_background)}</TableCell>
+                      <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
                       <TableCell>{app.candidate.email}</TableCell>
                       <TableCell>{app.emergency_contact || "-"}</TableCell>
                       <TableCell>
