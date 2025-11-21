@@ -14,7 +14,8 @@ import {
   Calendar,
   Plane,
   Mail,
-  MessageSquare
+  MessageSquare,
+  Key
 } from "lucide-react";
 import { useState } from "react";
 import { DatabaseToggle } from "@/components/DatabaseToggle";
@@ -38,6 +39,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     { name: "Departure Schedule", href: "/admin/departures", icon: Plane },
     { name: "Messages", href: "/admin/messages", icon: Mail },
     { name: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
+    { name: "Role Permissions", href: "/admin/role-permissions", icon: Key },
   ];
 
   const handleLogout = async () => {
