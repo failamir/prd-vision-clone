@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight, MapPin, Clock, Briefcase, X, Ship, Calendar 
 import heroCruise1 from "@/assets/hero-cruise-1.jpg";
 import heroCruise2 from "@/assets/hero-cruise-2.jpg";
 import heroCruise3 from "@/assets/hero-cruise-3.jpg";
+import TestimonialsSection from "@/components/TestimonialsSection";
 
 const heroSlides = [
   {
@@ -261,6 +262,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Testimonials Section */}
+      <TestimonialsSection />
 
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-ocean-deep to-ocean-blue text-white">
