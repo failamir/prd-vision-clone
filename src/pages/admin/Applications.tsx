@@ -81,6 +81,8 @@ interface Application {
     gender: string;
     height_cm: number;
     weight_kg: number;
+    registration_city?: string | null;
+    how_found_us?: string | null;
   };
   job: {
     title: string;
@@ -113,6 +115,8 @@ const AdminApplications = () => {
   const [latestReference, setLatestReference] = useState<any | null>(null);
   const [latestExperienceByCandidate, setLatestExperienceByCandidate] = useState<Record<string, any>>({});
   const [latestEducationByCandidate, setLatestEducationByCandidate] = useState<Record<string, any>>({});
+  const [experienceDialogOpen, setExperienceDialogOpen] = useState(false);
+  const [activeExperience, setActiveExperience] = useState<any | null>(null);
 
   const [approvedPositionDialogOpen, setApprovedPositionDialogOpen] = useState(false);
   const [approvedPositionJobs, setApprovedPositionJobs] = useState<JobOption[]>([]);
@@ -310,7 +314,7 @@ const AdminApplications = () => {
   const saveApprovedAs = async () => {
     if (!activeApp || !selectedApprovedAsJobId) return;
 
-    const job = approvedAsJobs.find((j) => j.id === selectedApprovedAsJobId);
+    const job = approvedAsJobs.find((j) => j.id === selectedApprovedJobId);
     if (!job) return;
 
     try {
@@ -443,7 +447,9 @@ const AdminApplications = () => {
             date_of_birth, 
             gender,
             height_cm,
-            weight_kg
+            weight_kg,
+            registration_city,
+            how_found_us
           ),
           job:jobs(title, company_name, department)
         `)
@@ -460,7 +466,7 @@ const AdminApplications = () => {
           .from("candidate_travel_documents" as any)
           .select("candidate_id, expiry_date, document_type")
           .in("candidate_id", uniqueCandidateIds)
-          .ilike("document_type", "%VISA%")
+          .ilike("document_type", "%C1D%")
           .order("expiry_date", { ascending: false });
 
         if (travelError) throw travelError;
@@ -500,7 +506,7 @@ const AdminApplications = () => {
     try {
       const { data, error } = await supabase
         .from("candidate_experience" as any)
-        .select("candidate_id, company, position, vessel_name_type, start_date, end_date, is_current, created_at")
+        .select("candidate_id, company, position, vessel_name_type, start_date, end_date, is_current, created_at, experience_type")
         .in("candidate_id", candidateIds)
         .order("created_at", { ascending: false });
 
@@ -642,6 +648,34 @@ const AdminApplications = () => {
     const end = exp.is_current ? "Present" : (exp.end_date ? formatDate(exp.end_date) : "");
     const period = (start || end) ? ` (${[start, end].filter(Boolean).join(" - ")})` : "";
     return `${parts}${period}`;
+  };
+
+  const getShipExperienceFlag = (candidateId?: string) => {
+    if (!candidateId) return "-";
+    const exp = latestExperienceByCandidate[candidateId];
+    if (!exp) return "-";
+
+    const rawType = (exp.experience_type || "").toString().toLowerCase();
+    const rawPosition = (exp.position || "").toString().toLowerCase();
+    const rawVessel = (exp.vessel_name_type || "").toString().toLowerCase();
+
+    const isDeckOrEngine =
+      rawType.includes("deck") ||
+      rawType.includes("engine") ||
+      rawPosition.includes("deck") ||
+      rawPosition.includes("eng") ||
+      rawVessel.includes("deck") ||
+      rawVessel.includes("engine");
+
+    const isHotelOrOther =
+      rawType.includes("hotel") ||
+      rawType.includes("other") ||
+      rawPosition.includes("hotel") ||
+      rawVessel.includes("hotel");
+
+    if (isDeckOrEngine) return "Yes";
+    if (isHotelOrOther) return "No";
+    return "-";
   };
 
   const getLatestEducationText = (candidateId?: string, fallback?: string) => {
@@ -1225,6 +1259,37 @@ const AdminApplications = () => {
             <Button type="button" onClick={handleSaveRemarks}>
               Save
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={experienceDialogOpen} onOpenChange={setExperienceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Latest Experience</DialogTitle>
+            <DialogDescription>
+              {activeApplication
+                ? `Latest experience for ${activeApplication.candidate.full_name}`
+                : "Latest candidate experience."}
+            </DialogDescription>
+          </DialogHeader>
+          {activeExperience ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+              <div><span className="font-medium">Company:</span> {activeExperience.company || "-"}</div>
+              <div><span className="font-medium">Position:</span> {activeExperience.position || "-"}</div>
+              <div><span className="font-medium">Vessel/Type:</span> {activeExperience.vessel_name_type || "-"}</div>
+              <div><span className="font-medium">Experience Type:</span> {activeExperience.experience_type || "-"}</div>
+              <div>
+                <span className="font-medium">Period:</span>{" "}
+                {activeExperience.start_date || activeExperience.end_date
+                  ? `${formatDate(activeExperience.start_date)} - ${activeExperience.is_current ? "Present" : formatDate(activeExperience.end_date)}`
+                  : "-"}
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No experience data.</p>
+          )}
+          <DialogFooter>
+            <Button type="button" onClick={() => setExperienceDialogOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1894,7 +1959,7 @@ const AdminApplications = () => {
                     />
                   </TableHead>
                   <TableHead className="min-w-[150px]">Remarks/Record</TableHead>
-                  <TableHead className="min-w-[100px]">Crew Code</TableHead>
+                  <TableHead className="min-w-[150px]">Crew Code</TableHead>
                   <TableHead className="min-w-[120px]">First Name</TableHead>
                   <TableHead className="min-w-[120px]">Last Name</TableHead>
                   <TableHead className="min-w-[130px]">Office Registered</TableHead>
@@ -1908,6 +1973,7 @@ const AdminApplications = () => {
                   <TableHead className="min-w-[60px]">Age</TableHead>
                   <TableHead className="min-w-[110px]">Weight/Height</TableHead>
                   <TableHead className="min-w-[100px]">Reference</TableHead>
+                  <TableHead className="min-w-[110px]">Ship Experience</TableHead>
                   <TableHead className="min-w-[130px]">Experience</TableHead>
                   <TableHead className="min-w-[130px]">C1D Expiry Date</TableHead>
                   <TableHead className="min-w-[160px]">Education Background</TableHead>
@@ -1969,9 +2035,9 @@ const AdminApplications = () => {
                       <TableCell>{app.crew_code || "-"}</TableCell>
                       <TableCell className="font-medium">{app.candidate.full_name.split(" ")[0]}</TableCell>
                       <TableCell className="font-medium">{app.candidate.full_name.split(" ").slice(1).join(" ")}</TableCell>
-                      <TableCell>{app.office_registered || "-"}</TableCell>
-                      <TableCell>{formatDate(app.date_of_entry)}</TableCell>
-                      <TableCell>{app.source || "-"}</TableCell>
+                      <TableCell>{app.candidate.registration_city || app.office_registered || "-"}</TableCell>
+                      <TableCell>{formatDate(app.applied_at || app.date_of_entry)}</TableCell>
+                      <TableCell>{app.candidate.how_found_us || app.source || "-"}</TableCell>
                       <TableCell>{app.job.title}</TableCell>
                       <TableCell>{app.job.department || "-"}</TableCell>
                       <TableCell>{app.second_position || "-"}</TableCell>
@@ -1986,7 +2052,24 @@ const AdminApplications = () => {
                       <TableCell>
                         <Button variant="outline" size="sm" onClick={() => openReferenceDialog(app)}>View Reference</Button>
                       </TableCell>
-                      <TableCell>{getLatestExperienceText(app.candidate_id, app.ship_experience)}</TableCell>
+                      <TableCell>{getShipExperienceFlag(app.candidate_id)}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span className="line-clamp-2 max-w-[220px]">
+                            {getLatestExperienceText(app.candidate_id, app.previous_experience)}
+                          </span>
+                          {latestExperienceByCandidate[app.candidate_id || ""] && (
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="h-auto p-0 text-xs"
+                              onClick={() => openExperienceDialog(app.candidate_id)}
+                            >
+                              View
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>{formatDate(app.c1d_expiry_date)}</TableCell>
                       <TableCell>{getLatestEducationText(app.candidate_id, app.education_background)}</TableCell>
                       <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
