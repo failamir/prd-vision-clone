@@ -19,7 +19,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = async (userId: string) => {
     try {
       // Try standard profiles table first
-      let { data, error } = await supabase
+      let { data, error } = await (supabase as any)
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -52,18 +52,36 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Check active sessions and set the user
-    const session = supabase.auth.getSession();
-
-    supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
+    let isMounted = true;
+    // Initialize from current session
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) return;
+      const currentUser = data.session?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) {
+        fetchProfile(currentUser.id);
       } else {
         setProfile(null);
       }
       setLoading(false);
     });
+
+    // Subscribe to auth state changes
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUser = session?.user ?? null;
+      setUser(nextUser);
+      if (nextUser) {
+        fetchProfile(nextUser.id);
+      } else {
+        setProfile(null);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription?.subscription.unsubscribe();
+    };
   }, []);
 
   return (

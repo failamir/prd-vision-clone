@@ -105,6 +105,32 @@ const AdminApplications = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
+  // Advanced filters
+  const [principal, setPrincipal] = useState("");
+  const [department, setDepartment] = useState("");
+  const [position, setPosition] = useState("");
+  const [office, setOffice] = useState("");
+  const [ageMin, setAgeMin] = useState("");
+  const [ageMax, setAgeMax] = useState("");
+  const [gender, setGender] = useState("");
+  const [nehaScore, setNehaScore] = useState("");
+  const [marlinScoreMin, setMarlinScoreMin] = useState("");
+  const [marlinScoreMax, setMarlinScoreMax] = useState("");
+  const [infoSource, setInfoSource] = useState("");
+  const [educationBackground, setEducationBackground] = useState("");
+  const [suitableFilter, setSuitableFilter] = useState(""); // Yes/No
+  const [shipExperience, setShipExperience] = useState("");
+  const [interviewResultFilter, setInterviewResultFilter] = useState("");
+  const [interviewByFilter, setInterviewByFilter] = useState("");
+  const [interviewDateMin, setInterviewDateMin] = useState("");
+  const [interviewDateMax, setInterviewDateMax] = useState("");
+  const [stwc2010, setStwc2010] = useState(""); // Yes/No
+  const [approvedAsFilter, setApprovedAsFilter] = useState("");
+  const [approvedPositionFilter, setApprovedPositionFilter] = useState("");
+  const [principalInterviewByFilter, setPrincipalInterviewByFilter] = useState("");
+  const [principalInterviewDateMin, setPrincipalInterviewDateMin] = useState("");
+  const [principalInterviewDateMax, setPrincipalInterviewDateMax] = useState("");
+  const [principalInterviewResultFilter, setPrincipalInterviewResultFilter] = useState("");
   const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);
   const [activeApplication, setActiveApplication] = useState<Application | null>(null);
   const [selectedRemark, setSelectedRemark] = useState("");
@@ -166,6 +192,137 @@ const AdminApplications = () => {
   const [employmentOfferValue, setEmploymentOfferValue] = useState<"Received" | "Not Received" | "">("");
   const [eoAcceptanceDialogOpen, setEoAcceptanceDialogOpen] = useState(false);
   const [eoAcceptanceValue, setEoAcceptanceValue] = useState<"Yes" | "No" | "">("");
+
+  // Helpers: filters and utilities
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStartDate("");
+    setEndDate("");
+    setPrincipal("");
+    setDepartment("");
+    setPosition("");
+    setOffice("");
+    setAgeMin("");
+    setAgeMax("");
+    setGender("");
+    setNehaScore("");
+    setMarlinScoreMin("");
+    setMarlinScoreMax("");
+    setInfoSource("");
+    setEducationBackground("");
+    setSuitableFilter("");
+    setShipExperience("");
+    setInterviewResultFilter("");
+    setInterviewByFilter("");
+    setInterviewDateMin("");
+    setInterviewDateMax("");
+    setStwc2010("");
+    setApprovedAsFilter("");
+    setApprovedPositionFilter("");
+    setPrincipalInterviewByFilter("");
+    setPrincipalInterviewDateMin("");
+    setPrincipalInterviewDateMax("");
+    setPrincipalInterviewResultFilter("");
+  };
+
+  const withinDateRange = (value: string | null | undefined, min?: string, max?: string) => {
+    if (!value) return true;
+    const d = new Date(value);
+    if (min) {
+      const dMin = new Date(min);
+      if (d < dMin) return false;
+    }
+    if (max) {
+      const dMax = new Date(max);
+      if (d > dMax) return false;
+    }
+    return true;
+  };
+
+  const numOrNull = (v: string | number | null | undefined) => {
+    if (v === null || v === undefined) return null;
+    const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
+    return isNaN(n) ? null : n;
+  };
+
+  const matchesText = (val: any, q: string) => {
+    if (!q) return true;
+    return (val ?? "").toString().toLowerCase().includes(q.toLowerCase());
+  };
+
+  const passesFilters = (app: Application) => {
+    // Global search
+    const searchPass = !searchQuery ||
+      app.candidate.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.candidate.email.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!searchPass) return false;
+
+    // Applied date range (use applied_at if present, else date_of_entry)
+    const appliedDate = app.applied_at || app.date_of_entry;
+    if (!withinDateRange(appliedDate, startDate || undefined, endDate || undefined)) return false;
+
+    // Principal, Department, Position, Office
+    if (!matchesText(app.job.company_name, principal)) return false;
+    if (!matchesText(app.job.department, department)) return false;
+    if (!matchesText(app.job.title, position)) return false;
+    if (!matchesText(app.office_registered, office)) return false;
+
+    // Age range
+    const age = Number(calculateAge(app.candidate.date_of_birth));
+    if (ageMin && age < Number(ageMin)) return false;
+    if (ageMax && age > Number(ageMax)) return false;
+
+    // Gender
+    if (gender && app.candidate.gender.toLowerCase() !== gender.toLowerCase()) return false;
+
+    // Marlin English score min/max
+    const marlin = numOrNull(app.marlin_english_score);
+    if (marlinScoreMin && (marlin === null || marlin < Number(marlinScoreMin))) return false;
+    if (marlinScoreMax && (marlin === null || marlin > Number(marlinScoreMax))) return false;
+
+    // NEHA score (minimum if provided)
+    const neha = numOrNull(app.neha_ces_test);
+    if (nehaScore && (neha === null || neha < Number(nehaScore))) return false;
+
+    // Information Source
+    if (!matchesText(app.source, infoSource)) return false;
+
+    // Education Background
+    if (!matchesText(app.education_background, educationBackground)) return false;
+
+    // Suitable (Yes/No exact when selected)
+    if (suitableFilter) {
+      const s = (app.suitable || "").toString().toLowerCase();
+      const target = suitableFilter.toLowerCase();
+      if (!(target === "yes" ? ["yes","y","approved","approve"].includes(s) : ["no","n","rejected","reject"].includes(s))) return false;
+    }
+
+    // Ship Experience
+    if (!matchesText(app.ship_experience, shipExperience)) return false;
+
+    // Interview filters
+    if (!matchesText(app.interview_by, interviewByFilter)) return false;
+    if (!withinDateRange(app.interview_date, interviewDateMin || undefined, interviewDateMax || undefined)) return false;
+    if (interviewResultFilter && (app.interview_result || "").toLowerCase() !== interviewResultFilter.toLowerCase()) return false;
+
+    // STWC 2010 (approximate using bst_cc contains 'STWC')
+    if (stwc2010) {
+      const has = (app.bst_cc || "").toString().toUpperCase().includes("STWC");
+      if (stwc2010 === 'Yes' && !has) return false;
+      if (stwc2010 === 'No' && has) return false;
+    }
+
+    // Approved filters
+    if (!matchesText(app.approved_as, approvedAsFilter)) return false;
+    if (!matchesText(app.approved_position, approvedPositionFilter)) return false;
+
+    // Principal interview filters
+    if (!matchesText(app.principal_interview_by, principalInterviewByFilter)) return false;
+    if (!withinDateRange(app.principal_interview_date, principalInterviewDateMin || undefined, principalInterviewDateMax || undefined)) return false;
+    if (principalInterviewResultFilter && (app.principal_interview_result || "").toLowerCase() !== principalInterviewResultFilter.toLowerCase()) return false;
+
+    return true;
+  };
 
   const remarkOptions = [
     "step3:screening",
@@ -1918,30 +2075,167 @@ const AdminApplications = () => {
             </div>
             
             <CollapsibleContent className="mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Start Date:</label>
-                  <Input 
-                    type="date" 
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
+                  <label className="text-sm font-medium mb-2 block">Principal</label>
+                  <Input placeholder="Select Principal" value={principal} onChange={(e) => setPrincipal(e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">End Date:</label>
-                  <Input 
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                  />
+                  <label className="text-sm font-medium mb-2 block">Department</label>
+                  <Input placeholder="Select Department" value={department} onChange={(e) => setDepartment(e.target.value)} />
                 </div>
-                <div className="flex items-end">
-                  <Button 
-                    onClick={exportToExcel}
-                    className="w-full bg-green-600 hover:bg-green-700"
-                  >
-                    Export SGP to Excel
-                  </Button>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Position</label>
+                  <Input placeholder="Select Position" value={position} onChange={(e) => setPosition(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Office</label>
+                  <Input placeholder="Select Office" value={office} onChange={(e) => setOffice(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Age Minimum</label>
+                  <Input type="number" value={ageMin} onChange={(e) => setAgeMin(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Age Maximum</label>
+                  <Input type="number" value={ageMax} onChange={(e) => setAgeMax(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Gender</label>
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Neha Score</label>
+                  <Input type="number" value={nehaScore} onChange={(e) => setNehaScore(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Marlin English Score Minimum</label>
+                  <Input type="number" value={marlinScoreMin} onChange={(e) => setMarlinScoreMin(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Marlin English Score Maximum</label>
+                  <Input type="number" value={marlinScoreMax} onChange={(e) => setMarlinScoreMax(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Information Source</label>
+                  <Input placeholder="Select information_source" value={infoSource} onChange={(e) => setInfoSource(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Education Background</label>
+                  <Input placeholder="Education Background" value={educationBackground} onChange={(e) => setEducationBackground(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Suitable</label>
+                  <Select value={suitableFilter} onValueChange={setSuitableFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="- Select -" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Yes">Yes</SelectItem>
+                      <SelectItem value="No">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Ship Experience</label>
+                  <Input placeholder="Ship Experience" value={shipExperience} onChange={(e) => setShipExperience(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Interview Result</label>
+                  <Select value={interviewResultFilter} onValueChange={setInterviewResultFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="- Select -" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Approved">Approved</SelectItem>
+                      <SelectItem value="Not Approved">Not Approved</SelectItem>
+                      <SelectItem value="Reclassed">Reclassed</SelectItem>
+                      <SelectItem value="Review">Review</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Interview By</label>
+                  <Input placeholder="Interview By" value={interviewByFilter} onChange={(e) => setInterviewByFilter(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Interview Date Minimum</label>
+                  <Input type="date" value={interviewDateMin} onChange={(e) => setInterviewDateMin(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Interview Date Maximum</label>
+                  <Input type="date" value={interviewDateMax} onChange={(e) => setInterviewDateMax(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">STWC 2010</label>
+                  <Select value={stwc2010} onValueChange={setStwc2010}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="- Select -" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Yes">Yes</SelectItem>
+                      <SelectItem value="No">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Approved As</label>
+                  <Input placeholder="Approved As" value={approvedAsFilter} onChange={(e) => setApprovedAsFilter(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Approved Position</label>
+                  <Input placeholder="Approved Position" value={approvedPositionFilter} onChange={(e) => setApprovedPositionFilter(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Principal Interview By</label>
+                  <Input placeholder="Principal Interview By" value={principalInterviewByFilter} onChange={(e) => setPrincipalInterviewByFilter(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Principal Interview Date Minimum</label>
+                  <Input type="date" value={principalInterviewDateMin} onChange={(e) => setPrincipalInterviewDateMin(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Principal Interview Date Maximum</label>
+                  <Input type="date" value={principalInterviewDateMax} onChange={(e) => setPrincipalInterviewDateMax(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Principal Interview Result</label>
+                  <Select value={principalInterviewResultFilter} onValueChange={setPrincipalInterviewResultFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="- Select -" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Approved">Approved</SelectItem>
+                      <SelectItem value="Not Approved">Not Approved</SelectItem>
+                      <SelectItem value="Reclassed">Reclassed</SelectItem>
+                      <SelectItem value="Review">Review</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Start Date</label>
+                  <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">End Date</label>
+                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                </div>
+                <div className="flex items-end gap-2">
+                  <Button onClick={exportToExcel} className="w-full bg-green-600 hover:bg-green-700">Export SGP to Excel</Button>
+                </div>
+                <div className="flex items-end justify-end gap-2">
+                  <Button variant="secondary" onClick={clearFilters} className="w-full">Clear</Button>
+                </div>
+                <div className="flex items-end justify-end gap-2">
+                  <Button className="w-full">Filter</Button>
                 </div>
               </div>
             </CollapsibleContent>
@@ -2036,10 +2330,7 @@ const AdminApplications = () => {
               </TableHeader>
               <TableBody>
                 {applications
-                  .filter(app => 
-                    app.candidate.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    app.candidate.email.toLowerCase().includes(searchQuery.toLowerCase())
-                  )
+                  .filter(passesFilters)
                   .map((app) => (
                     <TableRow key={app.id}>
                       <TableCell>
