@@ -1,94 +1,69 @@
-import { Link } from "react-router-dom";
-import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
-
 export const Footer = () => {
   return (
-    <footer className="bg-ocean-deep text-white">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div>
-            <h3 className="font-bold text-lg mb-4">Cipta Wira Tirta</h3>
-            <p className="text-sm text-blue-200 mb-4">
-              PT. Cipta Wira Tirta - Creating Hero Of The Sea
-            </p>
-            <p className="text-sm text-blue-200">
-              Leading maritime recruitment agency providing quality seafarers for cruise lines and shipping companies worldwide.
-            </p>
-          </div>
+    <footer className="main-footer style-six">
+      <div className="auto-container">
+        <div className="footer-menu">
+          {/* Widgets Section */}
+          <div className="widgets-section">
+            <div className="row">
+              <div className="foot-left">
+                <div className="footer-column about-widget">
+                  <div className="logo">
+                    <a href="https://ciptawiratirta.com">
+                      <img src="https://ciptawiratirta.com/uploads/0000/1/2022/06/30/logo-cowpy.png" alt="logo footer" />
+                    </a>
+                  </div>
+                </div>
+              </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/about" className="text-blue-200 hover:text-white transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/jobs" className="text-blue-200 hover:text-white transition-colors">
-                  Find Jobs
-                </Link>
-              </li>
-              <li>
-                <Link to="/employers" className="text-blue-200 hover:text-white transition-colors">
-                  For Employers
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-blue-200 hover:text-white transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-            </ul>
-          </div>
+              <div className="foot-right">
+                <div className="social-links">
+                  <h3 className="mb-2 title-social-links" style={{ color: '#fefefe' }}>Follow Us</h3>
+                  <div className="social-icon">
+                    <a href="https://www.facebook.com/profile.php?id=100081115663579"><i className="fab fa-facebook-f" /></a>
+                    <a href="https://www.instagram.com/wiramanningservice/?hl=id"><i className="fab fa-instagram" /></a>
+                    <a href="https://www.linkedin.com/in/wira-manning-service-852398232"><i className="fab fa-linkedin" /></a>
+                  </div>
+                </div>
 
-          {/* Services */}
-          <div>
-            <h4 className="font-semibold mb-4">Our Services</h4>
-            <ul className="space-y-2 text-sm">
-              <li className="text-blue-200">Insurance Services</li>
-              <li className="text-blue-200">Manning Services</li>
-              <li className="text-blue-200">Training & Certification</li>
-              <li className="text-blue-200">Career Counseling</li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="font-semibold mb-4">Contact Us</h4>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-start space-x-2">
-                <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
-                <span className="text-blue-200">Jakarta, Indonesia</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <Phone className="w-4 h-4 flex-shrink-0" />
-                <span className="text-blue-200">+62 21 xxx xxxx</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <Mail className="w-4 h-4 flex-shrink-0" />
-                <span className="text-blue-200">info@ciptawiratirta.com</span>
-              </li>
-            </ul>
-            <div className="flex space-x-4 mt-4">
-              <a href="#" className="text-blue-200 hover:text-white transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-blue-200 hover:text-white transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-blue-200 hover:text-white transition-colors">
-                <Linkedin className="w-5 h-5" />
-              </a>
+                <div className="head-office">
+                  <div className="head-office-left">
+                    <h3 className="mb-2">Offices</h3>
+                  </div>
+                  <div className="head-office-right">
+                    <ul>
+                      <li><a href="/page/faqs">Jakarta</a></li>
+                      <li><a href="/page/faqs">Bali</a></li>
+                      <li><a href="/page/faqs">Yogyakarta</a></li>
+                      <li><a href="/page/faqs">Surabaya</a></li>
+                      <li><a href="/page/faqs">Bandung</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="border-t border-blue-800 mt-8 pt-8 text-center text-sm text-blue-200">
-          <p>&copy; {new Date().getFullYear()} PT. Cipta Wira Tirta. All rights reserved.</p>
+      {/* Bottom */}
+      <div className="footer-bottom">
+        <div className="auto-container">
+          <div className="copyright-text">
+            <p>© 2022 <a href="https://kardusinfo.com">Kardusinfo Indonesia</a>. All Right Reserved.</p>
+          </div>
         </div>
+      </div>
+
+      {/* Scroll To Top */}
+      <div
+        className="scroll-to-top scroll-to-target"
+        data-target="html"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        role="button"
+        aria-label="Scroll to top"
+      >
+        <span className="fa fa-angle-up" />
       </div>
     </footer>
   );

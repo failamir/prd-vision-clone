@@ -58,12 +58,48 @@ const urgentJobs = [
 ];
 
 const partners = [
-  { name: "Norwegian Cruise Line", abbr: "NCL" },
-  { name: "NYK Ship Management", abbr: "NYKSM" },
-  { name: "Fred Olsen Cruise Line", abbr: "FOCL" },
-  { name: "SeaChef", abbr: "SC" },
-  { name: "Aloha Adriatic", abbr: "AA" },
-  { name: "Pertamina", abbr: "PTM" },
+  {
+    name: "Norwegian Cruise Line",
+    href: "https://www.ncl.com/in/en/",
+    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-1.png",
+    alt: "NCL",
+  },
+  {
+    name: "NYK Ship Management",
+    href: "http://www.nyksm.com.sg/",
+    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-2.png",
+    alt: "NYKSM",
+  },
+  {
+    name: "Fred Olsen Cruise Lines",
+    href: "https://www.fredolsencruises.com/",
+    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-3.png",
+    alt: "Fred Olsen Cruise Lines",
+  },
+  {
+    name: "SeaChefs",
+    href: "https://www.seachefs.com/",
+    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-4.png",
+    alt: "SeaChefs",
+  },
+  {
+    name: "SeaQuest Shipmanagement",
+    href: "http://www.sqships.com/",
+    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-5.png",
+    alt: "SeaQuest Shipmanagement",
+  },
+  {
+    name: "Alpha Adriatic",
+    href: "https://alphaadriatic.com/",
+    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-6.png",
+    alt: "Alpha Adriatic",
+  },
+  {
+    name: "Pertamina International Shipping",
+    href: "https://www.pertamina-pis.com/",
+    logo: "https://ciptawiratirta.com/uploads/0000/1/2024/04/24/logo-partner-1-11.png",
+    alt: "Pertamina International Shipping",
+  },
 ];
 
 // Urgent Jobs Modal Component
@@ -96,7 +132,7 @@ const UrgentJobsModal = ({ isOpen, onClose, jobs, onJobSelect }: any) => {
 
         <div className="p-6">
           <p className="text-gray-600 mb-6">These positions need to be filled immediately. Apply now!</p>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {urgentJobsList.map((job: any) => (
               <div
@@ -185,9 +221,8 @@ const Index = () => {
         {heroSlides.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-700 ${
-              index === currentSlide ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute inset-0 transition-opacity duration-700 ${index === currentSlide ? "opacity-100" : "opacity-0"
+              }`}
           >
             <div
               className="absolute inset-0 bg-cover bg-center"
@@ -235,9 +270,8 @@ const Index = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentSlide ? "bg-white" : "bg-white/50"
-              }`}
+              className={`w-3 h-3 rounded-full transition-colors ${index === currentSlide ? "bg-white" : "bg-white/50"
+                }`}
             />
           ))}
         </div>
@@ -247,43 +281,44 @@ const Index = () => {
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-foreground mb-12">Our Trusted Partners</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-8 items-center">
             {partners.map((partner, index) => (
-              <div
+              <a
                 key={index}
-                className="flex items-center justify-center p-6 bg-card rounded-lg border border-border hover:shadow-md transition-shadow"
+                href={partner.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center p-4 rounded-lg hover:shadow-sm transition-shadow"
+                title={partner.name}
               >
-                <div className="w-20 h-20 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                  {partner.abbr}
-                </div>
-              </div>
+                <img
+                  src={partner.logo}
+                  alt={partner.alt}
+                  className="h-12 md:h-16 w-auto object-contain"
+                  loading="lazy"
+                />
+              </a>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-ocean-deep to-ocean-blue text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">Ready to Start Your Maritime Career?</h2>
-          <p className="text-xl mb-8 text-blue-100">
-            Join thousands of seafarers who have found their dream jobs with us
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register?role=candidate">
-              <Button size="lg" className="bg-white text-ocean-deep hover:bg-white/90">
-                Register as Candidate
-              </Button>
-            </Link>
-            <Link to="/register?role=employer">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white/10"
-              >
-                Register as Employer
-              </Button>
-            </Link>
+      <section
+        className="call-to-action-two"
+        style={{
+          backgroundImage: 'url(https://ciptawiratirta.com/uploads/demo/general/call-to-action-2.jpg)'
+        }}
+      >
+        <div className="auto-container">
+          <div className="sec-title light text-center">
+            <h2>Your Dream Jobs Are Waiting</h2>
+            <div className="text"></div>
+          </div>
+
+          <div className="btn-box">
+            <a href="/job" className="theme-btn btn-style-three">Find Jobs</a>
+            <a href="/redirect.php" className="theme-btn btn-style-two" style={{ padding: '18px 35px 15px 35px' }}>Recruitment Procedure</a>
           </div>
         </div>
       </section>
