@@ -1388,6 +1388,24 @@ const Profile = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="covid_vaccinated">COVID-19 Vaccination Status *</Label>
+                <Select 
+                  value={profile.covid_vaccinated} 
+                  onValueChange={(value) => setProfile({ ...profile, covid_vaccinated: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Please select" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="Not Vaccinated">Not Vaccinated</SelectItem>
+                    <SelectItem value="Partially Vaccinated">Partially Vaccinated</SelectItem>
+                    <SelectItem value="Fully Vaccinated">Fully Vaccinated</SelectItem>
+                    <SelectItem value="Fully Vaccinated with Booster">Fully Vaccinated with Booster</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </Card>
         );
