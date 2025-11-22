@@ -1449,12 +1449,19 @@ const Profile = () => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="test_name">Test Name</Label>
-                    <Input
-                      id="test_name"
+                      <Select
                       value={newTest.test_name}
-                      onChange={(e) => setNewTest({ ...newTest, test_name: e.target.value })}
-                      placeholder="e.g., Marlin"
-                    />
+                        onValueChange={(v) => setNewTest({ ...newTest, test_name: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select test" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Marlins">Marlins</SelectItem>
+                          <SelectItem value="NEHA">NEHA</SelectItem>
+                          <SelectItem value="CES">CES</SelectItem>
+                        </SelectContent>
+                      </Select>
                   </div>
 
                   <div className="space-y-2">
