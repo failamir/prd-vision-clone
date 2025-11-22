@@ -1406,6 +1406,43 @@ const Profile = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="how_found_us">How did you find us? *</Label>
+                <Select 
+                  value={profile.how_found_us} 
+                  onValueChange={(value) => {
+                    setProfile({ ...profile, how_found_us: value });
+                    // Clear referral name if not selecting "Referral"
+                    if (value !== "Referral") {
+                      setProfile(prev => ({ ...prev, referral_name: "" }));
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Please select" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="Online Search">Online Search</SelectItem>
+                    <SelectItem value="Social Media">Social Media</SelectItem>
+                    <SelectItem value="Referral">Referral</SelectItem>
+                    <SelectItem value="Job Fair">Job Fair</SelectItem>
+                    <SelectItem value="Company Website">Company Website</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {profile.how_found_us === "Referral" && (
+                <div className="space-y-2">
+                  <Label htmlFor="referral_name">Referral Name *</Label>
+                  <Input
+                    id="referral_name"
+                    value={profile.referral_name}
+                    onChange={(e) => setProfile({ ...profile, referral_name: e.target.value })}
+                    placeholder="Who referred you?"
+                  />
+                </div>
+              )}
             </div>
           </Card>
         );
