@@ -47,7 +47,7 @@ export const RoleManagementDialog = ({
     role: string;
   } | null>(null);
 
-  const availableRoles = ["admin", "employer", "candidate"];
+  const availableRoles = ["admin", "employer", "candidate", "manajer", "staff", "interviewer", "interviewer_principal"];
 
   const handleRoleAction = async (action: "add" | "remove", role: string) => {
     setPendingAction({ type: action, role });
@@ -106,11 +106,19 @@ export const RoleManagementDialog = ({
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "admin":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      case "manajer":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+      case "interviewer":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "interviewer_principal":
+        return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200";
+      case "staff":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
       case "employer":
-        return "bg-blue-100 text-blue-800";
+        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
       default:
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
     }
   };
 
@@ -165,6 +173,10 @@ export const RoleManagementDialog = ({
                           {role === "admin" && "Full system access"}
                           {role === "employer" && "Can post and manage jobs"}
                           {role === "candidate" && "Can apply to jobs"}
+                          {role === "manajer" && "Can manage teams and operations"}
+                          {role === "staff" && "Can access staff functions"}
+                          {role === "interviewer" && "Can conduct interviews"}
+                          {role === "interviewer_principal" && "Can conduct principal interviews"}
                         </span>
                       </div>
                       {hasRole ? (
