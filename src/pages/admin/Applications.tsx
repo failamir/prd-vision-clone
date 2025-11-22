@@ -429,6 +429,63 @@ const AdminApplications = () => {
     fetchApplications();
   }, []);
 
+  const generateCrewCodes = async () => {
+    try {
+      // Get all applications ordered by applied_at
+      const { data: allApps, error: fetchError } = await supabase
+        .from("job_applications")
+        .select("id, crew_code, applied_at")
+        .order("applied_at", { ascending: true });
+
+      if (fetchError) throw fetchError;
+
+      const appsWithoutCodes = (allApps || []).filter((app: any) => !app.crew_code);
+      
+      if (appsWithoutCodes.length === 0) return;
+
+      // Find the highest existing crew code number
+      const existingCodes = (allApps || [])
+        .map((app: any) => app.crew_code)
+        .filter(Boolean)
+        .map((code: string) => {
+          const match = code.match(/SGP-(\d+)/);
+          return match ? parseInt(match[1]) : 0;
+        });
+
+      let nextNumber = existingCodes.length > 0 ? Math.max(...existingCodes) + 1 : 1;
+
+      // Generate crew codes for applications without them
+      for (const app of appsWithoutCodes) {
+        const crewCode = `SGP-${String(nextNumber).padStart(4, '0')}`;
+        
+        const { error: updateError } = await supabase
+          .from("job_applications")
+          .update({ crew_code: crewCode })
+          .eq("id", app.id);
+
+        if (updateError) {
+          console.error(`Error updating crew code for application ${app.id}:`, updateError);
+        }
+
+        nextNumber++;
+      }
+
+      toast({
+        title: "Crew codes generated",
+        description: `Generated ${appsWithoutCodes.length} crew codes`,
+      });
+
+      // Refresh applications to show the new crew codes
+      fetchApplications();
+    } catch (error) {
+      console.error("Error generating crew codes:", error);
+      toast({
+        title: "Error generating crew codes",
+        variant: "destructive",
+      });
+    }
+  };
+
   const fetchApplications = async () => {
     try {
       const { data, error } = await supabase
@@ -454,7 +511,7 @@ const AdminApplications = () => {
       const candidateIds = apps.map((d: any) => d.candidate_id).filter(Boolean);
 
       if (candidateIds.length > 0) {
-        const uniqueCandidateIds = Array.from(new Set(candidateIds));
+        const uniqueCandidateIds = Array.from(new Set(candidateIds)) as string[];
 
         const { data: travelDocs, error: travelError } = await supabase
           .from("candidate_travel_documents" as any)
@@ -482,8 +539,11 @@ const AdminApplications = () => {
       } else {
         setApplications(apps);
       }
-      await fetchLatestExperiences(candidateIds as any);
-      await fetchLatestEducations(candidateIds as any);
+      await fetchLatestExperiences(candidateIds as string[]);
+      await fetchLatestEducations(candidateIds as string[]);
+      
+      // Generate crew codes for applications without them
+      await generateCrewCodes();
     } catch (error) {
       console.error("Error fetching applications:", error);
       toast({
