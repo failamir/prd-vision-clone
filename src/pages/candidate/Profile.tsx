@@ -1369,6 +1369,80 @@ const Profile = () => {
                   onChange={(e) => setProfile({ ...profile, date_of_birth: e.target.value })}
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="registration_city">In which city do you register? *</Label>
+                <Select 
+                  value={profile.registration_city} 
+                  onValueChange={(value) => setProfile({ ...profile, registration_city: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Please select" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="Jakarta">Jakarta</SelectItem>
+                    <SelectItem value="Bandung">Bandung</SelectItem>
+                    <SelectItem value="Bali">Bali</SelectItem>
+                    <SelectItem value="Surabaya">Surabaya</SelectItem>
+                    <SelectItem value="Yogyakarta">Yogyakarta</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="covid_vaccinated">COVID-19 Vaccination Status *</Label>
+                <Select 
+                  value={profile.covid_vaccinated} 
+                  onValueChange={(value) => setProfile({ ...profile, covid_vaccinated: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Please select" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="Not Vaccinated">Not Vaccinated</SelectItem>
+                    <SelectItem value="Partially Vaccinated">Partially Vaccinated</SelectItem>
+                    <SelectItem value="Fully Vaccinated">Fully Vaccinated</SelectItem>
+                    <SelectItem value="Fully Vaccinated with Booster">Fully Vaccinated with Booster</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="how_found_us">How did you find us? *</Label>
+                <Select 
+                  value={profile.how_found_us} 
+                  onValueChange={(value) => {
+                    setProfile({ ...profile, how_found_us: value });
+                    // Clear referral name if not selecting "Referral"
+                    if (value !== "Referral") {
+                      setProfile(prev => ({ ...prev, referral_name: "" }));
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Please select" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="Online Search">Online Search</SelectItem>
+                    <SelectItem value="Social Media">Social Media</SelectItem>
+                    <SelectItem value="Referral">Referral</SelectItem>
+                    <SelectItem value="Job Fair">Job Fair</SelectItem>
+                    <SelectItem value="Company Website">Company Website</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {profile.how_found_us === "Referral" && (
+                <div className="space-y-2">
+                  <Label htmlFor="referral_name">Referral Name *</Label>
+                  <Input
+                    id="referral_name"
+                    value={profile.referral_name}
+                    onChange={(e) => setProfile({ ...profile, referral_name: e.target.value })}
+                    placeholder="Who referred you?"
+                  />
+                </div>
+              )}
             </div>
           </Card>
         );
