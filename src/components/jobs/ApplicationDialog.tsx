@@ -152,6 +152,13 @@ export const ApplicationDialog = ({ jobId, jobTitle, onSuccess }: ApplicationDia
   const onSubmit = async (values: ApplicationFormValues) => {
     setLoading(true);
     try {
+      // Fetch candidate's registration_city to sync with office_registered
+      const { data: profile } = await supabase
+        .from("candidate_profiles")
+        .select("registration_city")
+        .eq("id", candidateId)
+        .maybeSingle();
+
       const { error } = await supabase
         .from("job_applications")
         .insert({
@@ -160,6 +167,7 @@ export const ApplicationDialog = ({ jobId, jobTitle, onSuccess }: ApplicationDia
           cv_id: values.cv_id,
           cover_letter: values.cover_letter,
           status: "pending",
+          office_registered: profile?.registration_city || null,
         });
 
       if (error) throw error;

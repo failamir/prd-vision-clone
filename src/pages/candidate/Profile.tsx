@@ -1369,6 +1369,25 @@ const Profile = () => {
                   onChange={(e) => setProfile({ ...profile, date_of_birth: e.target.value })}
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="registration_city">In which city do you register? *</Label>
+                <Select 
+                  value={profile.registration_city} 
+                  onValueChange={(value) => setProfile({ ...profile, registration_city: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Please select" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="Jakarta">Jakarta</SelectItem>
+                    <SelectItem value="Bandung">Bandung</SelectItem>
+                    <SelectItem value="Bali">Bali</SelectItem>
+                    <SelectItem value="Surabaya">Surabaya</SelectItem>
+                    <SelectItem value="Yogyakarta">Yogyakarta</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </Card>
         );
