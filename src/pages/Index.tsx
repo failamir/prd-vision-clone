@@ -195,6 +195,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showUrgentJobsModal, setShowUrgentJobsModal] = useState(false);
+  const [partnerStartIndex, setPartnerStartIndex] = useState(0);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -211,6 +212,16 @@ const Index = () => {
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Auto-rotate partners logos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPartnerStartIndex((prev) => (prev + 1) % partners.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const extendedPartners = [...partners, ...partners];
 
   return (
     <div className="min-h-screen">
@@ -280,25 +291,33 @@ const Index = () => {
       {/* Partners Section */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-12">Our Trusted Partners</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-8 items-center">
-            {partners.map((partner, index) => (
-              <a
-                key={index}
-                href={partner.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center p-4 rounded-lg hover:shadow-sm transition-shadow"
-                title={partner.name}
-              >
-                <img
-                  src={partner.logo}
-                  alt={partner.alt}
-                  className="h-12 md:h-16 w-auto object-contain"
-                  loading="lazy"
-                />
-              </a>
-            ))}
+          <h2 className="text-3xl font-bold text-center text-foreground mb-8">Our Trusted Partners</h2>
+
+          <div className="relative">
+            <div className="overflow-hidden">
+              <div className="flex items-center gap-12 py-4 justify-center">
+                {extendedPartners
+                  .slice(partnerStartIndex, partnerStartIndex + partners.length)
+                  .map((partner, index) => (
+                    <a
+                      key={index}
+                      href={partner.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center px-4 py-2 rounded-lg hover:shadow-sm transition-shadow flex-shrink-0"
+                      title={partner.name}
+                    >
+                      <img
+                        src={partner.logo}
+                        alt={partner.alt}
+                        className="w-auto object-contain"
+                        style={{ height: "100px" }}
+                        loading="lazy"
+                      />
+                    </a>
+                  ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
