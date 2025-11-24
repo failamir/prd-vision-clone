@@ -109,3 +109,270 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .call-to-action-two {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    padding: 90px 0;
+    color: #ffffff;
+  }
+
+  .call-to-action-two::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(32, 103, 172, 0.85), rgba(32, 103, 172, 0.85));
+  }
+
+  .call-to-action-two .auto-container {
+    position: relative;
+    z-index: 1;
+    max-width: 1140px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    text-align: center;
+  }
+
+  .sec-title.light h2 {
+    color: #ffffff;
+    font-size: 42px;
+    line-height: 1.2;
+    font-weight: 700;
+    margin-bottom: 28px;
+  }
+
+  .btn-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .theme-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-weight: 600;
+    font-size: 18px;
+    transition: var(--transition-smooth);
+    text-decoration: none;
+  }
+
+  .theme-btn.btn-style-three {
+    background: #ffffff;
+    color: hsl(var(--ocean-deep));
+  }
+
+  .theme-btn.btn-style-three:hover {
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .theme-btn.btn-style-two {
+    background: #f4b000;
+    color: #1f2937;
+    padding: 18px 35px 15px 35px;
+  }
+
+  .theme-btn.btn-style-two:hover {
+    background: #e0a300;
+  }
+
+  .theme-btn.btn-style-one {
+    background: #f4b000;
+    /* near to reference */
+    color: #ffffff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .theme-btn.btn-style-one:hover {
+    background: #e0a300;
+  }
+
+  /* Footer (style-six) */
+  .main-footer.style-six {
+    background: #081a4a;
+    color: #fff;
+    position: relative;
+    padding: 36px 0 0;
+  }
+
+  .main-footer .auto-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  .footer-menu .widgets-section .row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 72px;
+    flex-wrap: nowrap;
+    padding: 18px 0;
+  }
+
+  .foot-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 0 0 auto;
+  }
+
+  .foot-left .logo img {
+    height: 48px;
+    width: auto;
+    display: block;
+  }
+
+  .foot-right {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .social-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .social-links .title-social-links {
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  .social-icon {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .social-icon a {
+    color: #fff;
+    opacity: 0.9;
+    font-size: 20px;
+    transition: var(--transition-smooth);
+  }
+
+  .social-icon a:hover {
+    opacity: 1;
+  }
+
+  .head-office {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .head-office-left h3 {
+    color: #fff;
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0;
+  }
+
+  .head-office-right ul {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .head-office-right ul li a {
+    display: inline-block;
+    background: #fff;
+    color: #111827;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  .footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 28px;
+    padding: 18px 0;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+  }
+
+  .footer-bottom a {
+    color: #fff;
+    text-decoration: underline;
+  }
+
+  .scroll-to-top {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    background: #fff;
+    color: hsl(var(--ocean-deep));
+    display: grid;
+    place-items: center;
+    box-shadow: var(--shadow-elevated);
+    cursor: pointer;
+    z-index: 50;
+  }
+
+  /* Recruitment Procedure CTA container */
+  .call-to-action .outer-box {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 28px 28px 32px 28px;
+  }
+
+  .call-to-action .sec-title h2 {
+    color: #111827;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  /* Page Title header band */
+  .page-title {
+    background: radial-gradient(90% 80% at 70% 20%, rgba(226, 238, 255, 0.7) 0%, rgba(226, 238, 255, 0.25) 40%, rgba(226, 238, 255, 0.08) 70%, rgba(226, 238, 255, 0) 100%), #ffffff;
+    padding: 56px 0;
+  }
+
+  .page-title .title-outer h1 {
+    color: #111827;
+    font-size: 30px;
+    line-height: 1.25;
+    font-weight: 700;
+  }
+
+  .page-title .page-breadcrumb {
+    color: #6b7280;
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
+  .page-title .page-breadcrumb a {
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  .page-title .page-breadcrumb a:hover {
+    color: #374151;
+  }
+}

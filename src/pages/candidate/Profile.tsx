@@ -1622,8 +1622,7 @@ const Profile = () => {
                       <div className="mb-6 border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                            <TableRow>
-                              <TableHead>ID</TableHead>
+                              <TableRow>
                               {department === "Hotel Department" ? (
                                 <>
                                   <TableHead>Hotel Name</TableHead>
@@ -1652,7 +1651,6 @@ const Profile = () => {
                           <TableBody>
                             {deckExperiences.map((row) => (
                               <TableRow key={row.id}>
-                                <TableCell>{row.id}</TableCell>
                                 {department === "Hotel Department" ? (
                                   <>
                                     <TableCell>{row.company}</TableCell>
@@ -1839,8 +1837,7 @@ const Profile = () => {
                       <div className="mb-6 border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                            <TableRow>
-                              <TableHead>ID</TableHead>
+                              <TableRow>
                               <TableHead>Institution</TableHead>
                               <TableHead>Place</TableHead>
                               <TableHead>Cert. Number</TableHead>
@@ -1853,7 +1850,6 @@ const Profile = () => {
                           <TableBody>
                             {deckCertificates.map((row) => (
                               <TableRow key={row.id}>
-                                <TableCell>{row.id}</TableCell>
                                 <TableCell>{row.institution}</TableCell>
                                 <TableCell>{row.place}</TableCell>
                                 <TableCell>{row.cert_number}</TableCell>
@@ -2005,8 +2001,7 @@ const Profile = () => {
                       <div className="mb-6 border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                            <TableRow>
-                              <TableHead>ID</TableHead>
+                              <TableRow>
                               <TableHead>Type Of Document</TableHead>
                               <TableHead>Number</TableHead>
                               <TableHead>Place Of Issuance</TableHead>
@@ -2019,7 +2014,6 @@ const Profile = () => {
                           <TableBody>
                             {travelDocuments.map((row) => (
                               <TableRow key={row.id}>
-                                <TableCell>{row.id}</TableCell>
                                 <TableCell>{row.document_type}</TableCell>
                                 <TableCell>{row.document_number}</TableCell>
                                 <TableCell>{row.issuing_authority}</TableCell>
@@ -2162,8 +2156,7 @@ const Profile = () => {
                       <div className="mb-6 border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                            <TableRow>
-                              <TableHead>ID</TableHead>
+                              <TableRow>
                               <TableHead>School Academy</TableHead>
                               <TableHead>From Date</TableHead>
                               <TableHead>To Date</TableHead>
@@ -2174,7 +2167,6 @@ const Profile = () => {
                           <TableBody>
                             {educations.map((row) => (
                               <TableRow key={row.id}>
-                                <TableCell>{row.id}</TableCell>
                                 <TableCell>{row.institution}</TableCell>
                                 <TableCell>
                                   {row.start_date
@@ -2372,7 +2364,6 @@ const Profile = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>ID</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Relationship</TableHead>
                           <TableHead>Place Birth</TableHead>
@@ -2384,7 +2375,6 @@ const Profile = () => {
                       <TableBody>
                         {nextOfKins.map((row) => (
                           <TableRow key={row.id}>
-                            <TableCell>{row.id}</TableCell>
                             <TableCell>{row.full_name}</TableCell>
                             <TableCell>{row.relationship}</TableCell>
                             <TableCell>{row.place_of_birth}</TableCell>
@@ -2490,8 +2480,7 @@ const Profile = () => {
                       <div className="mb-6 border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                            <TableRow>
-                              <TableHead>ID</TableHead>
+                              <TableRow>
                               <TableHead>Name</TableHead>
                               <TableHead>Relationship</TableHead>
                               <TableHead>Contact Number</TableHead>
@@ -2502,7 +2491,6 @@ const Profile = () => {
                           <TableBody>
                             {emergencyContacts.map((row) => (
                               <TableRow key={row.id}>
-                                <TableCell>{row.id}</TableCell>
                                 <TableCell>{row.full_name}</TableCell>
                                 <TableCell>{row.relationship}</TableCell>
                                 <TableCell>{row.phone}</TableCell>
