@@ -17,8 +17,9 @@ import {
   MessageSquare,
   Key
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DatabaseToggle } from "@/components/DatabaseToggle";
+import { useUser } from "@/contexts/UserContext";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -29,6 +30,29 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useUser();
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  const fetchUnread = async () => {
+    if (!user) return;
+    const { count } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('receiver_id', user.id)
+      .eq('is_read', false);
+    setUnreadCount(count || 0);
+  };
+
+  useEffect(() => {
+    fetchUnread();
+    if (!user) return;
+    const channel = supabase
+      .channel('admin-unread')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, fetchUnread)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, fetchUnread)
+      .subscribe();
+    return () => { channel.unsubscribe(); };
+  }, [user]);
 
   const navigation = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -38,6 +62,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     { name: "Interview Schedule", href: "/admin/interviews", icon: Calendar },
     { name: "Departure Schedule", href: "/admin/departures", icon: Plane },
     { name: "Messages", href: "/admin/messages", icon: Mail },
+    { name: "Message Center", href: "/admin/message-center", icon: MessageSquare },
     { name: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
     { name: "Role Permissions", href: "/admin/role-permissions", icon: Key },
   ];
@@ -109,18 +134,24 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
           {/* Database Toggle (Admin only) */}
           <div className="p-4 border-t">
-            <DatabaseToggle />
-          </div>
-
-          <div className="p-4 border-t">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-5 h-5 mr-3" />
-              Logout
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Link to="/admin/message-center">
+                <Button variant="outline" size="sm" className="relative">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Messages
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4 flex items-center justify-center">
+                      {unreadCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+              <DatabaseToggle />
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="ml-2">
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </aside>

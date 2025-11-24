@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
+import { supabase as primaryClient } from '@/integrations/supabase/client';
 
 type DatabaseType = 'primary' | 'secondary';
 
@@ -13,27 +14,15 @@ interface DatabaseContextType {
 
 const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined);
 
-const PRIMARY_CONFIG = {
-  url: import.meta.env.VITE_SUPABASE_URL,
-  key: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-};
-
 const SECONDARY_CONFIG = {
   url: 'https://flbieqiieplhuebceewp.supabase.co',
   key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsYmllcWlpZXBsaHVlYmNlZXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjczNzYsImV4cCI6MjA2OTIwMzM3Nn0.oYkic-WUKgHXrOj_t-hFETwfOZRcNPSuLmw_JE5wc8g',
 };
 
-const primaryClient = createClient<Database>(PRIMARY_CONFIG.url, PRIMARY_CONFIG.key, {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-  }
-});
-
 const secondaryClient = createClient<Database>(SECONDARY_CONFIG.url, SECONDARY_CONFIG.key, {
   auth: {
     storage: localStorage,
+    storageKey: 'sb-secondary-auth-token',
     persistSession: true,
     autoRefreshToken: true,
   }
