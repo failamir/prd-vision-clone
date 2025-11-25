@@ -1,6 +1,8 @@
 import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import manningImg1 from '@/assets/Manning Services-1.jpg';
+import manningImg2 from '@/assets/Manning Services-2.png';
 
 const ManningServicesPage: React.FC = () => {
   return (
@@ -18,32 +20,24 @@ const ManningServicesPage: React.FC = () => {
             </div>
 
             {/* Manning Services Content */}
-            <div className="flex flex-col lg:flex-row items-center gap-12">
-              <div className="lg:w-1/2">
+            <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+              <div className="lg:w-2/3 w-full">
                 <img
-                  src="https://images.pexels.com/photos/1001682/pexels-photo-1001682.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
-                  alt="Manning Services"
-                  className="rounded-lg shadow-lg"
+                  src={manningImg1}
+                  alt="Manning crew"
+                  className="w-full rounded-lg shadow-lg object-cover"
                 />
               </div>
-              <div className="lg:w-1/2 flex justify-center">
-                <div className="space-y-6">
-                  <div className="bg-red-600 text-white p-4 rounded-lg">
-                    <div className="text-sm font-semibold">MLC 2006</div>
-                    <div className="text-xs">BUREAU VERITAS</div>
-                    <div className="text-xs">Certification</div>
-                    <div className="text-xs mt-2">Member of CRSO Federation</div>
-                  </div>
-                  <div className="bg-blue-600 text-white p-4 rounded-lg">
-                    <div className="text-lg font-bold">RINA</div>
-                    <div className="text-sm">CERTIFIED MANAGEMENT SYSTEM</div>
-                    <div className="text-sm">ISO 9001</div>
-                  </div>
-                </div>
+              <div className="lg:w-1/3 w-full flex justify-center">
+                <img
+                  src={manningImg2}
+                  alt="Manning certifications"
+                  className="w-full max-w-xs rounded-lg shadow-lg object-contain"
+                />
               </div>
             </div>
 
-            <div className="max-w-4xl mx-auto text-gray-600 text-lg leading-relaxed mt-12 space-y-6">
+            <div className="max-w-4xl mx-auto text-gray-600 text-lg leading-relaxed mt-12 space-y-6 text-left">
               <p>
                 Since the establishment of the company in the year of 2000, we have an excellent proven track record as a 
                 reliable, honest and transparent manning agency. We provide wide range of manning services from selective 

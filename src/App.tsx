@@ -32,6 +32,7 @@ import AboutPage from "./pages/pages/AboutPage";
 import ContactPage from "./pages/pages/ContactPage";
 import SafetyPolicyPage from "./pages/pages/SafetyPolicyPage";
 import ManningServicesPage from "./pages/pages/ManningServicesPage";
+import InsurancePage from "./pages/pages/InsurancePage";
 import AdminInterviews from "./pages/admin/Interviews";
 import AdminDepartures from "./pages/admin/Departures";
 import AdminMessages from "./pages/admin/Messages";
@@ -53,6 +54,8 @@ const App = () => (
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/safety" element={<SafetyPolicyPage />} />
             <Route path="/services" element={<ManningServicesPage />} />
+            <Route path="/insurance" element={<InsurancePage />} />
+            <Route path="/manning-services" element={<ManningServicesPage />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/jobs/:id" element={<JobDetail />} />
             <Route path="/recruitment-procedure" element={<RecruitmentProcedurePage />} />
