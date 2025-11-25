@@ -10,6 +10,8 @@ import heroCruise1 from "@/assets/hero-cruise-1.jpg";
 import heroCruise2 from "@/assets/hero-cruise-2.jpg";
 import heroCruise3 from "@/assets/hero-cruise-3.jpg";
 import TestimonialsSection from "@/components/TestimonialsSection";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 const heroSlides = [
   {
@@ -26,35 +28,6 @@ const heroSlides = [
     image: heroCruise3,
     title: "Sail Your Dreams",
     subtitle: "Connecting talented seafarers with premium opportunities",
-  },
-];
-
-const urgentJobs = [
-  {
-    id: 1,
-    title: "Waiters",
-    company: "Norwegian Cruise Line",
-    department: "hotel",
-    location: "International Waters",
-    type: "Full-time",
-    salary: "$2,000 - $3,500",
-    logo: "NCL",
-    urgent: true,
-    datePosted: "10/11/2024",
-    expirationDate: "31/12/2024",
-  },
-  {
-    id: 2,
-    title: "Deck Officer",
-    company: "SeaChef Maritime",
-    department: "deck",
-    location: "International Waters",
-    type: "Full-time",
-    salary: "$4,000 - $6,000",
-    logo: "SC",
-    urgent: true,
-    datePosted: "09/11/2024",
-    expirationDate: "30/12/2024",
   },
 ];
 
@@ -107,10 +80,8 @@ const partners = [
 const UrgentJobsModal = ({ isOpen, onClose, jobs, onJobSelect }: any) => {
   if (!isOpen) return null;
 
-  const urgentJobsList = jobs.filter((job: any) => job.urgent);
-
   const getDepartmentColor = (department: string) => {
-    switch (department) {
+    switch (department?.toLowerCase()) {
       case 'deck': return 'bg-blue-100 text-blue-800';
       case 'engine': return 'bg-red-100 text-red-800';
       case 'hotel': return 'bg-green-100 text-green-800';
@@ -135,7 +106,7 @@ const UrgentJobsModal = ({ isOpen, onClose, jobs, onJobSelect }: any) => {
           <p className="text-gray-600 mb-6">These positions need to be filled immediately. Apply now!</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {urgentJobsList.map((job: any) => (
+            {jobs.map((job: any) => (
               <div
                 key={job.id}
                 className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-red-200"
@@ -150,7 +121,7 @@ const UrgentJobsModal = ({ isOpen, onClose, jobs, onJobSelect }: any) => {
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{job.title}</h3>
                       <div className="flex items-center gap-2 mb-2">
                         <Ship className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">{job.company}</span>
+                        <span className="text-sm text-gray-600">{job.company_name}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-gray-500" />
@@ -162,21 +133,25 @@ const UrgentJobsModal = ({ isOpen, onClose, jobs, onJobSelect }: any) => {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${getDepartmentColor(job.department)}`}>
-                      {job.department.charAt(0).toUpperCase()}{job.department.slice(1)} Department
-                    </span>
-                  </div>
+                  {job.department && (
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${getDepartmentColor(job.department)}`}>
+                        {job.department.charAt(0).toUpperCase()}{job.department.slice(1)} Department
+                      </span>
+                    </div>
+                  )}
 
                   <div className="space-y-2 text-sm text-gray-600 mb-4">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      <span>Posted: {job.datePosted}</span>
+                      <span>Posted: {format(new Date(job.created_at), 'dd/MM/yyyy')}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      <span>Expires: {job.expirationDate}</span>
-                    </div>
+                    {job.expires_at && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span>Expires: {format(new Date(job.expires_at), 'dd/MM/yyyy')}</span>
+                      </div>
+                    )}
                   </div>
 
                   <button className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors font-semibold">
@@ -197,6 +172,7 @@ const Index = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showUrgentJobsModal, setShowUrgentJobsModal] = useState(false);
   const [partnerStartIndex, setPartnerStartIndex] = useState(0);
+  const [urgentJobs, setUrgentJobs] = useState<any[]>([]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -206,13 +182,33 @@ const Index = () => {
     setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   };
 
-  // Show urgent jobs modal after 3 seconds
+  // Fetch urgent jobs from database
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowUrgentJobsModal(true);
-    }, 3000);
-    return () => clearTimeout(timer);
+    const fetchUrgentJobs = async () => {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('is_urgent', true)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!error && data) {
+        setUrgentJobs(data);
+      }
+    };
+    fetchUrgentJobs();
   }, []);
+
+  // Show urgent jobs modal after 3 seconds if there are urgent jobs
+  useEffect(() => {
+    if (urgentJobs.length > 0) {
+      const timer = setTimeout(() => {
+        setShowUrgentJobsModal(true);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [urgentJobs]);
 
   // Auto-rotate partners logos
   useEffect(() => {

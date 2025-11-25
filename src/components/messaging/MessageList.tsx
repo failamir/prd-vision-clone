@@ -43,12 +43,18 @@ export default function MessageList({ peerId }: { peerId?: string }) {
       setLoading(true);
       const { data, error } = await supabase
         .from("messages")
-        .select(`*, sender:profiles!messages_sender_id_fkey(full_name,avatar_url)`) // profiles join optional
+        .select(`
+          *,
+          sender:candidate_profiles!messages_sender_id_fkey(full_name,avatar_url)
+        `)
         .or(filterCondition)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-      setMessages(data || []);
+      setMessages((data || []).map(msg => ({
+        ...msg,
+        sender: msg.sender || { full_name: 'Unknown', avatar_url: undefined }
+      })) as Message[]);
     } catch (err) {
       console.error("Error fetching messages:", err);
       setError("Failed to load messages");
@@ -69,7 +75,13 @@ export default function MessageList({ peerId }: { peerId?: string }) {
     try {
       const { data, error } = await supabase
         .from("messages")
-        .insert([{ message: newMessage, sender_id: user.id, receiver_id: peerId, is_read: false }])
+        .insert([{ 
+          message: newMessage, 
+          subject: 'Message', 
+          sender_id: user.id, 
+          receiver_id: peerId, 
+          is_read: false 
+        }])
         .select();
 
       if (error) throw error;
