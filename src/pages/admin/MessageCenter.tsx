@@ -10,21 +10,23 @@ import { Link, useLocation } from 'react-router-dom';
 
 type Message = {
   id: string;
-  content: string;
+  message?: string;
+  content?: string;
+  subject?: string;
   sender_id: string;
   receiver_id: string;
   created_at: string;
-  read_at: string | null;
-  sender: {
-    id: string;
+  is_read?: boolean;
+  sender?: {
+    id?: string;
     full_name: string;
-    email: string;
+    email?: string;
     avatar_url?: string;
   };
-  recipient: {
-    id: string;
+  recipient?: {
+    id?: string;
     full_name: string;
-    email: string;
+    email?: string;
   };
 };
 
@@ -44,7 +46,7 @@ export default function AdminMessageCenter() {
   const location = useLocation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [replyMessage, setReplyMessage] = useState('');
   const [composeMessage, setComposeMessage] = useState('');
   const [mode, setMode] = useState<'reply' | 'compose'>('reply');
@@ -88,31 +90,17 @@ export default function AdminMessageCenter() {
       const uniqueUsers = new Map();
       
       const ids = Array.from(allUserIds);
-      // fetch profiles for these ids, trying 'profiles' then falling back to 'candidate_profiles'
+      // fetch profiles for these ids, trying 'candidate_profiles'
       let profilesMap: Record<string, { full_name: string; email: string; avatar_url?: string }> = {};
       if (ids.length) {
-        let profilesData: any[] | null = null;
-        let profilesErr: any = null;
-        const tryFetch = async (table: string) => {
-          const { data, error } = await supabase
-            .from(table)
-            .select('id, full_name, email, avatar_url')
-            .in('id', ids);
-          return { data, error };
-        };
-        // attempt profiles
-        const a = await tryFetch('profiles');
-        if (!a.error && a.data) {
-          profilesData = a.data as any[];
-        } else {
-          // attempt candidate_profiles
-          const b = await tryFetch('candidate_profiles');
-          profilesErr = b.error;
-          profilesData = b.data as any[];
-        }
-        if (profilesData) {
+        const { data, error } = await supabase
+          .from('candidate_profiles')
+          .select('id, full_name, email, avatar_url')
+          .in('id', ids);
+        
+        if (!error && data) {
           profilesMap = Object.fromEntries(
-            profilesData.map((p: any) => [p.id, { full_name: p.full_name ?? 'Unknown', email: p.email ?? '', avatar_url: p.avatar_url }])
+            data.map((p: any) => [p.id, { full_name: p.full_name, email: p.email, avatar_url: p.avatar_url }])
           );
         }
       }
@@ -216,26 +204,18 @@ export default function AdminMessageCenter() {
       
       setMessages(formattedMessages);
 
-      // Fetch sender/receiver profiles for labels
       const idsSet = new Set<string>();
       (messagesData || []).forEach((m: any) => { idsSet.add(m.sender_id); idsSet.add(m.receiver_id); });
       const ids = Array.from(idsSet).filter(Boolean);
       if (ids.length) {
-        const fetchProfiles = async (table: string) => {
-          return await supabase
-            .from(table)
-            .select('id, full_name, email, avatar_url')
-            .in('id', ids);
-        };
+        const { data, error } = await supabase
+          .from('candidate_profiles')
+          .select('id, full_name, email, avatar_url')
+          .in('id', ids);
+        
         let map: Record<string, { full_name: string; email?: string; avatar_url?: string; role?: 'User' | 'Candidate' | 'Reviewer' }> = {};
-        const a = await fetchProfiles('profiles');
-        if (!a.error && a.data) {
-          map = Object.fromEntries((a.data as any[]).map(p => [p.id, { full_name: p.full_name ?? 'Unknown', email: p.email, avatar_url: p.avatar_url, role: 'User' }]));
-        } else {
-          const b = await fetchProfiles('candidate_profiles');
-          if (!b.error && b.data) {
-            map = Object.fromEntries((b.data as any[]).map(p => [p.id, { full_name: p.full_name ?? 'Unknown', email: p.email, avatar_url: p.avatar_url, role: 'Candidate' }]));
-          }
+        if (!error && data) {
+          map = Object.fromEntries((data as any[]).map(p => [p.id, { full_name: p.full_name ?? 'Unknown', email: p.email, avatar_url: p.avatar_url, role: 'Candidate' }]));
         }
         setProfilesById(map);
       }
@@ -433,18 +413,12 @@ export default function AdminMessageCenter() {
     const run = async () => {
       if (!recipientQuery || mode !== 'compose') { setRecipientResults([]); return; }
       const q = `%${recipientQuery}%`;
-      // profiles
-      const p = await supabase
-        .from('profiles')
-        .select('id, full_name, email, avatar_url')
-        .ilike('full_name', q);
       // candidate_profiles fallback
       const c = await supabase
         .from('candidate_profiles')
         .select('id, full_name, email, avatar_url')
         .ilike('full_name', q);
       const arr: any[] = [];
-      if (p.data) arr.push(...p.data.map((x: any) => ({ ...x, role: 'User' as const })));
       if (c.data) arr.push(...c.data.map((x: any) => ({ ...x, role: 'Candidate' as const })));
       // de-dup by id
       const uniq = Array.from(new Map(arr.map(i => [i.id, i])).values());

@@ -2507,14 +2507,9 @@ const AdminApplications = () => {
                             {getLatestExperienceText(app.candidate_id, app.previous_experience)}
                           </span>
                           {latestExperienceByCandidate[app.candidate_id || ""] && (
-                            <Button
-                              variant="link"
-                              size="sm"
-                              className="h-auto p-0 text-xs"
-                              onClick={() => openExperienceDialog(app.candidate_id)}
-                            >
-                              View
-                            </Button>
+                            <div className="text-xs text-gray-500">
+                              {latestExperienceByCandidate[app.candidate_id || ""].position}
+                            </div>
                           )}
                         </div>
                       </TableCell>
