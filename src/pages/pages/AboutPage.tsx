@@ -1,19 +1,27 @@
 import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import jakartaImg from '@/assets/jakarta.png';
+import jogjaImg from '@/assets/jogja.png';
+import surabayaImg from '@/assets/surabaya.png';
+import baliImg from '@/assets/bali.png';
+import bandungImg from '@/assets/bandung.png';
+import familyGatheringImg from '@/assets/family-gathering.png';
+import shipVisit1Img from '@/assets/ship-visit-1.png';
+import badmintonImg from '@/assets/badminton.png';
+import crewImg from '@/assets/crew.png';
+import shipVisit2Img from '@/assets/ship-visit-2.png';
 
 const AboutPage: React.FC = () => {
   const teamPhotos = [
-    { title: 'Jakarta Team', image: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop' },
-    { title: 'Yogyakarta Team', image: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop' },
-    { title: 'Surabaya Team', image: 'https://images.pexels.com/photos/3184293/pexels-photo-3184293.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop' },
-    { title: 'Bali Team', image: 'https://images.pexels.com/photos/3184294/pexels-photo-3184294.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop' },
-    { title: 'Bandung Team', image: 'https://images.pexels.com/photos/3184295/pexels-photo-3184295.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop' },
-    { title: 'Family Gathering to Bogor', image: 'https://images.pexels.com/photos/3184296/pexels-photo-3184296.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop' },
-    { title: 'Ship Visit - Norwegian Jewel', image: 'https://images.pexels.com/photos/3184297/pexels-photo-3184297.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop' },
-    { title: 'Kegiatan Badminton', image: 'https://images.pexels.com/photos/3184298/pexels-photo-3184298.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop' },
-    { title: 'Crew Fred Olsen', image: 'https://images.pexels.com/photos/3184299/pexels-photo-3184299.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop' },
-    { title: 'Ship Visit - Norwegian Jewel', image: 'https://images.pexels.com/photos/3184300/pexels-photo-3184300.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop' }
+    { title: 'Jakarta Team', image: jakartaImg },
+    { title: 'Yogyakarta Team', image: jogjaImg },
+    { title: 'Surabaya Team', image: surabayaImg },
+    { title: 'Bali Team', image: baliImg },
+    { title: 'Bandung Team', image: bandungImg },
+    { title: 'Family Gathering to Bogor', image: familyGatheringImg },
+    { title: 'Ship Visit - Norwegian Jewel', image: shipVisit1Img },
+    { title: 'Kegiatan Badminton', image: badmintonImg }
   ];
 
   return (
@@ -52,7 +60,7 @@ const AboutPage: React.FC = () => {
             <div className="text-center">
               <div className="relative overflow-hidden rounded-lg mb-3">
                 <img
-                  src="https://images.pexels.com/photos/3184299/pexels-photo-3184299.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop"
+                  src={crewImg}
                   alt="Crew Fred Olsen"
                   className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
                 />
@@ -62,7 +70,7 @@ const AboutPage: React.FC = () => {
             <div className="text-center">
               <div className="relative overflow-hidden rounded-lg mb-3">
                 <img
-                  src="https://images.pexels.com/photos/3184300/pexels-photo-3184300.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop"
+                  src={shipVisit2Img}
                   alt="Ship Visit - Norwegian Jewel"
                   className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
                 />
