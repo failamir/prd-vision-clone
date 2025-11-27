@@ -196,6 +196,10 @@ const AdminApplications = () => {
   const [employmentOfferValue, setEmploymentOfferValue] = useState<"Received" | "Not Received" | "">("");
   const [eoAcceptanceDialogOpen, setEoAcceptanceDialogOpen] = useState(false);
   const [eoAcceptanceValue, setEoAcceptanceValue] = useState<"Yes" | "No" | "">("");
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Helpers: filters and utilities
   const clearFilters = () => {
@@ -589,6 +593,40 @@ const AdminApplications = () => {
   useEffect(() => {
     fetchApplications();
   }, []);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchQuery,
+    startDate,
+    endDate,
+    principal,
+    department,
+    position,
+    office,
+    ageMin,
+    ageMax,
+    gender,
+    nehaScore,
+    marlinScoreMin,
+    marlinScoreMax,
+    infoSource,
+    educationBackground,
+    suitableFilter,
+    shipExperience,
+    interviewResultFilter,
+    interviewByFilter,
+    interviewDateMin,
+    interviewDateMax,
+    stwc2010,
+    approvedAsFilter,
+    approvedPositionFilter,
+    principalInterviewByFilter,
+    principalInterviewDateMin,
+    principalInterviewDateMax,
+    principalInterviewResultFilter,
+  ]);
 
   const generateCrewCodes = async () => {
     try {
@@ -2455,9 +2493,12 @@ const AdminApplications = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {applications
-                  .filter(passesFilters)
-                  .map((app) => (
+                {(() => {
+                  const filtered = applications.filter(passesFilters);
+                  const startIndex = (currentPage - 1) * itemsPerPage;
+                  const endIndex = startIndex + itemsPerPage;
+                  return filtered.slice(startIndex, endIndex);
+                })().map((app) => (
                     <TableRow key={app.id}>
                       <TableCell>
                         <Checkbox 
@@ -2760,20 +2801,63 @@ const AdminApplications = () => {
           )}
 
           {/* Pagination */}
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-muted-foreground">
-              Showing 1 to {applications.length} of {applications.length} entries
-            </p>
-            <div className="flex gap-1">
-              <Button variant="outline" size="sm">&lt;</Button>
-              <Button variant="default" size="sm">1</Button>
-              <Button variant="outline" size="sm">2</Button>
-              <Button variant="outline" size="sm">3</Button>
-              <Button variant="outline" size="sm">...</Button>
-              <Button variant="outline" size="sm">20</Button>
-              <Button variant="outline" size="sm">&gt;</Button>
-            </div>
-          </div>
+          {(() => {
+            const filtered = applications.filter(passesFilters);
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filtered.length);
+            
+            if (filtered.length === 0) return null;
+            
+            return (
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1} to {endIndex} of {filtered.length} entries
+                </p>
+                <div className="flex gap-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    &lt;
+                  </Button>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                    if (
+                      page === 1 || 
+                      page === totalPages || 
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </Button>
+                      );
+                    } else if (page === currentPage - 2 || page === currentPage + 2) {
+                      return <span key={page} className="px-2">...</span>;
+                    }
+                    return null;
+                  })}
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    &gt;
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
         </Card>
       </div>
     </AdminLayout>
