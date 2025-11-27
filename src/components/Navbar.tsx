@@ -31,22 +31,24 @@ export const Navbar = () => {
               About Us
             </Link>
             <div className="relative group">
-              <button className="text-foreground hover:text-primary transition-colors flex items-center space-x-1">
+              <button className="text-foreground hover:text-primary transition-colors flex items-center space-x-1 py-2">
                 <span>Our Services</span>
               </button>
-              <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 absolute left-0 mt-3 w-48 bg-white dark:bg-background shadow-lg rounded-md border border-border py-2 transition-opacity">
-                <Link
-                  to="/insurance"
-                  className="block px-4 py-2 text-sm text-foreground hover:bg-muted hover:text-primary"
-                >
-                  Insurance
-                </Link>
-                <Link
-                  to="/manning-services"
-                  className="block px-4 py-2 text-sm text-foreground hover:bg-muted hover:text-primary"
-                >
-                  Manning Services
-                </Link>
+              <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 absolute left-0 top-full pt-2 transition-all duration-200">
+                <div className="w-48 bg-white dark:bg-background shadow-lg rounded-md border border-border py-2">
+                  <Link
+                    to="/insurance"
+                    className="block px-4 py-2 text-sm text-foreground hover:bg-muted hover:text-primary"
+                  >
+                    Insurance
+                  </Link>
+                  <Link
+                    to="/manning-services"
+                    className="block px-4 py-2 text-sm text-foreground hover:bg-muted hover:text-primary"
+                  >
+                    Manning Services
+                  </Link>
+                </div>
               </div>
             </div>
             <Link to="/safety" className="text-foreground hover:text-primary transition-colors">
