@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,300;400;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,55 +10,55 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 210 17% 15%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 17% 15%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 17% 15%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 207 90% 20%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 199 89% 48%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 45 93% 47%;
-    --accent-foreground: 210 17% 15%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 207 90% 20%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 53%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --ocean-deep: 210 100% 15%;
-    --ocean-blue: 207 90% 20%;
+    --ocean-deep: 222 47% 11%;
+    --ocean-blue: 221 83% 53%;
     --ocean-light: 199 89% 48%;
     --ocean-sky: 199 89% 65%;
     --gold-accent: 45 93% 47%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 207 90% 20%;
+    --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 199 89% 48%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
 
-    --gradient-ocean: linear-gradient(135deg, hsl(var(--ocean-deep)), hsl(var(--ocean-blue)));
-    --gradient-hero: linear-gradient(to right, rgba(10, 38, 71, 0.8), rgba(44, 116, 179, 0.6));
-    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-elevated: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --gradient-ocean: linear-gradient(135deg, hsl(222 47% 11%), hsl(221 83% 53%));
+    --gradient-hero: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(59, 130, 246, 0.8));
+    --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+    --shadow-elevated: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -107,6 +109,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Nunito Sans', sans-serif;
   }
 }
 

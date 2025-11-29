@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -6,6 +6,10 @@ import { cn } from "@/lib/utils";
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path;
+  const isActiveParent = (paths: string[]) => paths.includes(location.pathname);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -24,40 +28,81 @@ export const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-foreground hover:text-primary transition-colors">
+            <Link
+              to="/"
+              className={cn(
+                "text-foreground hover:text-primary transition-colors border-b-2 py-1",
+                isActive("/") ? "border-primary text-primary" : "border-transparent"
+              )}
+            >
               Home
             </Link>
-            <Link to="/about" className="text-foreground hover:text-primary transition-colors">
+            <Link
+              to="/about"
+              className={cn(
+                "text-foreground hover:text-primary transition-colors border-b-2 py-1",
+                isActive("/about") ? "border-primary text-primary" : "border-transparent"
+              )}
+            >
               About Us
             </Link>
             <div className="relative group">
-              <button className="text-foreground hover:text-primary transition-colors flex items-center space-x-1 py-2">
+              <button
+                className={cn(
+                  "text-foreground hover:text-primary transition-colors flex items-center space-x-1 py-2 border-b-2",
+                  isActiveParent(["/insurance", "/manning-services"]) ? "border-primary text-primary" : "border-transparent"
+                )}
+              >
                 <span>Our Services</span>
               </button>
               <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 absolute left-0 top-full pt-2 transition-all duration-200">
                 <div className="w-48 bg-white dark:bg-background shadow-lg rounded-md border border-border py-2">
                   <Link
                     to="/insurance"
-                    className="block px-4 py-2 text-sm text-foreground hover:bg-muted hover:text-primary"
+                    className={cn(
+                      "block px-4 py-2 text-sm hover:bg-muted hover:text-primary",
+                      isActive("/insurance") ? "text-primary bg-muted font-medium" : "text-foreground"
+                    )}
                   >
                     Insurance
                   </Link>
                   <Link
                     to="/manning-services"
-                    className="block px-4 py-2 text-sm text-foreground hover:bg-muted hover:text-primary"
+                    className={cn(
+                      "block px-4 py-2 text-sm hover:bg-muted hover:text-primary",
+                      isActive("/manning-services") ? "text-primary bg-muted font-medium" : "text-foreground"
+                    )}
                   >
                     Manning Services
                   </Link>
                 </div>
               </div>
             </div>
-            <Link to="/safety" className="text-foreground hover:text-primary transition-colors">
+            <Link
+              to="/safety"
+              className={cn(
+                "text-foreground hover:text-primary transition-colors border-b-2 py-1",
+                isActive("/safety") ? "border-primary text-primary" : "border-transparent"
+              )}
+            >
               Safety & Quality
             </Link>
-            <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
+            <Link
+              to="/contact"
+              className={cn(
+                "text-foreground hover:text-primary transition-colors border-b-2 py-1",
+                isActive("/contact") ? "border-primary text-primary" : "border-transparent"
+              )}
+            >
               Contact
             </Link>
-            <Link to="/jobs" className="text-foreground hover:text-primary transition-colors font-medium">
+            <Link
+              to="/jobs"
+              className={cn(
+                "text-foreground hover:text-primary transition-colors font-medium border-b-2 py-1",
+                isActive("/jobs") ? "border-primary text-primary" : "border-transparent"
+              )}
+            >
               Jobs
             </Link>
           </div>

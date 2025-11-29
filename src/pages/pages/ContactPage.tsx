@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Mail, Phone, Monitor, Plus, Minus } from 'lucide-react';
+import { Mail, Phone, Monitor, Plus, Minus, MapPin, Send } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { FadeIn } from '@/components/FadeIn';
 
 const ContactPage: React.FC = () => {
   const [expandedOffice, setExpandedOffice] = useState<string | null>('Jakarta');
@@ -58,161 +59,186 @@ const ContactPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Navbar />
+
+      {/* Hero Section */}
+      <section className="relative py-24 bg-slate-50 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-slate-200 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <FadeIn direction="up">
+            <h1 className="text-5xl font-bold text-slate-900 mb-6 tracking-tight">Get in Touch</h1>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+              We're here to help you with your maritime career journey. Reach out to us for any inquiries.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
       {/* Contact Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Contact</h2>
-            <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-              <span>Home</span>
-              <span>/</span>
-              <span>Contact</span>
-            </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-24">
+            {/* Contact Methods */}
+            <FadeIn direction="up" delay={100} className="lg:col-span-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center hover:shadow-md transition-shadow group">
+                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Mail className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2">Email Us</h4>
+                  <p className="text-slate-600">info@maritime.com</p>
+                </div>
+
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center hover:shadow-md transition-shadow group">
+                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Phone className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2">Call Us</h4>
+                  <p className="text-slate-600">021-7297 8400</p>
+                </div>
+
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center hover:shadow-md transition-shadow group">
+                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Monitor className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2">Social Media</h4>
+                  <div className="flex justify-center gap-4 text-slate-600">
+                    <span className="hover:text-blue-600 cursor-pointer">Instagram</span>
+                    <span className="hover:text-blue-600 cursor-pointer">Facebook</span>
+                    <span className="hover:text-blue-600 cursor-pointer">LinkedIn</span>
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
           </div>
 
-          {/* Our Office Section */}
-          <div className="mb-16">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8">Our Office</h3>
-            
-            <div className="space-y-4">
-              {offices.map((office) => (
-                <div key={office.name} className="bg-white rounded-lg shadow-sm border">
-                  <button
-                    onClick={() => toggleOffice(office.name)}
-                    className="w-full flex items-center justify-between p-6 text-left"
-                  >
-                    <span className="text-lg font-medium text-gray-900">{office.name}</span>
-                    {expandedOffice === office.name ? (
-                      <Minus className="w-5 h-5 text-gray-500" />
-                    ) : (
-                      <Plus className="w-5 h-5 text-gray-500" />
-                    )}
-                  </button>
-                  
-                  {expandedOffice === office.name && (
-                    <div className="px-6 pb-6">
-                      <p className="text-gray-600 mb-2">{office.address}</p>
-                      <p className="text-gray-600">{office.details}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            {/* Our Office Section */}
+            <FadeIn direction="right" delay={200}>
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-3">
+                  <MapPin className="w-6 h-6 text-blue-600" />
+                  Our Offices
+                </h3>
+
+                <div className="space-y-4">
+                  {offices.map((office) => (
+                    <div
+                      key={office.name}
+                      className={`bg-white rounded-xl shadow-sm border transition-all duration-300 overflow-hidden ${expandedOffice === office.name
+                        ? 'border-blue-500 ring-1 ring-blue-500 shadow-md'
+                        : 'border-slate-200 hover:border-blue-300'
+                        }`}
+                    >
+                      <button
+                        onClick={() => toggleOffice(office.name)}
+                        className="w-full flex items-center justify-between p-5 text-left"
+                      >
+                        <span className={`text-lg font-semibold transition-colors ${expandedOffice === office.name ? 'text-blue-600' : 'text-slate-900'
+                          }`}>
+                          {office.name}
+                        </span>
+                        {expandedOffice === office.name ? (
+                          <Minus className="w-5 h-5 text-blue-600" />
+                        ) : (
+                          <Plus className="w-5 h-5 text-slate-400" />
+                        )}
+                      </button>
+
+                      <div className={`transition-all duration-300 ease-in-out ${expandedOffice === office.name ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                        }`}>
+                        <div className="px-5 pb-5 pt-0">
+                          <p className="text-slate-600 mb-1 font-medium">{office.address}</p>
+                          <p className="text-slate-500 text-sm">{office.details}</p>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Contact Methods */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Mail className="w-8 h-8 text-blue-600" />
+                  ))}
                 </div>
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Email</h4>
-              <p className="text-gray-600">info@maritime.com</p>
-            </div>
+            </FadeIn>
 
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Phone className="w-8 h-8 text-blue-600" />
-                </div>
+            {/* Contact Form */}
+            <FadeIn direction="left" delay={400}>
+              <div className="bg-white rounded-3xl shadow-lg border border-slate-100 p-8 md:p-10">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Send us a Message</h3>
+                <p className="text-slate-500 mb-8">Fill out the form below and we'll get back to you shortly.</p>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        Your Name
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="John Doe"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        Your Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="john@example.com"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Subject
+                    </label>
+                    <input
+                      type="text"
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleInputChange}
+                      placeholder="How can we help?"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Your Message
+                    </label>
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      rows={5}
+                      placeholder="Write your message here..."
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none resize-none"
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-blue-600 text-white px-8 py-4 rounded-xl hover:bg-blue-700 transition-all font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-5 h-5" />
+                    Send Message
+                  </button>
+                </form>
               </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Phone</h4>
-              <p className="text-gray-600">021-7297 8400</p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Monitor className="w-8 h-8 text-blue-600" />
-                </div>
-              </div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Social</h4>
-              <div className="space-y-1">
-                <p className="text-gray-600">Instagram</p>
-                <p className="text-gray-600">Facebook</p>
-                <p className="text-gray-600">LinkedIn</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Form */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8">Leave A Message</h3>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Your Name*"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Your Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="Your Email*"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  placeholder="Subject *"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Your Message
-                </label>
-                <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  rows={6}
-                  placeholder="Write your message..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-              >
-                Send Message
-              </button>
-            </form>
+            </FadeIn>
           </div>
         </div>
       </section>

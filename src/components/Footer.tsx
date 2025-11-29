@@ -1,70 +1,88 @@
+import { Facebook, Instagram, Linkedin, ChevronUp } from "lucide-react";
+
 export const Footer = () => {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <footer className="main-footer style-six">
-      <div className="auto-container">
-        <div className="footer-menu">
-          {/* Widgets Section */}
-          <div className="widgets-section">
-            <div className="row">
-              <div className="foot-left">
-                <div className="footer-column about-widget">
-                  <div className="logo">
-                    <a href="https://ciptawiratirta.com">
-                      <img src="https://ciptawiratirta.com/uploads/0000/1/2022/06/30/logo-cowpy.png" alt="logo footer" />
+    <footer className="bg-slate-900 text-white pt-16 pb-8 relative">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
+          {/* Logo Section */}
+          <div className="flex-shrink-0">
+            <a href="https://ciptawiratirta.com" className="block">
+              <img
+                src="https://ciptawiratirta.com/uploads/0000/1/2022/06/30/logo-cowpy.png"
+                alt="Cipta Wira Tirta Logo"
+                className="h-12 w-auto brightness-0 invert opacity-90 hover:opacity-100 transition-opacity"
+              />
+            </a>
+          </div>
+
+          {/* Right Side Content */}
+          <div className="flex flex-col md:flex-row gap-12 md:gap-24 flex-grow justify-end">
+            {/* Social Links */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-white">Follow Us</h3>
+              <div className="flex items-center gap-6">
+                <a
+                  href="https://www.facebook.com/profile.php?id=100081115663579"
+                  className="text-gray-400 hover:text-white transition-colors transform hover:scale-110"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="w-6 h-6" />
+                </a>
+                <a
+                  href="https://www.instagram.com/wiramanningservice/?hl=id"
+                  className="text-gray-400 hover:text-white transition-colors transform hover:scale-110"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-6 h-6" />
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/wira-manning-service-852398232"
+                  className="text-gray-400 hover:text-white transition-colors transform hover:scale-110"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin className="w-6 h-6" />
+                </a>
+              </div>
+            </div>
+
+            {/* Offices */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-white">Offices</h3>
+              <ul className="flex flex-wrap gap-3">
+                {['Jakarta', 'Bali', 'Yogyakarta', 'Surabaya', 'Bandung'].map((city) => (
+                  <li key={city}>
+                    <a
+                      href="/contact"
+                      className="inline-block px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      {city}
                     </a>
-                  </div>
-                </div>
-              </div>
-
-              <div className="foot-right">
-                <div className="social-links">
-                  <h3 className="mb-2 title-social-links" style={{ color: '#fefefe' }}>Follow Us</h3>
-                  <div className="social-icon">
-                    <a href="https://www.facebook.com/profile.php?id=100081115663579"><i className="fab fa-facebook-f" /></a>
-                    <a href="https://www.instagram.com/wiramanningservice/?hl=id"><i className="fab fa-instagram" /></a>
-                    <a href="https://www.linkedin.com/in/wira-manning-service-852398232"><i className="fab fa-linkedin" /></a>
-                  </div>
-                </div>
-
-                <div className="head-office">
-                  <div className="head-office-left">
-                    <h3 className="mb-2">Offices</h3>
-                  </div>
-                  <div className="head-office-right">
-                    <ul>
-                      <li><a href="/page/faqs">Jakarta</a></li>
-                      <li><a href="/page/faqs">Bali</a></li>
-                      <li><a href="/page/faqs">Yogyakarta</a></li>
-                      <li><a href="/page/faqs">Surabaya</a></li>
-                      <li><a href="/page/faqs">Bandung</a></li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom */}
-      <div className="footer-bottom">
-        <div className="auto-container">
-          <div className="copyright-text">
-            <p>© 2022 <a href="https://kardusinfo.com">Kardusinfo Indonesia</a>. All Right Reserved.</p>
-          </div>
+        {/* Bottom Bar */}
+        <div className="border-t border-white/10 pt-8 mt-8 text-center text-sm text-gray-400">
+          <p>© {new Date().getFullYear()} <a href="https://ciptawiratirta.com" className="hover:text-white transition-colors">PT. Cipta Wira Tirta</a>. All Rights Reserved.</p>
         </div>
       </div>
 
       {/* Scroll To Top */}
-      <div
-        className="scroll-to-top scroll-to-target"
-        data-target="html"
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        role="button"
+      <button
+        onClick={scrollToTop}
+        className="fixed bottom-8 right-8 p-3 bg-white text-slate-900 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 z-50 group"
         aria-label="Scroll to top"
       >
-        <span className="fa fa-angle-up" />
-      </div>
+        <ChevronUp className="w-6 h-6 group-hover:text-blue-600 transition-colors" />
+      </button>
     </footer>
   );
 };
