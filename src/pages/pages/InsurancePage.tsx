@@ -62,36 +62,35 @@ const InsurancePage: React.FC = () => {
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FadeIn direction="up" delay={300}>
-              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all group">
-                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Heart className="w-7 h-7 text-blue-600" />
+              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 transition-all duration-300 group h-full">
+                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors duration-300">
+                  <Heart className="w-7 h-7 text-blue-600 group-hover:text-white transition-colors duration-300" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Medical Insurance</h3>
-                <p className="text-gray-600">Comprehensive medical coverage for seafarers and their families, ensuring health and well-being.</p>
+                <p className="text-gray-600 leading-relaxed">Comprehensive medical coverage for seafarers and their families, ensuring health and well-being.</p>
               </div>
             </FadeIn>
 
             <FadeIn direction="up" delay={400}>
-              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all group">
-                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Shield className="w-7 h-7 text-blue-600" />
+              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 transition-all duration-300 group h-full">
+                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors duration-300">
+                  <Shield className="w-7 h-7 text-blue-600 group-hover:text-white transition-colors duration-300" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Disability Protection</h3>
-                <p className="text-gray-600">Financial security and support in case of disability, providing stability for the future.</p>
+                <p className="text-gray-600 leading-relaxed">Financial security and support in case of disability, providing stability for the future.</p>
               </div>
             </FadeIn>
 
             <FadeIn direction="up" delay={500}>
-              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all group">
-                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Anchor className="w-7 h-7 text-blue-600" />
+              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 transition-all duration-300 group h-full">
+                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors duration-300">
+                  <Anchor className="w-7 h-7 text-blue-600 group-hover:text-white transition-colors duration-300" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Life Insurance</h3>
-                <p className="text-gray-600">Life insurance coverage to protect your loved ones and provide peace of mind while at sea.</p>
+                <p className="text-gray-600 leading-relaxed">Life insurance coverage to protect your loved ones and provide peace of mind while at sea.</p>
               </div>
             </FadeIn>
           </div>
-
         </div>
       </section>
       <Footer />

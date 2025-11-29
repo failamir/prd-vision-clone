@@ -83,31 +83,31 @@ const ContactPage: React.FC = () => {
             {/* Contact Methods */}
             <FadeIn direction="up" delay={100} className="lg:col-span-3">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-md transition-shadow group">
-                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <Mail className="w-8 h-8 text-blue-600" />
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 transition-all duration-300 group">
+                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:scale-110 transition-all duration-300">
+                    <Mail className="w-8 h-8 text-blue-600 group-hover:text-white transition-colors duration-300" />
                   </div>
                   <h4 className="text-lg font-bold text-gray-900 mb-2">Email Us</h4>
                   <p className="text-gray-600">info@maritime.com</p>
                 </div>
 
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-md transition-shadow group">
-                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <Phone className="w-8 h-8 text-blue-600" />
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 transition-all duration-300 group">
+                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:scale-110 transition-all duration-300">
+                    <Phone className="w-8 h-8 text-blue-600 group-hover:text-white transition-colors duration-300" />
                   </div>
                   <h4 className="text-lg font-bold text-gray-900 mb-2">Call Us</h4>
                   <p className="text-gray-600">021-7297 8400</p>
                 </div>
 
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-md transition-shadow group">
-                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <Monitor className="w-8 h-8 text-blue-600" />
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 transition-all duration-300 group">
+                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:scale-110 transition-all duration-300">
+                    <Monitor className="w-8 h-8 text-blue-600 group-hover:text-white transition-colors duration-300" />
                   </div>
                   <h4 className="text-lg font-bold text-gray-900 mb-2">Social Media</h4>
                   <div className="flex justify-center gap-4 text-gray-600">
-                    <span className="hover:text-blue-600 cursor-pointer">Instagram</span>
-                    <span className="hover:text-blue-600 cursor-pointer">Facebook</span>
-                    <span className="hover:text-blue-600 cursor-pointer">LinkedIn</span>
+                    <span className="hover:text-blue-600 cursor-pointer transition-colors">Instagram</span>
+                    <span className="hover:text-blue-600 cursor-pointer transition-colors">Facebook</span>
+                    <span className="hover:text-blue-600 cursor-pointer transition-colors">LinkedIn</span>
                   </div>
                 </div>
               </div>
@@ -128,8 +128,8 @@ const ContactPage: React.FC = () => {
                     <div
                       key={office.name}
                       className={`bg-white rounded-xl shadow-sm border transition-all duration-300 overflow-hidden ${expandedOffice === office.name
-                        ? 'border-blue-500 ring-1 ring-blue-500 shadow-md'
-                        : 'border-gray-200 hover:border-blue-300'
+                        ? 'border-blue-500 ring-4 ring-blue-500/10 shadow-lg'
+                        : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
                         }`}
                     >
                       <button
@@ -178,7 +178,7 @@ const ContactPage: React.FC = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         placeholder="John Doe"
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
                         required
                       />
                     </div>
@@ -193,7 +193,7 @@ const ContactPage: React.FC = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         placeholder="john@example.com"
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
                         required
                       />
                     </div>
@@ -209,7 +209,7 @@ const ContactPage: React.FC = () => {
                       value={formData.subject}
                       onChange={handleInputChange}
                       placeholder="How can we help?"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
                       required
                     />
                   </div>
@@ -224,7 +224,7 @@ const ContactPage: React.FC = () => {
                       onChange={handleInputChange}
                       rows={5}
                       placeholder="Write your message here..."
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none resize-none"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none resize-none"
                       required
                     />
                   </div>

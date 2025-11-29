@@ -60,7 +60,6 @@ const AboutPage: React.FC = () => {
                       <div className="absolute inset-0 bg-gray-900/0 group-hover:bg-gray-900/10 transition-colors duration-300 z-10" />
                       <img
                         src={photo.image}
-                        alt={photo.title}
                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                       />
                     </div>
