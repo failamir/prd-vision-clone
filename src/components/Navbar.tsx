@@ -4,10 +4,14 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo-dark.png";
+import { useUser } from "@/contexts/UserContext";
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user } = useUser();
+
+  const isLoggedIn = !!user;
 
   const isActive = (path: string) => location.pathname === path;
   const isActiveParent = (paths: string[]) => paths.includes(location.pathname);
@@ -108,16 +112,26 @@ export const Navbar = () => {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login">
-              <Button variant="ghost" className="text-foreground">
-                Login
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button className="bg-secondary hover:bg-secondary/90">
-                Register
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link to="/candidate/dashboard">
+                <Button variant="ghost" className="text-foreground">
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                  <Link to="/login">
+                    <Button variant="ghost" className="text-foreground">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button className="bg-secondary hover:bg-secondary/90">
+                      Register
+                    </Button>
+                  </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -164,16 +178,26 @@ export const Navbar = () => {
               Jobs
             </Link>
             <div className="flex flex-col space-y-2 pt-2">
-              <Link to="/login">
-                <Button variant="outline" className="w-full">
-                  Login
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button className="w-full bg-secondary">
-                  Register
-                </Button>
-              </Link>
+              {isLoggedIn ? (
+                <Link to="/candidate/dashboard">
+                  <Button variant="outline" className="w-full">
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                    <Link to="/login">
+                      <Button variant="outline" className="w-full">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link to="/register">
+                      <Button className="w-full bg-secondary">
+                        Register
+                      </Button>
+                    </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
