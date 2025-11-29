@@ -88,7 +88,11 @@ const ContactPage: React.FC = () => {
                     <Mail className="w-8 h-8 text-blue-600" />
                   </div>
                   <h4 className="text-lg font-bold text-slate-900 mb-2">Email Us</h4>
-                  <p className="text-slate-600">info@maritime.com</p>
+                  <p className="text-slate-600">
+                    <a href="mailto:apply.cwt@gmail.com" className="hover:text-blue-600">
+                      apply.cwt@gmail.com
+                    </a>
+                  </p>
                 </div>
 
                 <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center hover:shadow-md transition-shadow group">
@@ -105,9 +109,30 @@ const ContactPage: React.FC = () => {
                   </div>
                   <h4 className="text-lg font-bold text-slate-900 mb-2">Social Media</h4>
                   <div className="flex justify-center gap-4 text-slate-600">
-                    <span className="hover:text-blue-600 cursor-pointer">Instagram</span>
-                    <span className="hover:text-blue-600 cursor-pointer">Facebook</span>
-                    <span className="hover:text-blue-600 cursor-pointer">LinkedIn</span>
+                    <a
+                      href="https://www.instagram.com/ciptawiratirta/?hl=en"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 cursor-pointer"
+                    >
+                      Instagram
+                    </a>
+                    <a
+                      href="https://www.facebook.com/ciptawiratirta/?locale=id_ID"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 cursor-pointer"
+                    >
+                      Facebook
+                    </a>
+                    <a
+                      href="https://id.linkedin.com/in/pt-cipta-wira-tirta-5a2b6a374"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 cursor-pointer"
+                    >
+                      LinkedIn
+                    </a>
                   </div>
                 </div>
               </div>
