@@ -11,12 +11,12 @@ const InsurancePage: React.FC = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative py-24 bg-slate-50 overflow-hidden">
-        <div className="absolute inset-0 bg-grid-slate-200 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
+      <section className="relative py-24 bg-gray-50 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-gray-200 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <FadeIn direction="up">
-            <h1 className="text-5xl font-bold text-slate-900 mb-6 tracking-tight">Insurance & Benefits</h1>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <h1 className="text-5xl font-bold text-gray-900 mb-6 tracking-tight">Insurance & Benefits</h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Providing peace of mind for ship owners, seafarers, and their families through comprehensive protection.
             </p>
           </FadeIn>
@@ -34,14 +34,14 @@ const InsurancePage: React.FC = () => {
                 <img
                   src={bgNewCrop}
                   alt="Marine Benefits"
-                  className="relative w-full max-w-md mx-auto drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+                  className="relative w-full max-w-md mx-auto drop-shadow-2xl hover:scale-105 transition-transform duration-500 rounded-2xl"
                 />
               </div>
             </FadeIn>
 
             <FadeIn direction="left" delay={200} className="order-1 lg:order-2">
-              <h2 className="text-3xl font-bold text-slate-900 mb-6">Partnering with Marine Benefits AS</h2>
-              <div className="space-y-6 text-lg text-slate-600 leading-relaxed">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Partnering with Marine Benefits AS</h2>
+              <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
                 <p>
                   We are proud to be part of a company providing peace of mind for ship owners, seafarers and their families.
                 </p>
@@ -49,9 +49,9 @@ const InsurancePage: React.FC = () => {
                   In co-operation with <span className="font-semibold text-blue-600">Marine Benefits AS of Norway</span>, we provide seafarers and their dependants with social benefit
                   such as medical, disability and life insurance.
                 </p>
-                <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
                   <Shield className="w-8 h-8 text-blue-600 flex-shrink-0" />
-                  <p className="text-sm font-medium text-slate-700">
+                  <p className="text-sm font-medium text-gray-700">
                     All work processes are compliant with <span className="font-bold">ISO 9001</span> and <span className="font-bold">ISO 27001</span> standards.
                   </p>
                 </div>
@@ -62,32 +62,32 @@ const InsurancePage: React.FC = () => {
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FadeIn direction="up" delay={300}>
-              <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group">
+              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all group">
                 <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Heart className="w-7 h-7 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">Medical Insurance</h3>
-                <p className="text-slate-600">Comprehensive medical coverage for seafarers and their families, ensuring health and well-being.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Medical Insurance</h3>
+                <p className="text-gray-600">Comprehensive medical coverage for seafarers and their families, ensuring health and well-being.</p>
               </div>
             </FadeIn>
 
             <FadeIn direction="up" delay={400}>
-              <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group">
+              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all group">
                 <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Shield className="w-7 h-7 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">Disability Protection</h3>
-                <p className="text-slate-600">Financial security and support in case of disability, providing stability for the future.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Disability Protection</h3>
+                <p className="text-gray-600">Financial security and support in case of disability, providing stability for the future.</p>
               </div>
             </FadeIn>
 
             <FadeIn direction="up" delay={500}>
-              <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group">
+              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all group">
                 <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Anchor className="w-7 h-7 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">Life Insurance</h3>
-                <p className="text-slate-600">Life insurance coverage to protect your loved ones and provide peace of mind while at sea.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Life Insurance</h3>
+                <p className="text-gray-600">Life insurance coverage to protect your loved ones and provide peace of mind while at sea.</p>
               </div>
             </FadeIn>
           </div>

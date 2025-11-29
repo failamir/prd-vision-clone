@@ -63,12 +63,12 @@ const ContactPage: React.FC = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative py-24 bg-slate-50 overflow-hidden">
-        <div className="absolute inset-0 bg-grid-slate-200 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
+      <section className="relative py-24 bg-gray-50 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-gray-200 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <FadeIn direction="up">
-            <h1 className="text-5xl font-bold text-slate-900 mb-6 tracking-tight">Get in Touch</h1>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <h1 className="text-5xl font-bold text-gray-900 mb-6 tracking-tight">Get in Touch</h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               We're here to help you with your maritime career journey. Reach out to us for any inquiries.
             </p>
           </FadeIn>
@@ -83,28 +83,28 @@ const ContactPage: React.FC = () => {
             {/* Contact Methods */}
             <FadeIn direction="up" delay={100} className="lg:col-span-3">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center hover:shadow-md transition-shadow group">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-md transition-shadow group">
                   <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                     <Mail className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">Email Us</h4>
-                  <p className="text-slate-600">info@maritime.com</p>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">Email Us</h4>
+                  <p className="text-gray-600">info@maritime.com</p>
                 </div>
 
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center hover:shadow-md transition-shadow group">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-md transition-shadow group">
                   <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                     <Phone className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">Call Us</h4>
-                  <p className="text-slate-600">021-7297 8400</p>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">Call Us</h4>
+                  <p className="text-gray-600">021-7297 8400</p>
                 </div>
 
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center hover:shadow-md transition-shadow group">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-md transition-shadow group">
                   <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                     <Monitor className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">Social Media</h4>
-                  <div className="flex justify-center gap-4 text-slate-600">
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">Social Media</h4>
+                  <div className="flex justify-center gap-4 text-gray-600">
                     <span className="hover:text-blue-600 cursor-pointer">Instagram</span>
                     <span className="hover:text-blue-600 cursor-pointer">Facebook</span>
                     <span className="hover:text-blue-600 cursor-pointer">LinkedIn</span>
@@ -118,7 +118,7 @@ const ContactPage: React.FC = () => {
             {/* Our Office Section */}
             <FadeIn direction="right" delay={200}>
               <div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-3">
+                <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
                   <MapPin className="w-6 h-6 text-blue-600" />
                   Our Offices
                 </h3>
@@ -129,29 +129,29 @@ const ContactPage: React.FC = () => {
                       key={office.name}
                       className={`bg-white rounded-xl shadow-sm border transition-all duration-300 overflow-hidden ${expandedOffice === office.name
                         ? 'border-blue-500 ring-1 ring-blue-500 shadow-md'
-                        : 'border-slate-200 hover:border-blue-300'
+                        : 'border-gray-200 hover:border-blue-300'
                         }`}
                     >
                       <button
                         onClick={() => toggleOffice(office.name)}
                         className="w-full flex items-center justify-between p-5 text-left"
                       >
-                        <span className={`text-lg font-semibold transition-colors ${expandedOffice === office.name ? 'text-blue-600' : 'text-slate-900'
+                        <span className={`text-lg font-semibold transition-colors ${expandedOffice === office.name ? 'text-blue-600' : 'text-gray-900'
                           }`}>
                           {office.name}
                         </span>
                         {expandedOffice === office.name ? (
                           <Minus className="w-5 h-5 text-blue-600" />
                         ) : (
-                          <Plus className="w-5 h-5 text-slate-400" />
+                          <Plus className="w-5 h-5 text-gray-400" />
                         )}
                       </button>
 
                       <div className={`transition-all duration-300 ease-in-out ${expandedOffice === office.name ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
                         }`}>
                         <div className="px-5 pb-5 pt-0">
-                          <p className="text-slate-600 mb-1 font-medium">{office.address}</p>
-                          <p className="text-slate-500 text-sm">{office.details}</p>
+                          <p className="text-gray-600 mb-1 font-medium">{office.address}</p>
+                          <p className="text-gray-500 text-sm">{office.details}</p>
                         </div>
                       </div>
                     </div>
@@ -162,14 +162,14 @@ const ContactPage: React.FC = () => {
 
             {/* Contact Form */}
             <FadeIn direction="left" delay={400}>
-              <div className="bg-white rounded-3xl shadow-lg border border-slate-100 p-8 md:p-10">
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Send us a Message</h3>
-                <p className="text-slate-500 mb-8">Fill out the form below and we'll get back to you shortly.</p>
+              <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 md:p-10">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Send us a Message</h3>
+                <p className="text-gray-500 mb-8">Fill out the form below and we'll get back to you shortly.</p>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Your Name
                       </label>
                       <input
@@ -178,13 +178,13 @@ const ContactPage: React.FC = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         placeholder="John Doe"
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Your Email
                       </label>
                       <input
@@ -193,14 +193,14 @@ const ContactPage: React.FC = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         placeholder="john@example.com"
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Subject
                     </label>
                     <input
@@ -209,13 +209,13 @@ const ContactPage: React.FC = () => {
                       value={formData.subject}
                       onChange={handleInputChange}
                       placeholder="How can we help?"
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Your Message
                     </label>
                     <textarea
@@ -224,7 +224,7 @@ const ContactPage: React.FC = () => {
                       onChange={handleInputChange}
                       rows={5}
                       placeholder="Write your message here..."
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none resize-none"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none resize-none"
                       required
                     />
                   </div>

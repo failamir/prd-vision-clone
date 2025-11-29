@@ -236,7 +236,7 @@ const Index = () => {
               style={{ backgroundImage: `url(${slide.image})` }}
             />
             {/* Modern gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 via-gray-900/60 to-transparent" />
 
             <div className="relative container mx-auto px-4 h-full flex items-center">
               <div className="max-w-3xl text-white pt-20">
@@ -273,13 +273,13 @@ const Index = () => {
         <div className="absolute bottom-12 right-12 flex gap-4 z-20">
           <button
             onClick={prevSlide}
-            className="w-12 h-12 flex items-center justify-center rounded-full border border-white/30 text-white hover:bg-white hover:text-slate-900 transition-all backdrop-blur-sm"
+            className="w-12 h-12 flex items-center justify-center rounded-full border border-white/30 text-white hover:bg-white hover:text-gray-900 transition-all backdrop-blur-sm"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={nextSlide}
-            className="w-12 h-12 flex items-center justify-center rounded-full border border-white/30 text-white hover:bg-white hover:text-slate-900 transition-all backdrop-blur-sm"
+            className="w-12 h-12 flex items-center justify-center rounded-full border border-white/30 text-white hover:bg-white hover:text-gray-900 transition-all backdrop-blur-sm"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
@@ -299,12 +299,12 @@ const Index = () => {
       </section>
 
       {/* Partners Section - Cleaner Look */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <FadeIn direction="up">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">Trusted by Industry Leaders</h2>
-              <p className="text-slate-500 max-w-2xl mx-auto">We partner with the world's most prestigious cruise lines and shipping companies to provide you with the best career opportunities.</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Trusted by Industry Leaders</h2>
+              <p className="text-gray-500 max-w-2xl mx-auto">We partner with the world's most prestigious cruise lines and shipping companies to provide you with the best career opportunities.</p>
             </div>
           </FadeIn>
 
