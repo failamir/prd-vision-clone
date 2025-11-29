@@ -378,4 +378,20 @@ All colors MUST be HSL.
   .page-title .page-breadcrumb a:hover {
     color: #374151;
   }
+
+  /* Partners marquee slider */
+  .partners-marquee {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    animation: partners-marquee-scroll 20s linear infinite;
+  }
+
+@keyframes partners-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }

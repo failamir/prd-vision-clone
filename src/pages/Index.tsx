@@ -178,7 +178,6 @@ const Index = () => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showUrgentJobsModal, setShowUrgentJobsModal] = useState(false);
-  const [partnerStartIndex, setPartnerStartIndex] = useState(0);
   const [urgentJobs, setUrgentJobs] = useState<any[]>([]);
 
   const nextSlide = () => {
@@ -225,14 +224,6 @@ const Index = () => {
       return () => clearTimeout(timer);
     }
   }, [urgentJobs]);
-
-  // Auto-rotate partners logos
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPartnerStartIndex((prev) => (prev + 1) % partners.length);
-    }, 3000); // Slower rotation for better visibility
-    return () => clearInterval(interval);
-  }, []);
 
   const extendedPartners = [...partners, ...partners];
 
@@ -327,14 +318,14 @@ const Index = () => {
 
           <FadeIn delay={200} direction="up">
             <div className="relative overflow-hidden py-8">
-              <div className="flex items-center gap-16 justify-center flex-wrap opacity-80 hover:opacity-100 transition-opacity duration-500">
-                {partners.map((partner, index) => (
+              <div className="partners-marquee opacity-80 hover:opacity-100 transition-opacity duration-500">
+                {extendedPartners.map((partner, index) => (
                   <a
                     key={index}
                     href={partner.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group transition-transform hover:scale-110 duration-300"
+                    className="group mx-12 inline-flex items-center justify-center transition-transform hover:scale-110 duration-300"
                     title={partner.name}
                   >
                     <img
