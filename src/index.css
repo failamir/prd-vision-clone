@@ -384,14 +384,16 @@ All colors MUST be HSL.
     display: inline-flex;
     align-items: center;
     white-space: nowrap;
-    animation: partners-marquee-scroll 20s linear infinite;
-  }
+    animation: partners-marquee-scroll 240s linear infinite;
+    }
+    
+    }
 
 @keyframes partners-marquee-scroll {
   0% {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-25%);
   }
 }
