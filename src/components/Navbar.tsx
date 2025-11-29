@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import logo from "@/assets/logo-dark.png";
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,14 +17,12 @@ export const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">CWT</span>
-            </div>
-            <div className="hidden sm:block">
-              <div className="font-bold text-foreground">Cipta Wira Tirta</div>
-              <div className="text-xs text-muted-foreground">PT. Cipta Wira Tirta</div>
-            </div>
+          <Link to="/" className="flex items-center">
+            <img
+              src={logo}
+              alt="Cipta Wira Tirta Logo"
+              className="h-10 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Navigation */}

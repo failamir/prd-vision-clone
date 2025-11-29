@@ -178,28 +178,6 @@ const Login = () => {
               Register Now
             </Link>
           </p>
-          <p className="text-sm text-muted-foreground">
-            First time admin?{" "}
-            <Link to="/admin/setup" className="text-ocean-blue font-medium hover:underline">
-              Setup Admin Account
-            </Link>
-          </p>
-        </div>
-
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mt-6">
-            <Button variant="outline">Google</Button>
-            <Button variant="outline">LinkedIn</Button>
-          </div>
         </div>
       </Card>
     </div>

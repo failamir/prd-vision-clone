@@ -87,8 +87,12 @@ const ContactPage: React.FC = () => {
                   <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:scale-110 transition-all duration-300">
                     <Mail className="w-8 h-8 text-blue-600 group-hover:text-white transition-colors duration-300" />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Email Us</h4>
-                  <p className="text-gray-600">info@maritime.com</p>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2">Email Us</h4>
+                  <p className="text-slate-600">
+                    <a href="mailto:apply.cwt@gmail.com" className="hover:text-blue-600">
+                      apply.cwt@gmail.com
+                    </a>
+                  </p>
                 </div>
 
                 <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 transition-all duration-300 group">
@@ -103,11 +107,32 @@ const ContactPage: React.FC = () => {
                   <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:scale-110 transition-all duration-300">
                     <Monitor className="w-8 h-8 text-blue-600 group-hover:text-white transition-colors duration-300" />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Social Media</h4>
-                  <div className="flex justify-center gap-4 text-gray-600">
-                    <span className="hover:text-blue-600 cursor-pointer transition-colors">Instagram</span>
-                    <span className="hover:text-blue-600 cursor-pointer transition-colors">Facebook</span>
-                    <span className="hover:text-blue-600 cursor-pointer transition-colors">LinkedIn</span>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2">Social Media</h4>
+                  <div className="flex justify-center gap-4 text-slate-600">
+                    <a
+                      href="https://www.instagram.com/ciptawiratirta/?hl=en"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 cursor-pointer"
+                    >
+                      Instagram
+                    </a>
+                    <a
+                      href="https://www.facebook.com/ciptawiratirta/?locale=id_ID"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 cursor-pointer"
+                    >
+                      Facebook
+                    </a>
+                    <a
+                      href="https://id.linkedin.com/in/pt-cipta-wira-tirta-5a2b6a374"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 cursor-pointer"
+                    >
+                      LinkedIn
+                    </a>
                   </div>
                 </div>
               </div>
