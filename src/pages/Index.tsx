@@ -182,6 +182,15 @@ const Index = () => {
     setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   };
 
+  // Auto-rotate hero slides every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Fetch urgent jobs from database
   useEffect(() => {
     const fetchUrgentJobs = async () => {
