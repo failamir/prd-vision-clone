@@ -102,9 +102,9 @@ const Login = () => {
         <form className="space-y-6" onSubmit={handleLogin}>
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
-            <Input 
-              id="email" 
-              type="email" 
+            <Input
+              id="email"
+              type="email"
               placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -121,7 +121,7 @@ const Login = () => {
             </div>
             <div className="relative">
               <Input
-                id="password" 
+                id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
@@ -144,8 +144,8 @@ const Login = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="remember" 
+            <Checkbox
+              id="remember"
               checked={rememberMe}
               onCheckedChange={(checked) => setRememberMe(checked as boolean)}
             />
@@ -154,8 +154,8 @@ const Login = () => {
             </label>
           </div>
 
-          <Button 
-            className="w-full bg-primary hover:bg-primary/90" 
+          <Button
+            className="w-full bg-primary hover:bg-primary/90"
             size="lg"
             type="submit"
             disabled={loading}
@@ -174,7 +174,7 @@ const Login = () => {
         <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <Link to="/register" className="text-secondary font-medium hover:underline">
+            <Link to="/register" className="text-primary font-medium hover:underline">
               Register Now
             </Link>
           </p>

@@ -26,9 +26,9 @@ const RecruitmentProcedurePage: React.FC = () => {
       {/* Content */}
       <div>
         <div className="auto-container">
-          <div className="bravo-text text-box text-center py-10">
-            <p className="mt-20 text-gray-800">Follow the requirement flow below</p>
-            <div className="flex justify-center mt-6">
+          <div className="bravo-text text-box text-center">
+            <p className="text-gray-800">Follow the requirement flow below</p>
+            <div className="flex justify-center">
               <img
                 src={RPImage}
                 alt="Recruitment Procedure Flow"
@@ -41,7 +41,7 @@ const RecruitmentProcedurePage: React.FC = () => {
       </div>
 
       {/* Call To Action */}
-      <section className="call-to-action my-24">
+      <section className="call-to-action">
         <div className="auto-container">
           <div className="outer-box">
             <div className="content-column text-center">

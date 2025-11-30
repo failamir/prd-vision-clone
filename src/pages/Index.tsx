@@ -236,7 +236,7 @@ const Index = () => {
         {heroSlides.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-105"
+            className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentSlide ? "opacity-100 scale-100 z-10" : "opacity-0 scale-105 z-0 pointer-events-none"
               }`}
           >
             <div
@@ -249,7 +249,7 @@ const Index = () => {
             <div className="relative container mx-auto px-4 h-full flex items-center">
               <div className="max-w-3xl text-white pt-20">
                 <FadeIn delay={200} direction="up">
-                  <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
+                  <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight text-white">
                     {slide.title}
                   </h1>
                 </FadeIn>
@@ -325,13 +325,13 @@ const Index = () => {
                     href={partner.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group mx-12 inline-flex items-center justify-center transition-transform hover:scale-110 duration-300 flex-shrink-0"
+                    className="group mx-4 inline-flex items-center justify-center transition-all hover:scale-105 duration-300 flex-shrink-0 bg-white rounded-xl shadow-sm p-8 hover:shadow-md border border-gray-100"
                     title={partner.name}
                   >
                     <img
                       src={partner.logo}
                       alt={partner.alt}
-                      className="h-32 w-auto object-contain opacity-100 transition-all duration-500"
+                      className="h-24 w-auto object-contain opacity-100 transition-all duration-500"
                       loading="lazy"
                     />
                   </a>

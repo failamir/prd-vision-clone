@@ -29,13 +29,13 @@ const AboutPage: React.FC = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative py-24 bg-gray-50 overflow-hidden">
-        <div className="absolute inset-0 bg-grid-gray-200 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      {/* Hero Section - Apple Style Clean */}
+      <section className="relative py-32 bg-white overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white -z-10" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <FadeIn direction="up">
-            <h1 className="text-5xl font-bold text-gray-900 mb-6 tracking-tight">About Us</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-8 tracking-tighter">About Us</h1>
+            <p className="text-2xl md:text-3xl text-gray-500 font-medium leading-relaxed max-w-3xl mx-auto">
               Building the future of maritime recruitment with integrity, professionalism, and excellence since 2000.
             </p>
           </FadeIn>
@@ -43,71 +43,73 @@ const AboutPage: React.FC = () => {
       </section>
 
       {/* Main Content */}
-      <section className="py-20">
+      <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* Team Photos Grid */}
-          <div className="mb-24">
+          {/* Team Photos Grid - Premium Cards */}
+          <div className="mb-32">
             <FadeIn direction="up" delay={200}>
-              <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Our Team & Activities</h2>
+              <h2 className="text-4xl font-bold text-center text-gray-900 mb-16 tracking-tight">Our Team & Activities</h2>
             </FadeIn>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {teamPhotos.map((photo, index) => (
-                <FadeIn key={index} delay={index * 100} direction="up">
-                  <div className="group cursor-pointer">
-                    <div className="relative overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 aspect-[4/3]">
-                      <div className="absolute inset-0 bg-gray-900/0 group-hover:bg-gray-900/10 transition-colors duration-300 z-10" />
-                      <img
-                        src={photo.image}
-                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                      />
+                <FadeIn key={index} delay={index * 50} direction="up">
+                  <div className="group relative overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-500 aspect-[4/5] cursor-pointer">
+                    <img
+                      src={photo.image}
+                      alt={photo.title}
+                      className="w-full h-full object-cover transition-transform duration-700 scale-150 object-[center_60%]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                      <p className="text-white font-semibold text-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                        {photo.title}
+                      </p>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 text-center mt-4 group-hover:text-blue-600 transition-colors">
-                      {photo.title}
-                    </h3>
                   </div>
                 </FadeIn>
               ))}
             </div>
           </div>
 
-          {/* Special Highlights */}
-          <div className="mb-24">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+          {/* Special Highlights - Large Feature Cards */}
+          <div className="mb-32">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               <FadeIn direction="left" delay={200}>
-                <div className="group text-center">
-                  <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 aspect-video">
-                    <img
-                      src={crewImg}
-                      alt="Crew Fred Olsen"
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                    />
+                <div className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 aspect-video">
+                  <img
+                    src={crewImg}
+                    alt="Crew Fred Olsen"
+                    className="w-full h-full object-cover transition-transform duration-700 scale-150 object-[center_40%]"
+                  />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500" />
+                  <div className="absolute bottom-0 left-0 p-8">
+                    <h3 className="text-2xl font-bold text-white drop-shadow-md">Crew Fred Olsen</h3>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mt-6">Crew Fred Olsen</h3>
                 </div>
               </FadeIn>
 
               <FadeIn direction="right" delay={200}>
-                <div className="group text-center">
-                  <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 aspect-video">
-                    <img
-                      src={shipVisit2Img}
-                      alt="Ship Visit - Norwegian Jewel"
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                    />
+                <div className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 aspect-video">
+                  <img
+                    src={shipVisit2Img}
+                    alt="Ship Visit - Norwegian Jewel"
+                    className="w-full h-full object-cover transition-transform duration-700 scale-150 object-[center_60%]"
+                  />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500" />
+                  <div className="absolute bottom-0 left-0 p-8">
+                    <h3 className="text-2xl font-bold text-white drop-shadow-md">Ship Visit - Norwegian Jewel</h3>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mt-6">Ship Visit - Norwegian Jewel</h3>
                 </div>
               </FadeIn>
             </div>
           </div>
 
-          {/* About Text */}
+          {/* Our History - Clean Typography Block */}
           <FadeIn direction="up" delay={400}>
-            <div className="max-w-4xl mx-auto bg-gray-50 rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Our History</h2>
-              <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
+            <div className="max-w-4xl mx-auto bg-gray-50/50 backdrop-blur-xl rounded-[2.5rem] p-10 md:p-16 border border-white/50 shadow-xl">
+              <h2 className="text-4xl font-bold text-gray-900 mb-10 tracking-tight text-center">Our History</h2>
+              <div className="space-y-8 text-xl text-gray-600 leading-relaxed font-light">
                 <p>
                   The company is established in May 2000 as a representative office for <span className="font-semibold text-gray-900">Wilhelmsen Ship Management</span> formerly
                   known as Barber International. Initially, the company served for a cruise line company based in Miami, USA.
@@ -128,7 +130,7 @@ const AboutPage: React.FC = () => {
             </div>
           </FadeIn>
         </div>
-      </section >
+      </section>
       <Footer />
     </div >
   );

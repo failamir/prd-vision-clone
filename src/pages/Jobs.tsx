@@ -154,13 +154,13 @@ const Jobs = () => {
   };
 
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = searchQuery === "" || 
+    const matchesSearch = searchQuery === "" ||
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.company_name.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesLocation = locationFilter === "" || locationFilter === "all" ||
       job.location.toLowerCase().includes(locationFilter.toLowerCase());
-    
+
     const matchesType = typeFilter === "" || typeFilter === "all" ||
       job.job_type.toLowerCase() === typeFilter.toLowerCase();
 
@@ -178,7 +178,7 @@ const Jobs = () => {
     const date = new Date(dateString);
     const now = new Date();
     const days = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (days === 0) return "Today";
     if (days === 1) return "Yesterday";
     if (days < 7) return `${days} days ago`;
@@ -193,7 +193,7 @@ const Jobs = () => {
       {/* Header */}
       <section className="pt-24 pb-12 bg-gradient-to-r from-ocean-deep to-ocean-blue text-white">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Find Your Dream Job</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">Find Your Dream Job</h1>
           <p className="text-xl text-blue-100">
             Explore maritime job opportunities worldwide
           </p>
@@ -314,7 +314,7 @@ const Jobs = () => {
                                 View Details
                               </Button>
                             </Link>
-                            <Button 
+                            <Button
                               variant={savedJobs.has(job.id) ? "default" : "outline"}
                               onClick={() => handleSaveJob(job.id)}
                             >

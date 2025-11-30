@@ -120,16 +120,16 @@ export const Navbar = () => {
               </Link>
             ) : (
               <>
-                  <Link to="/login">
-                    <Button variant="ghost" className="text-foreground">
-                      Login
-                    </Button>
-                  </Link>
-                  <Link to="/register">
+                <Link to="/login">
+                  <Button variant="ghost" className="text-foreground">
+                    Login
+                  </Button>
+                </Link>
+                {/* <Link to="/register">
                     <Button className="bg-secondary hover:bg-secondary/90">
                       Register
                     </Button>
-                  </Link>
+                  </Link> */}
               </>
             )}
           </div>
@@ -186,16 +186,16 @@ export const Navbar = () => {
                 </Link>
               ) : (
                 <>
-                    <Link to="/login">
-                      <Button variant="outline" className="w-full">
-                        Login
-                      </Button>
-                    </Link>
-                    <Link to="/register">
-                      <Button className="w-full bg-secondary">
-                        Register
-                      </Button>
-                    </Link>
+                  <Link to="/login">
+                    <Button variant="outline" className="w-full">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button className="w-full bg-secondary">
+                      Register
+                    </Button>
+                  </Link>
                 </>
               )}
             </div>
