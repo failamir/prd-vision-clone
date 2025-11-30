@@ -331,7 +331,7 @@ const Index = () => {
                     <img
                       src={partner.logo}
                       alt={partner.alt}
-                      className="h-24 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-500"
+                      className="h-24 w-auto object-contain opacity-100 transition-all duration-500"
                       loading="lazy"
                     />
                   </a>

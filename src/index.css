@@ -384,7 +384,7 @@ All colors MUST be HSL.
     display: inline-flex;
     align-items: center;
     white-space: nowrap;
-    animation: partners-marquee-scroll 240s linear infinite;
+    animation: partners-marquee-scroll 300s linear infinite;
     }
     
     }
@@ -394,6 +394,6 @@ All colors MUST be HSL.
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-25%);
+    transform: translateX(-50%);
   }
 }
