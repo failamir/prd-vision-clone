@@ -13,7 +13,7 @@ export const Footer = () => {
           <div className="flex-shrink-0">
             <a href="https://ciptawiratirta.com" className="block">
               <img
-                src="https://ciptawiratirta.com/uploads/0000/1/2022/06/30/logo-cowpy.png"
+                src="src/assets/logo.png"
                 alt="Cipta Wira Tirta Logo"
                 className="h-12 w-auto brightness-0 invert opacity-90 hover:opacity-100 transition-opacity"
               />

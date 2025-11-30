@@ -4,9 +4,17 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MapPin, Clock, Ship, Calendar, X, ArrowRight } from "lucide-react";
-import heroCruise1 from "@/assets/hero-cruise-1.jpg";
-import heroCruise2 from "@/assets/hero-cruise-2.jpg";
-import heroCruise3 from "@/assets/hero-cruise-3.jpg";
+import heroCWT1 from "@/assets/CWT1.png";
+import heroCWT2 from "@/assets/CWT2.png";
+import heroCWT3 from "@/assets/CWT3.png";
+import logoPartner1 from "@/assets/logo-partner-1.png";
+import logoPartner2 from "@/assets/logo-partner-2.png";
+import logoPartner3 from "@/assets/logo-partner-3.png";
+import logoPartner4 from "@/assets/logo-partner-4.png";
+import logoPartner5 from "@/assets/logo-partner-5.png";
+import logoPartner6 from "@/assets/logo-partner-6.png";
+import logoPartnerPis from "@/assets/logo-partner-1-11.png";
+import ctaBackground from "@/assets/call-to-action.jpg";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -14,17 +22,17 @@ import { FadeIn } from "@/components/FadeIn";
 
 const heroSlides = [
   {
-    image: heroCruise1,
+    image: heroCWT1,
     title: "Creating Hero Of The Sea",
     subtitle: "Join the world's leading cruise lines and shipping companies",
   },
   {
-    image: heroCruise2,
+    image: heroCWT2,
     title: "Your Maritime Career Starts Here",
     subtitle: "Professional recruitment services for seafarers worldwide",
   },
   {
-    image: heroCruise3,
+    image: heroCWT3,
     title: "Sail Your Dreams",
     subtitle: "Connecting talented seafarers with premium opportunities",
   },
@@ -34,43 +42,43 @@ const partners = [
   {
     name: "Norwegian Cruise Line",
     href: "https://www.ncl.com/in/en/",
-    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-1.png",
+    logo: logoPartner1,
     alt: "NCL",
   },
   {
     name: "NYK Ship Management",
     href: "http://www.nyksm.com.sg/",
-    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-2.png",
+    logo: logoPartner2,
     alt: "NYKSM",
   },
   {
     name: "Fred Olsen Cruise Lines",
     href: "https://www.fredolsencruises.com/",
-    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-3.png",
+    logo: logoPartner3,
     alt: "Fred Olsen Cruise Lines",
   },
   {
     name: "SeaChefs",
     href: "https://www.seachefs.com/",
-    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-4.png",
+    logo: logoPartner4,
     alt: "SeaChefs",
   },
   {
     name: "SeaQuest Shipmanagement",
     href: "http://www.sqships.com/",
-    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-5.png",
+    logo: logoPartner5,
     alt: "SeaQuest Shipmanagement",
   },
   {
     name: "Alpha Adriatic",
     href: "https://alphaadriatic.com/",
-    logo: "https://ciptawiratirta.com/uploads/0000/1/2022/12/09/logo-partner-6.png",
+    logo: logoPartner6,
     alt: "Alpha Adriatic",
   },
   {
     name: "Pertamina International Shipping",
     href: "https://www.pertamina-pis.com/",
-    logo: "https://ciptawiratirta.com/uploads/0000/1/2024/04/24/logo-partner-1-11.png",
+    logo: logoPartnerPis,
     alt: "Pertamina International Shipping",
   },
 ];
@@ -170,7 +178,6 @@ const Index = () => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showUrgentJobsModal, setShowUrgentJobsModal] = useState(false);
-  const [partnerStartIndex, setPartnerStartIndex] = useState(0);
   const [urgentJobs, setUrgentJobs] = useState<any[]>([]);
 
   const nextSlide = () => {
@@ -185,7 +192,7 @@ const Index = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 3000);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, []);
@@ -217,14 +224,6 @@ const Index = () => {
       return () => clearTimeout(timer);
     }
   }, [urgentJobs]);
-
-  // Auto-rotate partners logos
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPartnerStartIndex((prev) => (prev + 1) % partners.length);
-    }, 3000); // Slower rotation for better visibility
-    return () => clearInterval(interval);
-  }, []);
 
   const extendedPartners = [...partners, ...partners];
 
@@ -308,31 +307,31 @@ const Index = () => {
       </section>
 
       {/* Partners Section - Cleaner Look */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-[#f6f7f7]">
         <div className="container mx-auto px-4">
           <FadeIn direction="up">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Trusted by Industry Leaders</h2>
-              <p className="text-gray-500 max-w-2xl mx-auto">We partner with the world's most prestigious cruise lines and shipping companies to provide you with the best career opportunities.</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">Trusted by Industry Leaders</h2>
+              <p className="text-slate-600 max-w-2xl mx-auto">We partner with the world's most prestigious cruise lines and shipping companies to provide you with the best career opportunities.</p>
             </div>
           </FadeIn>
 
           <FadeIn delay={200} direction="up">
             <div className="relative overflow-hidden py-8">
-              <div className="flex items-center gap-16 justify-center flex-wrap opacity-80 hover:opacity-100 transition-opacity duration-500">
-                {partners.map((partner, index) => (
+              <div className="partners-marquee opacity-80 hover:opacity-100">
+                {extendedPartners.map((partner, index) => (
                   <a
                     key={index}
                     href={partner.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group transition-transform hover:scale-110 duration-300"
+                    className="group mx-12 inline-flex items-center justify-center transition-transform hover:scale-110 duration-300 flex-shrink-0"
                     title={partner.name}
                   >
                     <img
                       src={partner.logo}
                       alt={partner.alt}
-                      className="h-16 w-auto object-contain grayscale group-hover:grayscale-0 transition-all duration-500"
+                      className="h-32 w-auto object-contain opacity-100 transition-all duration-500"
                       loading="lazy"
                     />
                   </a>
@@ -350,7 +349,7 @@ const Index = () => {
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://ciptawiratirta.com/uploads/demo/general/call-to-action-2.jpg"
+            src={ctaBackground}
             alt="Background"
             className="w-full h-full object-cover"
           />
