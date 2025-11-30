@@ -192,7 +192,7 @@ const Index = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 3000);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, []);
@@ -307,31 +307,31 @@ const Index = () => {
       </section>
 
       {/* Partners Section - Cleaner Look */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 bg-[#f6f7f7]">
         <div className="container mx-auto px-4">
           <FadeIn direction="up">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-slate-900 mb-4">Trusted by Industry Leaders</h2>
-              <p className="text-slate-500 max-w-2xl mx-auto">We partner with the world's most prestigious cruise lines and shipping companies to provide you with the best career opportunities.</p>
+              <p className="text-slate-600 max-w-2xl mx-auto">We partner with the world's most prestigious cruise lines and shipping companies to provide you with the best career opportunities.</p>
             </div>
           </FadeIn>
 
           <FadeIn delay={200} direction="up">
             <div className="relative overflow-hidden py-8">
-              <div className="partners-marquee opacity-80 hover:opacity-100 transition-opacity duration-500">
+              <div className="partners-marquee opacity-80 hover:opacity-100">
                 {extendedPartners.map((partner, index) => (
                   <a
                     key={index}
                     href={partner.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group mx-12 inline-flex items-center justify-center transition-transform hover:scale-110 duration-300"
+                    className="group mx-12 inline-flex items-center justify-center transition-transform hover:scale-110 duration-300 flex-shrink-0"
                     title={partner.name}
                   >
                     <img
                       src={partner.logo}
                       alt={partner.alt}
-                      className="h-24 w-auto object-contain opacity-100 transition-all duration-500"
+                      className="h-32 w-auto object-contain opacity-100 transition-all duration-500"
                       loading="lazy"
                     />
                   </a>
