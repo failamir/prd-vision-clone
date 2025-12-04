@@ -1,5 +1,5 @@
 import { Facebook, Instagram, Linkedin, ChevronUp } from "lucide-react";
-
+import logo from "@/assets/logo.png";
 export const Footer = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -13,7 +13,7 @@ export const Footer = () => {
           <div className="flex-shrink-0">
             <a href="https://ciptawiratirta.com" className="block">
               <img
-                src="src/assets/logo.png"
+                src={logo}
                 alt="Cipta Wira Tirta Logo"
                 className="h-12 w-auto brightness-0 invert opacity-90 hover:opacity-100 transition-opacity"
               />
