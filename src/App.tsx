@@ -39,6 +39,7 @@ import AdminDepartures from "./pages/admin/Departures";
 import AdminMessages from "./pages/admin/Messages";
 import AdminTestimonials from "./pages/admin/Testimonials";
 import AdminRolePermissions from "./pages/admin/RolePermissions";
+import ContactSubmissions from "./pages/admin/ContactSubmissions";
 
 const queryClient = new QueryClient();
 
@@ -50,46 +51,47 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/safety" element={<SafetyPolicyPage />} />
-            <Route path="/services" element={<ManningServicesPage />} />
-            <Route path="/insurance" element={<InsurancePage />} />
-            <Route path="/manning-services" element={<ManningServicesPage />} />
-            <Route path="/jobs" element={<Jobs />} />
-            <Route path="/jobs/:id" element={<JobDetail />} />
-            <Route path="/recruitment-procedure" element={<RecruitmentProcedurePage />} />
-            <Route path="/redirect.php" element={<RecruitmentProcedurePage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/candidate/dashboard" element={<ProtectedRoute><CandidateDashboard /></ProtectedRoute>} />
-            <Route path="/candidate/profile" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
-            <Route path="/candidate/cvs" element={<ProtectedRoute><CandidateCVs /></ProtectedRoute>} />
-            <Route path="/candidate/applications" element={<ProtectedRoute><CandidateApplications /></ProtectedRoute>} />
-            <Route path="/candidate/saved-jobs" element={<ProtectedRoute><CandidateSavedJobs /></ProtectedRoute>} />
-            <Route path="/candidate/interview-schedule" element={<ProtectedRoute><CandidateInterviewSchedule /></ProtectedRoute>} />
-            <Route path="/candidate/departure-schedule" element={<ProtectedRoute><CandidateDepartureSchedule /></ProtectedRoute>} />
-            <Route path="/candidate/messages" element={<ProtectedRoute><CandidateMessages /></ProtectedRoute>} />
-            <Route path="/candidate/testimonials" element={<ProtectedRoute><CandidateTestimonials /></ProtectedRoute>} />
-            <Route path="/candidate/change-password" element={<ProtectedRoute><CandidateChangePassword /></ProtectedRoute>} />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/safety" element={<SafetyPolicyPage />} />
+              <Route path="/services" element={<ManningServicesPage />} />
+              <Route path="/insurance" element={<InsurancePage />} />
+              <Route path="/manning-services" element={<ManningServicesPage />} />
+              <Route path="/jobs" element={<Jobs />} />
+              <Route path="/jobs/:id" element={<JobDetail />} />
+              <Route path="/recruitment-procedure" element={<RecruitmentProcedurePage />} />
+              <Route path="/redirect.php" element={<RecruitmentProcedurePage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/candidate/dashboard" element={<ProtectedRoute><CandidateDashboard /></ProtectedRoute>} />
+              <Route path="/candidate/profile" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
+              <Route path="/candidate/cvs" element={<ProtectedRoute><CandidateCVs /></ProtectedRoute>} />
+              <Route path="/candidate/applications" element={<ProtectedRoute><CandidateApplications /></ProtectedRoute>} />
+              <Route path="/candidate/saved-jobs" element={<ProtectedRoute><CandidateSavedJobs /></ProtectedRoute>} />
+              <Route path="/candidate/interview-schedule" element={<ProtectedRoute><CandidateInterviewSchedule /></ProtectedRoute>} />
+              <Route path="/candidate/departure-schedule" element={<ProtectedRoute><CandidateDepartureSchedule /></ProtectedRoute>} />
+              <Route path="/candidate/messages" element={<ProtectedRoute><CandidateMessages /></ProtectedRoute>} />
+              <Route path="/candidate/testimonials" element={<ProtectedRoute><CandidateTestimonials /></ProtectedRoute>} />
+              <Route path="/candidate/change-password" element={<ProtectedRoute><CandidateChangePassword /></ProtectedRoute>} />
 
-            {/* Admin Routes */}
-            <Route path="/admin/setup" element={<AdminSetup />} />
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-            <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
-            <Route path="/admin/jobs" element={<AdminRoute><AdminJobs /></AdminRoute>} />
-            <Route path="/admin/applications" element={<AdminRoute><AdminApplications /></AdminRoute>} />
-            <Route path="/admin/interviews" element={<AdminRoute><AdminInterviews /></AdminRoute>} />
-            <Route path="/admin/departures" element={<AdminRoute><AdminDepartures /></AdminRoute>} />
-            <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
-            <Route path="/admin/testimonials" element={<AdminRoute><AdminTestimonials /></AdminRoute>} />
-            <Route path="/admin/role-permissions" element={<AdminRoute><AdminRolePermissions /></AdminRoute>} />
+              {/* Admin Routes */}
+              <Route path="/admin/setup" element={<AdminSetup />} />
+              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+              <Route path="/admin/jobs" element={<AdminRoute><AdminJobs /></AdminRoute>} />
+              <Route path="/admin/applications" element={<AdminRoute><AdminApplications /></AdminRoute>} />
+              <Route path="/admin/interviews" element={<AdminRoute><AdminInterviews /></AdminRoute>} />
+              <Route path="/admin/departures" element={<AdminRoute><AdminDepartures /></AdminRoute>} />
+              <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
+              <Route path="/admin/testimonials" element={<AdminRoute><AdminTestimonials /></AdminRoute>} />
+              <Route path="/admin/role-permissions" element={<AdminRoute><AdminRolePermissions /></AdminRoute>} />
+              <Route path="/admin/contact-submissions" element={<AdminRoute><ContactSubmissions /></AdminRoute>} />
 
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </UserProvider>
