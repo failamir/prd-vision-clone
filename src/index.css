@@ -389,7 +389,7 @@ All colors MUST be HSL.
     display: inline-flex;
     align-items: center;
     white-space: nowrap;
-    animation: partners-marquee-scroll 120s linear infinite;
+    animation: partners-marquee-scroll 30s linear infinite;
   }
 
 }

@@ -316,30 +316,31 @@ const Index = () => {
             </div>
           </FadeIn>
 
-          <FadeIn delay={200} direction="up">
-            <div className="relative overflow-hidden py-8">
-              <div className="partners-marquee opacity-80 hover:opacity-100">
-                {extendedPartners.map((partner, index) => (
-                  <a
-                    key={index}
-                    href={partner.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group mx-4 inline-flex items-center justify-center transition-all hover:scale-105 duration-300 flex-shrink-0 bg-white rounded-xl shadow-sm p-8 hover:shadow-md border border-gray-100"
-                    title={partner.name}
-                  >
-                    <img
-                      src={partner.logo}
-                      alt={partner.alt}
-                      className="h-40 w-auto object-contain opacity-100 transition-all duration-500"
-                      loading="lazy"
-                    />
-                  </a>
-                ))}
-              </div>
-            </div>
-          </FadeIn>
+
         </div>
+        <FadeIn delay={200} direction="up">
+          <div className="relative overflow-hidden py-8 w-full">
+            <div className="partners-marquee opacity-80 hover:opacity-100">
+              {extendedPartners.map((partner, index) => (
+                <a
+                  key={index}
+                  href={partner.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group mx-4 inline-flex items-center justify-center transition-all hover:scale-105 duration-300 flex-shrink-0 bg-white rounded-xl shadow-sm p-8 hover:shadow-md border border-gray-100"
+                  title={partner.name}
+                >
+                  <img
+                    src={partner.logo}
+                    alt={partner.alt}
+                    className="h-40 w-auto object-contain opacity-100 transition-all duration-500"
+                    loading="lazy"
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
+        </FadeIn>
       </section>
 
       {/* Testimonials Section */}
