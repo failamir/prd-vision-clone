@@ -21,8 +21,9 @@ const AboutPage: React.FC = () => {
     { title: 'Bali Team', image: baliImg },
     { title: 'Bandung Team', image: bandungImg },
     { title: 'Family Gathering to Bogor', image: familyGatheringImg },
-    { title: 'Ship Visit - Norwegian Jewel', image: shipVisit1Img },
-    { title: 'Kegiatan Badminton', image: badmintonImg }
+    { title: 'Kegiatan Badminton', image: badmintonImg },
+    { title: 'Crew Fred Olsen', image: crewImg },
+    { title: 'Ship Visit - Norwegian Jewel', image: shipVisit2Img }
   ];
 
   return (
@@ -72,38 +73,7 @@ const AboutPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Special Highlights - Large Feature Cards */}
-          <div className="mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              <FadeIn direction="left" delay={200}>
-                <div className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 aspect-video">
-                  <img
-                    src={crewImg}
-                    alt="Crew Fred Olsen"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 object-[center_40%]"
-                  />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500" />
-                  <div className="absolute bottom-0 left-0 p-8">
-                    <h3 className="text-2xl font-bold text-white drop-shadow-md">Crew Fred Olsen</h3>
-                  </div>
-                </div>
-              </FadeIn>
 
-              <FadeIn direction="right" delay={200}>
-                <div className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 aspect-video">
-                  <img
-                    src={shipVisit2Img}
-                    alt="Ship Visit - Norwegian Jewel"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 object-[center_60%]"
-                  />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500" />
-                  <div className="absolute bottom-0 left-0 p-8">
-                    <h3 className="text-2xl font-bold text-white drop-shadow-md">Ship Visit - Norwegian Jewel</h3>
-                  </div>
-                </div>
-              </FadeIn>
-            </div>
-          </div>
 
           {/* Our History - Clean Typography Block */}
           <FadeIn direction="up" delay={400}>
