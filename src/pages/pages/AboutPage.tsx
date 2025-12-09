@@ -31,7 +31,7 @@ const AboutPage: React.FC = () => {
       <Navbar />
 
       {/* Hero Section - Apple Style Clean */}
-      <section className="relative py-20 bg-white overflow-hidden">
+      <section className="relative pt-20 pb-10 bg-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white -z-10" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <FadeIn direction="up">
@@ -44,12 +44,39 @@ const AboutPage: React.FC = () => {
       </section>
 
       {/* Main Content */}
-      <section className="py-24">
+      <section className="pt-10 pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Our History - Clean Typography Block */}
+          <div className="mb-32">
+            <FadeIn direction="up" delay={200}>
+              <div className="max-w-4xl mx-auto bg-gray-50/50 backdrop-blur-xl rounded-[2.5rem] p-10 md:p-16 border border-white/50 shadow-xl">
+                <h2 className="text-4xl font-bold text-gray-900 mb-10 tracking-tight text-center">Our History</h2>
+                <div className="space-y-8 text-xl text-gray-600 leading-relaxed font-light">
+                  <p>
+                    The company is established in May 2000 as a representative office for <span className="font-semibold text-gray-900">Wilhelmsen Ship Management</span> formerly
+                    known as Barber International. Initially, the company served for a cruise line company based in Miami, USA.
+                    The company has grown rapidly not only to serve cruise line companies but for other types of vessels including FPSO.
+                  </p>
+                  <p>
+                    In the year 2008, Wilhelmsen Ship Management made significant changes. The cruise ship crewing management
+                    was not part of their future plans. <span className="font-semibold text-gray-900">Cipta Wira Tirta</span> continues to serve the existing clients with similar quality of
+                    services.
+                  </p>
+                  <p>
+                    Our reputation and commitment in providing quality crew management services, fair and professional recruitment
+                    of seafarers, excellent relationship with authorities and regulators have made the company matured into a
+                    reputable manning agent and have added more values for Indonesian seafarers in the international seafarer world.
+                    The operations of PT. Cipta Wira Tirta is in Compliance with <span className="font-semibold text-gray-900">ISO 9001 : 2015</span>, <span className="font-semibold text-gray-900">MLC 2006</span> for SRPS and SIUJPAK.
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
 
           {/* Team Photos Grid - Premium Cards */}
           <div className="mb-32">
-            <FadeIn direction="up" delay={200}>
+            <FadeIn direction="up" delay={400}>
               <h2 className="text-4xl font-bold text-center text-gray-900 mb-16 tracking-tight">Our Team & Activities</h2>
             </FadeIn>
 
@@ -72,33 +99,6 @@ const AboutPage: React.FC = () => {
               ))}
             </div>
           </div>
-
-
-
-          {/* Our History - Clean Typography Block */}
-          <FadeIn direction="up" delay={400}>
-            <div className="max-w-4xl mx-auto bg-gray-50/50 backdrop-blur-xl rounded-[2.5rem] p-10 md:p-16 border border-white/50 shadow-xl">
-              <h2 className="text-4xl font-bold text-gray-900 mb-10 tracking-tight text-center">Our History</h2>
-              <div className="space-y-8 text-xl text-gray-600 leading-relaxed font-light">
-                <p>
-                  The company is established in May 2000 as a representative office for <span className="font-semibold text-gray-900">Wilhelmsen Ship Management</span> formerly
-                  known as Barber International. Initially, the company served for a cruise line company based in Miami, USA.
-                  The company has grown rapidly not only to serve cruise line companies but for other types of vessels including FPSO.
-                </p>
-                <p>
-                  In the year 2008, Wilhelmsen Ship Management made significant changes. The cruise ship crewing management
-                  was not part of their future plans. <span className="font-semibold text-gray-900">Cipta Wira Tirta</span> continues to serve the existing clients with similar quality of
-                  services.
-                </p>
-                <p>
-                  Our reputation and commitment in providing quality crew management services, fair and professional recruitment
-                  of seafarers, excellent relationship with authorities and regulators have made the company matured into a
-                  reputable manning agent and have added more values for Indonesian seafarers in the international seafarer world.
-                  The operations of PT. Cipta Wira Tirta is in Compliance with <span className="font-semibold text-gray-900">ISO 9001 : 2015</span>, <span className="font-semibold text-gray-900">MLC 2006</span> for SRPS and SIUJPAK.
-                </p>
-              </div>
-            </div>
-          </FadeIn>
         </div>
       </section>
       <Footer />
