@@ -103,7 +103,7 @@ const ContactPage: React.FC = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative py-24 bg-gray-50 overflow-hidden">
+      <section className="relative pt-24 pb-10 bg-gray-50 overflow-hidden">
         <div className="absolute inset-0 bg-grid-gray-200 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <FadeIn direction="up">
@@ -116,7 +116,7 @@ const ContactPage: React.FC = () => {
       </section>
 
       {/* Contact Section */}
-      <section className="py-20">
+      <section className="pt-10 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-24">
