@@ -30,7 +30,7 @@ const AboutPage: React.FC = () => {
       <Navbar />
 
       {/* Hero Section - Apple Style Clean */}
-      <section className="relative py-32 bg-white overflow-hidden">
+      <section className="relative py-20 bg-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white -z-10" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <FadeIn direction="up">
@@ -52,14 +52,14 @@ const AboutPage: React.FC = () => {
               <h2 className="text-4xl font-bold text-center text-gray-900 mb-16 tracking-tight">Our Team & Activities</h2>
             </FadeIn>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
               {teamPhotos.map((photo, index) => (
                 <FadeIn key={index} delay={index * 50} direction="up">
                   <div className="group relative overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-500 aspect-[4/5] cursor-pointer">
                     <img
                       src={photo.image}
                       alt={photo.title}
-                      className="w-full h-full object-cover transition-transform duration-700 scale-150 object-[center_60%]"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 object-[center_60%]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                       <p className="text-white font-semibold text-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
@@ -73,14 +73,14 @@ const AboutPage: React.FC = () => {
           </div>
 
           {/* Special Highlights - Large Feature Cards */}
-          <div className="mb-32">
+          <div className="mb-16">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               <FadeIn direction="left" delay={200}>
                 <div className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 aspect-video">
                   <img
                     src={crewImg}
                     alt="Crew Fred Olsen"
-                    className="w-full h-full object-cover transition-transform duration-700 scale-150 object-[center_40%]"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 object-[center_40%]"
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500" />
                   <div className="absolute bottom-0 left-0 p-8">
@@ -94,7 +94,7 @@ const AboutPage: React.FC = () => {
                   <img
                     src={shipVisit2Img}
                     alt="Ship Visit - Norwegian Jewel"
-                    className="w-full h-full object-cover transition-transform duration-700 scale-150 object-[center_60%]"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 object-[center_60%]"
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500" />
                   <div className="absolute bottom-0 left-0 p-8">
