@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import logo from "@/assets/logo-dark.png";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -94,9 +95,11 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ocean-deep via-ocean-blue to-ocean-light p-4">
       <Card className="w-full max-w-2xl p-8">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">CWT</span>
-          </div>
+          {/* <div className="w-16 h-16 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center mx-auto mb-4"> */}
+          {/* <span className="text-white font-bold text-2xl">CWT</span> */}
+          <img src={logo} alt="Logo" width={264} height={264} className="mx-auto" />
+          {/* </div> */}
+          <br />
           <h1 className="text-3xl font-bold text-foreground mb-2">Create Your Account</h1>
           <p className="text-muted-foreground">Start your maritime career journey today</p>
         </div>
@@ -137,8 +140,8 @@ const Register = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
-              <Input 
-                id="firstName" 
+              <Input
+                id="firstName"
                 placeholder="John"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
@@ -147,8 +150,8 @@ const Register = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name</Label>
-              <Input 
-                id="lastName" 
+              <Input
+                id="lastName"
                 placeholder="Doe"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
@@ -159,9 +162,9 @@ const Register = () => {
 
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
-            <Input 
-              id="email" 
-              type="email" 
+            <Input
+              id="email"
+              type="email"
               placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -172,8 +175,8 @@ const Register = () => {
           {userType === "employer" && (
             <div className="space-y-2">
               <Label htmlFor="company">Company Name</Label>
-              <Input 
-                id="company" 
+              <Input
+                id="company"
                 placeholder="Your Company Name"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
@@ -184,9 +187,9 @@ const Register = () => {
 
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number</Label>
-            <Input 
-              id="phone" 
-              type="tel" 
+            <Input
+              id="phone"
+              type="tel"
               placeholder="+62 xxx xxxx xxxx"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -195,9 +198,9 @@ const Register = () => {
 
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input 
-              id="password" 
-              type="password" 
+            <Input
+              id="password"
+              type="password"
               placeholder="Create a strong password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -208,9 +211,9 @@ const Register = () => {
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input 
-              id="confirmPassword" 
-              type="password" 
+            <Input
+              id="confirmPassword"
+              type="password"
               placeholder="Confirm your password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -220,25 +223,25 @@ const Register = () => {
           </div>
 
           <div className="flex items-start space-x-2">
-            <Checkbox 
+            <Checkbox
               id="terms"
               checked={agreedToTerms}
               onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
             />
             <label htmlFor="terms" className="text-sm text-foreground cursor-pointer leading-relaxed">
               I agree to the{" "}
-              <Link to="/terms" className="text-secondary hover:underline">
+              <Link to="/terms" className="text-primary hover:underline">
                 Terms & Conditions
               </Link>{" "}
               and{" "}
-              <Link to="/privacy" className="text-secondary hover:underline">
+              <Link to="/privacy" className="text-primary hover:underline">
                 Privacy Policy
               </Link>
             </label>
           </div>
 
-          <Button 
-            className="w-full bg-primary hover:bg-primary/90" 
+          <Button
+            className="w-full bg-primary hover:bg-primary/90"
             size="lg"
             type="submit"
             disabled={loading}
@@ -257,7 +260,7 @@ const Register = () => {
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="text-secondary font-medium hover:underline">
+            <Link to="/login" className="text-primary font-medium hover:underline">
               Sign In
             </Link>
           </p>
