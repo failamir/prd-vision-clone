@@ -34,8 +34,8 @@ const AboutPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white -z-10" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <FadeIn direction="up">
-            <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-8 tracking-tighter">About Us</h1>
-            <p className="text-2xl md:text-3xl text-gray-500 font-medium leading-relaxed max-w-3xl mx-auto">
+            <h1 className="text-5xl font-bold text-gray-900 mb-6 tracking-tight">About Us</h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Building the future of maritime recruitment with integrity, professionalism, and excellence since 2000.
             </p>
           </FadeIn>
@@ -52,7 +52,7 @@ const AboutPage: React.FC = () => {
               <h2 className="text-4xl font-bold text-center text-gray-900 mb-16 tracking-tight">Our Team & Activities</h2>
             </FadeIn>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {teamPhotos.map((photo, index) => (
                 <FadeIn key={index} delay={index * 50} direction="up">
                   <div className="group relative overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-500 aspect-[4/5] cursor-pointer">
@@ -73,7 +73,7 @@ const AboutPage: React.FC = () => {
           </div>
 
           {/* Special Highlights - Large Feature Cards */}
-          <div className="mb-16">
+          <div className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               <FadeIn direction="left" delay={200}>
                 <div className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 aspect-video">
