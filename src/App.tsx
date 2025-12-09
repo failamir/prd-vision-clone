@@ -39,7 +39,9 @@ import AdminDepartures from "./pages/admin/Departures";
 import AdminMessages from "./pages/admin/Messages";
 import AdminTestimonials from "./pages/admin/Testimonials";
 import AdminRolePermissions from "./pages/admin/RolePermissions";
-import ContactSubmissions from "./pages/admin/ContactSubmissions";
+import AdminContactSubmissions from "./pages/admin/ContactSubmissions";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +60,8 @@ const App = () => (
               <Route path="/safety" element={<SafetyPolicyPage />} />
               <Route path="/services" element={<ManningServicesPage />} />
               <Route path="/insurance" element={<InsurancePage />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/manning-services" element={<ManningServicesPage />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
@@ -87,7 +91,7 @@ const App = () => (
               <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
               <Route path="/admin/testimonials" element={<AdminRoute><AdminTestimonials /></AdminRoute>} />
               <Route path="/admin/role-permissions" element={<AdminRoute><AdminRolePermissions /></AdminRoute>} />
-              <Route path="/admin/contact-submissions" element={<AdminRoute><ContactSubmissions /></AdminRoute>} />
+              <Route path="/admin/contact-submissions" element={<AdminRoute><AdminContactSubmissions /></AdminRoute>} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

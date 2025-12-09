@@ -1,5 +1,6 @@
 import { Facebook, Instagram, Linkedin, ChevronUp } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { Link } from "react-router-dom";
 export const Footer = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -71,7 +72,11 @@ export const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 mt-8 text-center text-sm text-gray-400">
-          <p>© {new Date().getFullYear()} <a href="https://ciptawiratirta.com" className="hover:text-white transition-colors">PT. Cipta Wira Tirta</a>. All Rights Reserved.</p>
+          <p className="mb-4 md:mb-0">© {new Date().getFullYear()} <a href="https://ciptawiratirta.com" className="hover:text-white transition-colors">PT. Cipta Wira Tirta</a>. All Rights Reserved.</p>
+          <div className="flex justify-center gap-6 mt-4 md:mt-2">
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link>
+          </div>
         </div>
       </div>
 
