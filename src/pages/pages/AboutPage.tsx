@@ -55,7 +55,7 @@ const AboutPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {teamPhotos.map((photo, index) => (
                 <FadeIn key={index} delay={index * 50} direction="up">
-                  <div className="group relative overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-500 aspect-[4/5] cursor-pointer">
+                  <div className="group relative overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-500 aspect-[500/350] cursor-pointer">
                     <img
                       src={photo.image}
                       alt={photo.title}
