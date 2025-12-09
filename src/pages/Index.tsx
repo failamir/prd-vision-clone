@@ -192,7 +192,7 @@ const Index = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 6000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
@@ -307,10 +307,10 @@ const Index = () => {
       </section>
 
       {/* Partners Section - Cleaner Look */}
-      <section className="py-20 bg-[#f6f7f7]">
+      <section className="py-10 bg-[#f6f7f7]">
         <div className="container mx-auto px-4">
           <FadeIn direction="up">
-            <div className="text-center mb-12">
+            <div className="text-center mb-6">
               <h2 className="text-3xl font-bold text-slate-900 mb-4">Trusted by Industry Leaders</h2>
               <p className="text-slate-600 max-w-2xl mx-auto">We partner with the world's most prestigious cruise lines and shipping companies to provide you with the best career opportunities.</p>
             </div>
@@ -331,7 +331,7 @@ const Index = () => {
                     <img
                       src={partner.logo}
                       alt={partner.alt}
-                      className="h-24 w-auto object-contain opacity-100 transition-all duration-500"
+                      className="h-40 w-auto object-contain opacity-100 transition-all duration-500"
                       loading="lazy"
                     />
                   </a>
