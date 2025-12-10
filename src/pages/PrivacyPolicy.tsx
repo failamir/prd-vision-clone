@@ -20,7 +20,7 @@ const PrivacyPolicy = () => {
                                 <div className="bg-slate-800 p-3 rounded-xl mb-6">
                                     <Shield className="w-8 h-8 text-green-400" />
                                 </div>
-                                <h1 className="text-4xl md:text-5xl font-bold mb-4">Privacy Policy</h1>
+                                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">Privacy Policy</h1>
                                 <p className="text-slate-400 text-lg max-w-2xl">
                                     We value your privacy and are committed to protecting your personal data.
                                 </p>

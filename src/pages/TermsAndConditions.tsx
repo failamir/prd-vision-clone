@@ -20,7 +20,7 @@ const TermsAndConditions = () => {
                                 <div className="bg-slate-800 p-3 rounded-xl mb-6">
                                     <FileText className="w-8 h-8 text-blue-400" />
                                 </div>
-                                <h1 className="text-4xl md:text-5xl font-bold mb-4">Terms & Conditions</h1>
+                                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">Terms & Conditions</h1>
                                 <p className="text-slate-400 text-lg max-w-2xl">
                                     Please read these terms carefully before using our services.
                                 </p>
