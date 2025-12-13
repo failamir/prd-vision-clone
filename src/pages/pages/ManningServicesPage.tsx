@@ -20,7 +20,7 @@ const ManningServicesPage: React.FC = () => {
             </div>
 
             {/* Manning Services Content */}
-            <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+            <div className="max-w-4xl mx-auto flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
               <div className="lg:w-2/3 w-full">
                 <img
                   src={manningImg1}
@@ -39,8 +39,8 @@ const ManningServicesPage: React.FC = () => {
 
             <div className="max-w-4xl mx-auto text-gray-600 text-lg leading-relaxed mt-12 space-y-6 text-left">
               <p>
-                Since the establishment of the company in the year of 2000, we have an excellent proven track record as a 
-                reliable, honest and transparent manning agency. We provide wide range of manning services from selective 
+                Since the establishment of the company in the year of 2000, we have an excellent proven track record as a
+                reliable, honest and transparent manning agency. We provide wide range of manning services from selective
                 recruitment to P&I matters.
               </p>
               <p>

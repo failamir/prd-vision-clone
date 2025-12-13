@@ -36,9 +36,7 @@ const AboutPage: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <FadeIn direction="up">
             <h1 className="text-5xl font-bold text-gray-900 mb-6 tracking-tight">About Us</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Building the future of maritime recruitment with integrity, professionalism, and excellence since 2000.
-            </p>
+
           </FadeIn>
         </div>
       </section>
@@ -50,7 +48,7 @@ const AboutPage: React.FC = () => {
           {/* Our History - Clean Typography Block */}
           <div className="mb-32">
             <FadeIn direction="up" delay={200}>
-              <div className="max-w-4xl mx-auto bg-gray-50/50 backdrop-blur-xl rounded-[2.5rem] p-10 md:p-16 border border-white/50 shadow-xl">
+              <div className="w-full bg-gray-50/50 backdrop-blur-xl rounded-[2.5rem] p-10 md:p-16 border border-white/50 shadow-xl">
                 <h2 className="text-4xl font-bold text-gray-900 mb-10 tracking-tight text-center">Our History</h2>
                 <div className="space-y-8 text-xl text-gray-600 leading-relaxed font-light">
                   <p>
@@ -87,7 +85,10 @@ const AboutPage: React.FC = () => {
                     <img
                       src={photo.image}
                       alt={photo.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 object-[center_60%]"
+                      className={`w-full h-full object-cover transition-transform duration-700 object-[center_60%] ${photo.title === 'Crew Fred Olsen'
+                        ? 'scale-105 group-hover:scale-115'
+                        : 'group-hover:scale-110'
+                        }`}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                       <p className="text-white font-semibold text-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">

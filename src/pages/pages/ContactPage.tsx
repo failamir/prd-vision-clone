@@ -242,7 +242,7 @@ const ContactPage: React.FC = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
-                        placeholder="John Doe"
+                        placeholder="Your Name"
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
                         required
                       />
@@ -257,7 +257,7 @@ const ContactPage: React.FC = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="john@example.com"
+                        placeholder="your-email@example.com"
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
                         required
                       />
