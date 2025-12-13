@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   User,
   FileText,
-  Briefcase,
   Bookmark,
   Calendar,
   Plane,
@@ -27,7 +26,6 @@ interface DashboardLayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/candidate/dashboard", icon: LayoutDashboard },
   { name: "My Profile", href: "/candidate/profile", icon: User },
-  { name: "CV & Form Letter", href: "/candidate/cvs", icon: Briefcase },
   { name: "Applications", href: "/candidate/applications", icon: FileText },
   { name: "Saved Jobs", href: "/candidate/saved-jobs", icon: Bookmark },
   { name: "Interview Schedule", href: "/candidate/interview-schedule", icon: Calendar },
