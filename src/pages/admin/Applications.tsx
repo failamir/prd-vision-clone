@@ -72,7 +72,6 @@ interface Application {
   applied_at: string;
   candidate_id?: string;
   candidate: {
-    // user_id optional, not used for storage path but kept for potential future use
     user_id?: string;
     full_name: string;
     email: string;
@@ -83,6 +82,15 @@ interface Application {
     weight_kg: number;
     registration_city?: string | null;
     how_found_us?: string | null;
+    address?: string | null;
+    city?: string | null;
+    country?: string | null;
+    ktp_number?: string | null;
+    place_of_birth?: string | null;
+    covid_vaccinated?: string | null;
+    professional_title?: string | null;
+    bio?: string | null;
+    referral_name?: string | null;
   };
   job: {
     title: string;
@@ -142,6 +150,11 @@ const AdminApplications = () => {
   const [latestExperienceByCandidate, setLatestExperienceByCandidate] = useState<Record<string, any>>({});
   const [latestEducationByCandidate, setLatestEducationByCandidate] = useState<Record<string, any>>({});
   const [experienceDialogOpen, setExperienceDialogOpen] = useState(false);
+  const [emergencyContactsByCandidate, setEmergencyContactsByCandidate] = useState<Record<string, any>>({});
+  const [nextOfKinByCandidate, setNextOfKinByCandidate] = useState<Record<string, any>>({});
+  const [certificatesByCandidate, setCertificatesByCandidate] = useState<Record<string, any[]>>({});
+  const [cvsByCandidate, setCvsByCandidate] = useState<Record<string, any>>({});
+  const [formLettersByCandidate, setFormLettersByCandidate] = useState<Record<string, any>>({});
   const [activeExperience, setActiveExperience] = useState<any | null>(null);
 
   const [approvedPositionDialogOpen, setApprovedPositionDialogOpen] = useState(false);
@@ -701,7 +714,16 @@ const AdminApplications = () => {
             height_cm,
             weight_kg,
             registration_city,
-            how_found_us
+            how_found_us,
+            address,
+            city,
+            country,
+            ktp_number,
+            place_of_birth,
+            covid_vaccinated,
+            professional_title,
+            bio,
+            referral_name
           ),
           job:jobs(title, company_name, department)
         `)
@@ -737,6 +759,11 @@ const AdminApplications = () => {
 
         setApplications(merged);
         await fetchMedicalTests(uniqueCandidateIds);
+        await fetchEmergencyContacts(uniqueCandidateIds);
+        await fetchNextOfKin(uniqueCandidateIds);
+        await fetchCertificates(uniqueCandidateIds);
+        await fetchCVs(uniqueCandidateIds);
+        await fetchFormLetters(uniqueCandidateIds);
       } else {
         setApplications(apps);
       }
@@ -834,6 +861,107 @@ const AdminApplications = () => {
       });
 
       setMedicalTestsByCandidate(map);
+    } catch { }
+  };
+
+  const fetchEmergencyContacts = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_emergency_contacts" as any)
+        .select("candidate_id, full_name, relationship, phone, email")
+        .in("candidate_id", candidateIds)
+        .order("is_primary", { ascending: false });
+
+      if (error) throw error;
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setEmergencyContactsByCandidate(map);
+    } catch { }
+  };
+
+  const fetchNextOfKin = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_next_of_kin" as any)
+        .select("candidate_id, full_name, relationship, date_of_birth, place_of_birth")
+        .in("candidate_id", candidateIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setNextOfKinByCandidate(map);
+    } catch { }
+  };
+
+  const fetchCertificates = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_certificates" as any)
+        .select("candidate_id, type_certificate, institution, cert_number, date_of_issue")
+        .in("candidate_id", candidateIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      const map: Record<string, any[]> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = [];
+        }
+        map[row.candidate_id].push(row);
+      });
+      setCertificatesByCandidate(map);
+    } catch { }
+  };
+
+  const fetchCVs = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_cvs" as any)
+        .select("candidate_id, file_name, file_path, is_default")
+        .in("candidate_id", candidateIds)
+        .order("is_default", { ascending: false });
+
+      if (error) throw error;
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setCvsByCandidate(map);
+    } catch { }
+  };
+
+  const fetchFormLetters = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_form_letters" as any)
+        .select("candidate_id, file_name, file_path, is_default")
+        .in("candidate_id", candidateIds)
+        .order("is_default", { ascending: false });
+
+      if (error) throw error;
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setFormLettersByCandidate(map);
     } catch { }
   };
 
@@ -2468,11 +2596,20 @@ const AdminApplications = () => {
                   <TableHead className="min-w-[160px]">Education Background</TableHead>
                   <TableHead className="min-w-[120px]">Contact No</TableHead>
                   <TableHead className="min-w-[180px]">Email</TableHead>
+                  <TableHead className="min-w-[150px]">Address</TableHead>
+                  <TableHead className="min-w-[100px]">City</TableHead>
+                  <TableHead className="min-w-[100px]">Country</TableHead>
+                  <TableHead className="min-w-[130px]">KTP Number</TableHead>
+                  <TableHead className="min-w-[120px]">Place of Birth</TableHead>
+                  <TableHead className="min-w-[150px]">Professional Title</TableHead>
+                  <TableHead className="min-w-[130px]">Referral Name</TableHead>
                   <TableHead className="min-w-[150px]">Emergency Contact</TableHead>
+                  <TableHead className="min-w-[130px]">Next of Kin</TableHead>
+                  <TableHead className="min-w-[150px]">Certificates</TableHead>
                   <TableHead className="min-w-[80px]">Photo</TableHead>
                   <TableHead className="min-w-[80px]">CV</TableHead>
                   <TableHead className="min-w-[100px]">Form Letter</TableHead>
-                  <TableHead className="min-w-[140px]">Vaccin Covid Booster</TableHead>
+                  <TableHead className="min-w-[140px]">Covid Vaccinated</TableHead>
                   <TableHead className="min-w-[80px]">BST/CC</TableHead>
                   <TableHead className="min-w-[100px]">Suitable</TableHead>
                   <TableHead className="min-w-[120px]">Interview By</TableHead>
@@ -2558,23 +2695,64 @@ const AdminApplications = () => {
                       <TableCell>{getLatestEducationText(app.candidate_id, app.education_background)}</TableCell>
                       <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
                       <TableCell>{app.candidate.email}</TableCell>
-                      <TableCell>{app.emergency_contact || "-"}</TableCell>
+                      <TableCell>{app.candidate.address || "-"}</TableCell>
+                      <TableCell>{app.candidate.city || "-"}</TableCell>
+                      <TableCell>{app.candidate.country || "-"}</TableCell>
+                      <TableCell>{app.candidate.ktp_number || "-"}</TableCell>
+                      <TableCell>{app.candidate.place_of_birth || "-"}</TableCell>
+                      <TableCell>{app.candidate.professional_title || "-"}</TableCell>
+                      <TableCell>{app.candidate.referral_name || "-"}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const ec = emergencyContactsByCandidate[app.candidate_id || ""];
+                          if (!ec) return app.emergency_contact || "-";
+                          return `${ec.full_name} (${ec.relationship}) - ${ec.phone}`;
+                        })()}
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const nok = nextOfKinByCandidate[app.candidate_id || ""];
+                          if (!nok) return "-";
+                          return `${nok.full_name} (${nok.relationship})`;
+                        })()}
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const certs = certificatesByCandidate[app.candidate_id || ""];
+                          if (!certs || certs.length === 0) return "-";
+                          return `${certs.length} certificate(s)`;
+                        })()}
+                      </TableCell>
                       <TableCell>
                         {app.photo_url ? (
                           <img src={app.photo_url} alt="Photo" className="w-10 h-10 rounded object-cover" />
                         ) : "-"}
                       </TableCell>
                       <TableCell>
-                        {app.cv_url ? (
-                          <Button variant="link" size="sm" className="h-auto p-0">View file</Button>
-                        ) : "-"}
+                        {(() => {
+                          const cv = cvsByCandidate[app.candidate_id || ""];
+                          if (cv?.file_path) {
+                            return <Button variant="link" size="sm" className="h-auto p-0" onClick={async () => {
+                              const { data } = await supabase.storage.from("cvs").createSignedUrl(cv.file_path, 3600);
+                              if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                            }}>View CV</Button>;
+                          }
+                          return app.cv_url ? <Button variant="link" size="sm" className="h-auto p-0">View file</Button> : "-";
+                        })()}
                       </TableCell>
                       <TableCell>
-                        {app.letter_form_url ? (
-                          <Button variant="link" size="sm" className="h-auto p-0">View file</Button>
-                        ) : "-"}
+                        {(() => {
+                          const fl = formLettersByCandidate[app.candidate_id || ""];
+                          if (fl?.file_path) {
+                            return <Button variant="link" size="sm" className="h-auto p-0" onClick={async () => {
+                              const { data } = await supabase.storage.from("candidate-documents").createSignedUrl(fl.file_path, 3600);
+                              if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                            }}>View Form Letter</Button>;
+                          }
+                          return app.letter_form_url ? <Button variant="link" size="sm" className="h-auto p-0">View file</Button> : "-";
+                        })()}
                       </TableCell>
-                      <TableCell>{app.vaccin_covid_booster ? "Yes" : "-"}</TableCell>
+                      <TableCell>{app.candidate.covid_vaccinated || (app.vaccin_covid_booster ? "Yes" : "-")}</TableCell>
                       <TableCell>{app.bst_cc || "-"}</TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">
