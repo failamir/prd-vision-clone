@@ -39,7 +39,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 3;
   // CV & Form Letter state
   const [cvs, setCvs] = useState<CV[]>([]);
   const [formLetters, setFormLetters] = useState<FormLetter[]>([]);
@@ -211,7 +211,7 @@ const Profile = () => {
   }, [candidateId, currentStep, screeningTab]);
 
   useEffect(() => {
-    if (candidateId && currentStep === 4) {
+    if (candidateId && currentStep === 1) {
       fetchCVs();
       fetchFormLetters();
     }
@@ -1701,6 +1701,147 @@ const Profile = () => {
                 </div>
               )}
             </div>
+
+            {/* CV & Form Letter Section */}
+            <div className="mt-8 pt-6 border-t">
+              <h3 className="text-xl font-semibold text-foreground mb-6">CV & Form Letter</h3>
+              <Tabs value={documentsTab} onValueChange={setDocumentsTab}>
+                <TabsList className="mb-6">
+                  <TabsTrigger value="cv">CV / Resume</TabsTrigger>
+                  <TabsTrigger value="form_letter">Form Letter</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="cv">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-muted-foreground">Upload your CV/Resume documents (PDF, DOC, DOCX - Max 5MB)</p>
+                      <div>
+                        <Input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleCVUpload}
+                          disabled={uploadingCV}
+                          className="hidden"
+                          id="cv-upload"
+                        />
+                        <label htmlFor="cv-upload">
+                          <Button type="button" asChild disabled={uploadingCV}>
+                            <span>
+                              {uploadingCV ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                              Upload CV
+                            </span>
+                          </Button>
+                        </label>
+                      </div>
+                    </div>
+
+                    {cvs.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>No CVs uploaded yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {cvs.map((cv) => (
+                          <div key={cv.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <FileText className="w-8 h-8 text-primary" />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{cv.file_name}</span>
+                                  {cv.is_default && <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />}
+                                </div>
+                                <span className="text-sm text-muted-foreground">
+                                  {formatFileSize(cv.file_size)} • {new Date(cv.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {!cv.is_default && (
+                                <Button type="button" variant="outline" size="sm" onClick={() => handleSetDefaultCV(cv.id)}>
+                                  Set Default
+                                </Button>
+                              )}
+                              <Button type="button" variant="outline" size="icon" onClick={() => handleDownloadCV(cv)}>
+                                <Download className="w-4 h-4" />
+                              </Button>
+                              <Button type="button" variant="outline" size="icon" onClick={() => handleDeleteCV(cv)}>
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="form_letter">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-muted-foreground">Upload your Form Letter documents (PDF, DOC, DOCX - Max 5MB)</p>
+                      <div>
+                        <Input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleFormLetterUpload}
+                          disabled={uploadingFormLetter}
+                          className="hidden"
+                          id="form-letter-upload"
+                        />
+                        <label htmlFor="form-letter-upload">
+                          <Button type="button" asChild disabled={uploadingFormLetter}>
+                            <span>
+                              {uploadingFormLetter ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                              Upload Form Letter
+                            </span>
+                          </Button>
+                        </label>
+                      </div>
+                    </div>
+
+                    {formLetters.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>No Form Letters uploaded yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {formLetters.map((fl) => (
+                          <div key={fl.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <FileText className="w-8 h-8 text-primary" />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{fl.file_name}</span>
+                                  {fl.is_default && <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />}
+                                </div>
+                                <span className="text-sm text-muted-foreground">
+                                  {formatFileSize(fl.file_size)} • {new Date(fl.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {!fl.is_default && (
+                                <Button type="button" variant="outline" size="sm" onClick={() => handleSetDefaultFormLetter(fl.id)}>
+                                  Set Default
+                                </Button>
+                              )}
+                              <Button type="button" variant="outline" size="icon" onClick={() => handleDownloadFormLetter(fl)}>
+                                <Download className="w-4 h-4" />
+                              </Button>
+                              <Button type="button" variant="outline" size="icon" onClick={() => handleDeleteFormLetter(fl)}>
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
           </Card>
         );
 
@@ -2847,149 +2988,6 @@ const Profile = () => {
           </Card>
         );
 
-      case 4:
-        return (
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold text-foreground mb-6">CV & Form Letter</h3>
-            <Tabs value={documentsTab} onValueChange={setDocumentsTab}>
-              <TabsList className="mb-6">
-                <TabsTrigger value="cv">CV / Resume</TabsTrigger>
-                <TabsTrigger value="form_letter">Form Letter</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="cv">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-muted-foreground">Upload your CV/Resume documents (PDF, DOC, DOCX - Max 5MB)</p>
-                    <div>
-                      <Input
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        onChange={handleCVUpload}
-                        disabled={uploadingCV}
-                        className="hidden"
-                        id="cv-upload"
-                      />
-                      <label htmlFor="cv-upload">
-                        <Button type="button" asChild disabled={uploadingCV}>
-                          <span>
-                            {uploadingCV ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                            Upload CV
-                          </span>
-                        </Button>
-                      </label>
-                    </div>
-                  </div>
-
-                  {cvs.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>No CVs uploaded yet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {cvs.map((cv) => (
-                        <div key={cv.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <FileText className="w-8 h-8 text-primary" />
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{cv.file_name}</span>
-                                {cv.is_default && <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />}
-                              </div>
-                              <span className="text-sm text-muted-foreground">
-                                {formatFileSize(cv.file_size)} • {new Date(cv.created_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            {!cv.is_default && (
-                              <Button type="button" variant="outline" size="sm" onClick={() => handleSetDefaultCV(cv.id)}>
-                                Set Default
-                              </Button>
-                            )}
-                            <Button type="button" variant="outline" size="icon" onClick={() => handleDownloadCV(cv)}>
-                              <Download className="w-4 h-4" />
-                            </Button>
-                            <Button type="button" variant="outline" size="icon" onClick={() => handleDeleteCV(cv)}>
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="form_letter">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-muted-foreground">Upload your Form Letter documents (PDF, DOC, DOCX - Max 5MB)</p>
-                    <div>
-                      <Input
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        onChange={handleFormLetterUpload}
-                        disabled={uploadingFormLetter}
-                        className="hidden"
-                        id="form-letter-upload"
-                      />
-                      <label htmlFor="form-letter-upload">
-                        <Button type="button" asChild disabled={uploadingFormLetter}>
-                          <span>
-                            {uploadingFormLetter ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                            Upload Form Letter
-                          </span>
-                        </Button>
-                      </label>
-                    </div>
-                  </div>
-
-                  {formLetters.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>No Form Letters uploaded yet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {formLetters.map((fl) => (
-                        <div key={fl.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <FileText className="w-8 h-8 text-primary" />
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{fl.file_name}</span>
-                                {fl.is_default && <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />}
-                              </div>
-                              <span className="text-sm text-muted-foreground">
-                                {formatFileSize(fl.file_size)} • {new Date(fl.created_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            {!fl.is_default && (
-                              <Button type="button" variant="outline" size="sm" onClick={() => handleSetDefaultFormLetter(fl.id)}>
-                                Set Default
-                              </Button>
-                            )}
-                            <Button type="button" variant="outline" size="icon" onClick={() => handleDownloadFormLetter(fl)}>
-                              <Download className="w-4 h-4" />
-                            </Button>
-                            <Button type="button" variant="outline" size="icon" onClick={() => handleDeleteFormLetter(fl)}>
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </Card>
-        );
-
       default:
         return null;
     }
@@ -3038,14 +3036,6 @@ const Profile = () => {
             className={currentStep === 3 ? "" : "bg-background"}
           >
             STEP 3 : Screening
-          </Button>
-          <Button
-            type="button"
-            variant={currentStep === 4 ? "default" : "outline"}
-            onClick={() => setCurrentStep(4)}
-            className={currentStep === 4 ? "" : "bg-background"}
-          >
-            STEP 4 : CV & Form Letter
           </Button>
         </div>
 
