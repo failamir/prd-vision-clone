@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -47,12 +47,15 @@ interface Job {
 const JobDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const shouldAutoApply = searchParams.get("apply") === "true";
   const { toast } = useToast();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [similarJobs, setSimilarJobs] = useState<Job[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [autoApplyTriggered, setAutoApplyTriggered] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -372,11 +375,18 @@ const JobDetail = () => {
                     <ApplicationDialog 
                       jobId={job.id} 
                       jobTitle={job.title}
-                      onSuccess={checkIfSaved}
+                      onSuccess={() => {
+                        checkIfSaved();
+                        if (shouldAutoApply) {
+                          setSearchParams({});
+                        }
+                      }}
+                      autoOpen={shouldAutoApply && !autoApplyTriggered}
+                      onAutoOpenTriggered={() => setAutoApplyTriggered(true)}
                     />
                   </div>
                 ) : (
-                  <Link to="/login">
+                  <Link to={`/register?job=${job.id}`}>
                     <Button className="w-full bg-primary hover:bg-primary/90 mb-3">Apply Now</Button>
                   </Link>
                 )}

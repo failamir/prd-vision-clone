@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,8 @@ import logo from "@/assets/logo-dark.png";
 
 const Register = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const jobId = searchParams.get("job");
   const { toast } = useToast();
   const [userType, setUserType] = useState("candidate");
   const [firstName, setFirstName] = useState("");
@@ -29,10 +31,15 @@ const Register = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/candidate/dashboard");
+        // If there's a pending job application, redirect to that job
+        if (jobId) {
+          navigate(`/jobs/${jobId}?apply=true`);
+        } else {
+          navigate("/candidate/dashboard");
+        }
       }
     });
-  }, [navigate]);
+  }, [navigate, jobId]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,10 +83,17 @@ const Register = () => {
 
       toast({
         title: "Registration successful!",
-        description: "Your account has been created. Redirecting...",
+        description: jobId 
+          ? "Your account has been created. Redirecting to apply..." 
+          : "Your account has been created. Redirecting...",
       });
 
-      navigate("/candidate/dashboard");
+      // If there's a pending job application, redirect to that job with apply flag
+      if (jobId) {
+        navigate(`/jobs/${jobId}?apply=true`);
+      } else {
+        navigate("/candidate/dashboard");
+      }
     } catch (error: any) {
       toast({
         title: "Registration failed",
