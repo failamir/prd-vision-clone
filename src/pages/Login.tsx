@@ -174,14 +174,14 @@ const Login = () => {
           </Button>
         </form>
 
-        <div className="mt-6 text-center space-y-2">
+        {/* <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
             <Link to="/register" className="text-primary font-medium hover:underline">
               Register Now
             </Link>
           </p>
-        </div>
+        </div> */}
       </Card>
     </div>
   );

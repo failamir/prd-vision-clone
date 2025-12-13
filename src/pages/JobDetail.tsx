@@ -200,7 +200,7 @@ const JobDetail = () => {
     const date = new Date(dateString);
     const now = new Date();
     const days = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (days === 0) return "Today";
     if (days === 1) return "Yesterday";
     if (days < 7) return `${days} days ago`;
@@ -212,7 +212,7 @@ const JobDetail = () => {
     const expiry = new Date(expiresAt);
     const now = new Date();
     const days = Math.floor((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (days < 0) return "Expired";
     if (days === 0) return "Today";
     if (days === 1) return "1 day";
@@ -372,8 +372,8 @@ const JobDetail = () => {
                 </div>
                 {isAuthenticated ? (
                   <div className="mb-3">
-                    <ApplicationDialog 
-                      jobId={job.id} 
+                    <ApplicationDialog
+                      jobId={job.id}
                       jobTitle={job.title}
                       onSuccess={() => {
                         checkIfSaved();
@@ -390,7 +390,7 @@ const JobDetail = () => {
                     <Button className="w-full bg-primary hover:bg-primary/90 mb-3">Apply Now</Button>
                   </Link>
                 )}
-                <Button 
+                <Button
                   variant={isSaved ? "default" : "outline"}
                   className="w-full"
                   onClick={handleSaveJob}
@@ -429,7 +429,7 @@ const JobDetail = () => {
               </Card>
 
               {/* Similar Jobs */}
-              {similarJobs.length > 0 && (
+              {/* {similarJobs.length > 0 && (
                 <Card className="p-6">
                   <h3 className="text-xl font-bold text-foreground mb-4">Similar Jobs</h3>
                   <div className="space-y-4">
@@ -448,7 +448,7 @@ const JobDetail = () => {
                     ))}
                   </div>
                 </Card>
-              )}
+              )} */}
             </div>
           </div>
         </div>

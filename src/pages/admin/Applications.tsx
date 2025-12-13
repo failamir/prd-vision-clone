@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -196,7 +197,7 @@ const AdminApplications = () => {
   const [employmentOfferValue, setEmploymentOfferValue] = useState<"Received" | "Not Received" | "">("");
   const [eoAcceptanceDialogOpen, setEoAcceptanceDialogOpen] = useState(false);
   const [eoAcceptanceValue, setEoAcceptanceValue] = useState<"Yes" | "No" | "">("");
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -302,7 +303,7 @@ const AdminApplications = () => {
     if (suitableFilter) {
       const s = (app.suitable || "").toString().toLowerCase();
       const target = suitableFilter.toLowerCase();
-      if (!(target === "yes" ? ["yes","y","approved","approve"].includes(s) : ["no","n","rejected","reject"].includes(s))) return false;
+      if (!(target === "yes" ? ["yes", "y", "approved", "approve"].includes(s) : ["no", "n", "rejected", "reject"].includes(s))) return false;
     }
 
     // Ship Experience
@@ -639,7 +640,7 @@ const AdminApplications = () => {
       if (fetchError) throw fetchError;
 
       const appsWithoutCodes = (allApps || []).filter((app: any) => !app.crew_code);
-      
+
       if (appsWithoutCodes.length === 0) return;
 
       // Find the highest existing crew code number
@@ -656,7 +657,7 @@ const AdminApplications = () => {
       // Generate crew codes for applications without them
       for (const app of appsWithoutCodes) {
         const crewCode = `SGP-${String(nextNumber).padStart(4, '0')}`;
-        
+
         const { error: updateError } = await supabase
           .from("job_applications")
           .update({ crew_code: crewCode })
@@ -742,7 +743,7 @@ const AdminApplications = () => {
       }
       await fetchLatestExperiences(candidateIds as string[]);
       await fetchLatestEducations(candidateIds as string[]);
-      
+
       // Generate crew codes for applications without them
       await generateCrewCodes();
     } catch (error) {
@@ -976,7 +977,7 @@ const AdminApplications = () => {
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    
+
     if (!confirm(`Delete ${selectedIds.size} selected application(s)?`)) return;
 
     try {
@@ -1197,14 +1198,8 @@ const AdminApplications = () => {
     }
   };
 
-  const exportToExcel = () => {
-    // Enhanced CSV export to include ALL fields with proper formatting and URLs for file fields
+  const getExportData = () => {
     const dash = (v: any) => (v === undefined || v === null || v === "" ? "-" : v);
-    const safe = (v: any) => {
-      const val = dash(v);
-      // CSV escape (wrap in quotes and double any quotes inside)
-      return `"${String(val).replace(/"/g, '""')}"`;
-    };
 
     const headers = [
       "Remarks/Record",
@@ -1258,60 +1253,78 @@ const AdminApplications = () => {
       const lastName = app.candidate?.full_name ? app.candidate.full_name.split(" ").slice(1).join(" ") : "";
 
       return [
-        safe(app.remarks || app.status),
-        safe(app.crew_code),
-        safe(firstName),
-        safe(lastName),
-        safe(app.office_registered),
-        safe(app.date_of_entry ? formatDate(app.date_of_entry) : "-"),
-        safe(app.source),
-        safe(app.job?.title),
-        safe(app.job?.department),
-        safe(app.second_position),
-        safe(app.candidate?.gender),
-        safe(app.candidate?.date_of_birth ? formatDate(app.candidate.date_of_birth) : "-"),
-        safe(app.candidate?.date_of_birth ? calculateAge(app.candidate.date_of_birth) : "-"),
-        safe(app.candidate?.weight_kg && app.candidate?.height_cm ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}` : "-"),
-        safe(getShipExperienceFlag(app.candidate_id)),
-        safe(app.c1d_expiry_date ? formatDate(app.c1d_expiry_date) : "-"),
-        safe(getLatestExperienceText(app.candidate_id, app.previous_experience)),
-        safe(getLatestEducationText(app.candidate_id, app.education_background)),
-        safe(app.contact_no),
-        safe(app.candidate?.email),
-        safe(app.emergency_contact),
-        safe(app.photo_url),
-        safe(app.cv_url),
-        safe(app.letter_form_url),
-        safe(app.vaccin_covid_booster ? "Yes" : "-"),
-        safe(app.bst_cc),
-        safe(app.suitable),
-        safe(app.interview_by),
-        safe(app.interview_date ? formatDate(app.interview_date) : "-"),
-        safe(app.interview_result),
-        safe(app.interview_result_notes),
-        safe(app.approved_position),
-        safe(app.marlin_english_score),
-        safe(app.neha_ces_test),
-        safe(app.test_result),
-        safe(app.principal_interview_by),
-        safe(app.principal_interview_date ? formatDate(app.principal_interview_date) : "-"),
-        safe(app.principal_interview_result),
-        safe(app.approved_as),
-        safe(app.status),
-        safe(app.employment_offer),
-        safe(app.eo_acceptance),
-        safe(app.applied_at ? formatDate(app.applied_at) : "-"),
-        safe(app.job?.company_name),
+        dash(app.remarks || app.status),
+        dash(app.crew_code),
+        dash(firstName),
+        dash(lastName),
+        dash(app.office_registered),
+        dash(app.date_of_entry ? formatDate(app.date_of_entry) : "-"),
+        dash(app.source),
+        dash(app.job?.title),
+        dash(app.job?.department),
+        dash(app.second_position),
+        dash(app.candidate?.gender),
+        dash(app.candidate?.date_of_birth ? formatDate(app.candidate.date_of_birth) : "-"),
+        dash(app.candidate?.date_of_birth ? calculateAge(app.candidate.date_of_birth) : "-"),
+        dash(app.candidate?.weight_kg && app.candidate?.height_cm ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}` : "-"),
+        dash(getShipExperienceFlag(app.candidate_id)),
+        dash(app.c1d_expiry_date ? formatDate(app.c1d_expiry_date) : "-"),
+        dash(getLatestExperienceText(app.candidate_id, app.previous_experience)),
+        dash(getLatestEducationText(app.candidate_id, app.education_background)),
+        dash(app.contact_no),
+        dash(app.candidate?.email),
+        dash(app.emergency_contact),
+        dash(app.photo_url),
+        dash(app.cv_url),
+        dash(app.letter_form_url),
+        dash(app.vaccin_covid_booster ? "Yes" : "-"),
+        dash(app.bst_cc),
+        dash(app.suitable),
+        dash(app.interview_by),
+        dash(app.interview_date ? formatDate(app.interview_date) : "-"),
+        dash(app.interview_result),
+        dash(app.interview_result_notes),
+        dash(app.approved_position),
+        dash(app.marlin_english_score),
+        dash(app.neha_ces_test),
+        dash(app.test_result),
+        dash(app.principal_interview_by),
+        dash(app.principal_interview_date ? formatDate(app.principal_interview_date) : "-"),
+        dash(app.principal_interview_result),
+        dash(app.approved_as),
+        dash(app.status),
+        dash(app.employment_offer),
+        dash(app.eo_acceptance),
+        dash(app.applied_at ? formatDate(app.applied_at) : "-"),
+        dash(app.job?.company_name),
       ];
     });
 
-    const csv = [headers.map(safe).join(","), ...rows.map((row) => row.join(","))].join("\n");
+    return { headers, rows };
+  };
+
+  const exportToCSV = () => {
+    const { headers, rows } = getExportData();
+    const safe = (v: any) => {
+      // CSV escape (wrap in quotes and double any quotes inside)
+      return `"${String(v).replace(/"/g, '""')}"`;
+    };
+
+    const csv = [headers.map(safe).join(","), ...rows.map((row) => row.map(safe).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "sgp-applications.csv";
     a.click();
+  };
+
+  const exportToExcel = () => {
+    const { headers, rows } = getExportData();
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
+    XLSX.writeFile(workbook, "sgp-applications.xlsx");
   };
 
   const getTestRow = (app: Application, type: "CES" | "NEHA" | "Marlins") => {
@@ -2236,7 +2249,7 @@ const AdminApplications = () => {
                 </Button>
               </CollapsibleTrigger>
             </div>
-            
+
             <CollapsibleContent className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
@@ -2393,6 +2406,7 @@ const AdminApplications = () => {
                 </div>
                 <div className="flex items-end gap-2">
                   <Button onClick={exportToExcel} className="w-full bg-green-600 hover:bg-green-700">Export SGP to Excel</Button>
+                  <Button onClick={exportToCSV} className="w-full bg-blue-600 hover:bg-blue-700">Export SGP to CSV</Button>
                 </div>
                 <div className="flex items-end justify-end gap-2">
                   <Button variant="secondary" onClick={clearFilters} className="w-full">Clear</Button>
@@ -2408,7 +2422,7 @@ const AdminApplications = () => {
         {/* Selection Gap Pool List */}
         <Card className="p-4">
           <h2 className="text-lg font-semibold mb-4">Selection Gap Pool List</h2>
-          
+
           {/* Action Buttons */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex gap-2">
@@ -2427,8 +2441,8 @@ const AdminApplications = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm">Search:</span>
-              <Input 
-                placeholder="Search..." 
+              <Input
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-64"
@@ -2442,7 +2456,7 @@ const AdminApplications = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">
-                    <Checkbox 
+                    <Checkbox
                       checked={selectedIds.size === applications.length && applications.length > 0}
                       onCheckedChange={(checked) => checked ? handleSelectAll() : handleDeselectAll()}
                     />
@@ -2499,297 +2513,297 @@ const AdminApplications = () => {
                   const endIndex = startIndex + itemsPerPage;
                   return filtered.slice(startIndex, endIndex);
                 })().map((app) => (
-                    <TableRow key={app.id}>
-                      <TableCell>
-                        <Checkbox 
-                          checked={selectedIds.has(app.id)}
-                          onCheckedChange={() => handleToggleSelect(app.id)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <Badge variant="secondary" className="text-xs">
-                            {app.remarks || app.status}
-                          </Badge>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openRemarksDialog(app)}
-                          >
-                            Update Remarks
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>{app.crew_code || "-"}</TableCell>
-                      <TableCell className="font-medium">{app.candidate.full_name.split(" ")[0]}</TableCell>
-                      <TableCell className="font-medium">{app.candidate.full_name.split(" ").slice(1).join(" ")}</TableCell>
-                      <TableCell>{app.candidate.registration_city || app.office_registered || "-"}</TableCell>
-                      <TableCell>{formatDate(app.applied_at || app.date_of_entry)}</TableCell>
-                      <TableCell>{app.candidate.how_found_us || app.source || "-"}</TableCell>
-                      <TableCell>{app.job.title}</TableCell>
-                      <TableCell>{app.job.department || "-"}</TableCell>
-                      <TableCell>{app.second_position || "-"}</TableCell>
-                      <TableCell>{app.candidate.gender || "-"}</TableCell>
-                      <TableCell>{formatDate(app.candidate.date_of_birth)}</TableCell>
-                      <TableCell>{calculateAge(app.candidate.date_of_birth)}</TableCell>
-                      <TableCell>
-                        {app.candidate.weight_kg && app.candidate.height_cm 
-                          ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}` 
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm" onClick={() => openReferenceDialog(app)}>View Reference</Button>
-                      </TableCell>
-                      <TableCell>{getShipExperienceFlag(app.candidate_id)}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span className="line-clamp-2 max-w-[220px]">
-                            {getLatestExperienceText(app.candidate_id, app.previous_experience)}
-                          </span>
-                          {latestExperienceByCandidate[app.candidate_id || ""] && (
-                            <div className="text-xs text-gray-500">
-                              {latestExperienceByCandidate[app.candidate_id || ""].position}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{formatDate(app.c1d_expiry_date)}</TableCell>
-                      <TableCell>{getLatestEducationText(app.candidate_id, app.education_background)}</TableCell>
-                      <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
-                      <TableCell>{app.candidate.email}</TableCell>
-                      <TableCell>{app.emergency_contact || "-"}</TableCell>
-                      <TableCell>
-                        {app.photo_url ? (
-                          <img src={app.photo_url} alt="Photo" className="w-10 h-10 rounded object-cover" />
-                        ) : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {app.cv_url ? (
-                          <Button variant="link" size="sm" className="h-auto p-0">View file</Button>
-                        ) : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {app.letter_form_url ? (
-                          <Button variant="link" size="sm" className="h-auto p-0">View file</Button>
-                        ) : "-"}
-                      </TableCell>
-                      <TableCell>{app.vaccin_covid_booster ? "Yes" : "-"}</TableCell>
-                      <TableCell>{app.bst_cc || "-"}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.suitable || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openSuitableDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.interview_by || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openInterviewerDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.interview_date ? formatDate(app.interview_date) : "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openInterviewDateDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.interview_result || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openInterviewResultDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span className="line-clamp-2 max-w-[200px]">{app.interview_result_notes || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openInterviewNotesDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.approved_position || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openApprovedPositionDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{getTestScoreText(app, "Marlins")}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openTestDialog(app, "Marlins")}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{getTestScoreText(app, "NEHA")}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openTestDialog(app, "NEHA")}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{getTestScoreText(app, "CES")}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openTestDialog(app, "CES")}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.principal_interview_by || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openPrincipalInterviewerDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>
-                            {app.principal_interview_date
-                              ? formatDate(app.principal_interview_date)
-                              : "-"}
-                          </span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openPrincipalInterviewDateDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.principal_interview_result || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openPrincipalInterviewResultDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.approved_as || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openApprovedAsDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.status || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openNotesDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.employment_offer || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openEmploymentOfferDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span>{app.eo_acceptance || "-"}</span>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="h-auto p-0 text-xs"
-                            onClick={() => openEoAcceptanceDialog(app)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  <TableRow key={app.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(app.id)}
+                        onCheckedChange={() => handleToggleSelect(app.id)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {app.remarks || app.status}
+                        </Badge>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openRemarksDialog(app)}
+                        >
+                          Update Remarks
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>{app.crew_code || "-"}</TableCell>
+                    <TableCell className="font-medium">{app.candidate.full_name.split(" ")[0]}</TableCell>
+                    <TableCell className="font-medium">{app.candidate.full_name.split(" ").slice(1).join(" ")}</TableCell>
+                    <TableCell>{app.candidate.registration_city || app.office_registered || "-"}</TableCell>
+                    <TableCell>{formatDate(app.applied_at || app.date_of_entry)}</TableCell>
+                    <TableCell>{app.candidate.how_found_us || app.source || "-"}</TableCell>
+                    <TableCell>{app.job.title}</TableCell>
+                    <TableCell>{app.job.department || "-"}</TableCell>
+                    <TableCell>{app.second_position || "-"}</TableCell>
+                    <TableCell>{app.candidate.gender || "-"}</TableCell>
+                    <TableCell>{formatDate(app.candidate.date_of_birth)}</TableCell>
+                    <TableCell>{calculateAge(app.candidate.date_of_birth)}</TableCell>
+                    <TableCell>
+                      {app.candidate.weight_kg && app.candidate.height_cm
+                        ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}`
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="outline" size="sm" onClick={() => openReferenceDialog(app)}>View Reference</Button>
+                    </TableCell>
+                    <TableCell>{getShipExperienceFlag(app.candidate_id)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span className="line-clamp-2 max-w-[220px]">
+                          {getLatestExperienceText(app.candidate_id, app.previous_experience)}
+                        </span>
+                        {latestExperienceByCandidate[app.candidate_id || ""] && (
+                          <div className="text-xs text-gray-500">
+                            {latestExperienceByCandidate[app.candidate_id || ""].position}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>{formatDate(app.c1d_expiry_date)}</TableCell>
+                    <TableCell>{getLatestEducationText(app.candidate_id, app.education_background)}</TableCell>
+                    <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
+                    <TableCell>{app.candidate.email}</TableCell>
+                    <TableCell>{app.emergency_contact || "-"}</TableCell>
+                    <TableCell>
+                      {app.photo_url ? (
+                        <img src={app.photo_url} alt="Photo" className="w-10 h-10 rounded object-cover" />
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {app.cv_url ? (
+                        <Button variant="link" size="sm" className="h-auto p-0">View file</Button>
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {app.letter_form_url ? (
+                        <Button variant="link" size="sm" className="h-auto p-0">View file</Button>
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell>{app.vaccin_covid_booster ? "Yes" : "-"}</TableCell>
+                    <TableCell>{app.bst_cc || "-"}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.suitable || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openSuitableDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.interview_by || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openInterviewerDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.interview_date ? formatDate(app.interview_date) : "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openInterviewDateDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.interview_result || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openInterviewResultDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span className="line-clamp-2 max-w-[200px]">{app.interview_result_notes || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openInterviewNotesDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.approved_position || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openApprovedPositionDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{getTestScoreText(app, "Marlins")}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openTestDialog(app, "Marlins")}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{getTestScoreText(app, "NEHA")}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openTestDialog(app, "NEHA")}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{getTestScoreText(app, "CES")}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openTestDialog(app, "CES")}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.principal_interview_by || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openPrincipalInterviewerDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>
+                          {app.principal_interview_date
+                            ? formatDate(app.principal_interview_date)
+                            : "-"}
+                        </span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openPrincipalInterviewDateDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.principal_interview_result || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openPrincipalInterviewResultDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.approved_as || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openApprovedAsDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.status || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openNotesDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.employment_offer || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openEmploymentOfferDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.eo_acceptance || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openEoAcceptanceDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -2806,28 +2820,28 @@ const AdminApplications = () => {
             const totalPages = Math.ceil(filtered.length / itemsPerPage);
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = Math.min(startIndex + itemsPerPage, filtered.length);
-            
+
             if (filtered.length === 0) return null;
-            
+
             return (
               <div className="flex items-center justify-between mt-4">
                 <p className="text-sm text-muted-foreground">
                   Showing {startIndex + 1} to {endIndex} of {filtered.length} entries
                 </p>
                 <div className="flex gap-1">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
                   >
                     &lt;
                   </Button>
-                  
+
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
                     if (
-                      page === 1 || 
-                      page === totalPages || 
+                      page === 1 ||
+                      page === totalPages ||
                       (page >= currentPage - 1 && page <= currentPage + 1)
                     ) {
                       return (
@@ -2845,9 +2859,9 @@ const AdminApplications = () => {
                     }
                     return null;
                   })}
-                  
-                  <Button 
-                    variant="outline" 
+
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}

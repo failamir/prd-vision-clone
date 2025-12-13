@@ -31,7 +31,7 @@ const AboutPage: React.FC = () => {
       <Navbar />
 
       {/* Hero Section - Apple Style Clean */}
-      <section className="relative pt-20 pb-10 bg-white overflow-hidden">
+      <section className="relative pt-32 pb-10 bg-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white -z-10" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <FadeIn direction="up">
@@ -42,15 +42,15 @@ const AboutPage: React.FC = () => {
       </section>
 
       {/* Main Content */}
-      <section className="pt-10 pb-24">
+      <section className="pt-0 pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Our History - Clean Typography Block */}
           <div className="mb-32">
             <FadeIn direction="up" delay={200}>
               <div className="w-full bg-gray-50/50 backdrop-blur-xl rounded-[2.5rem] p-10 md:p-16 border border-white/50 shadow-xl">
-                <h2 className="text-4xl font-bold text-gray-900 mb-10 tracking-tight text-center">Our History</h2>
-                <div className="space-y-8 text-xl text-gray-600 leading-relaxed font-light">
+                <h2 className="text-4xl font-bold text-gray-900 mb-10 tracking-tight text-left">Our History</h2>
+                <div className="space-y-8 text-xl text-gray-600 leading-relaxed font-light text-left">
                   <p>
                     The company is established in May 2000 as a representative office for <span className="font-semibold text-gray-900">Wilhelmsen Ship Management</span> formerly
                     known as Barber International. Initially, the company served for a cruise line company based in Miami, USA.
