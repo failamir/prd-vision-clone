@@ -51,9 +51,17 @@ interface ApplicationDialogProps {
   jobId: string;
   jobTitle: string;
   onSuccess?: () => void;
+  autoOpen?: boolean;
+  onAutoOpenTriggered?: () => void;
 }
 
-export const ApplicationDialog = ({ jobId, jobTitle, onSuccess }: ApplicationDialogProps) => {
+export const ApplicationDialog = ({ 
+  jobId, 
+  jobTitle, 
+  onSuccess, 
+  autoOpen = false,
+  onAutoOpenTriggered 
+}: ApplicationDialogProps) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [cvs, setCvs] = useState<CV[]>([]);
@@ -68,6 +76,14 @@ export const ApplicationDialog = ({ jobId, jobTitle, onSuccess }: ApplicationDia
       cover_letter: "",
     },
   });
+
+  // Handle auto-open from URL parameter
+  useEffect(() => {
+    if (autoOpen && !hasApplied) {
+      setOpen(true);
+      onAutoOpenTriggered?.();
+    }
+  }, [autoOpen, hasApplied, onAutoOpenTriggered]);
 
   useEffect(() => {
     if (open) {
