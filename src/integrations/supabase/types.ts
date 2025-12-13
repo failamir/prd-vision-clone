@@ -344,6 +344,47 @@ export type Database = {
           },
         ]
       }
+      candidate_form_letters: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          is_default: boolean | null
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_default?: boolean | null
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_default?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_form_letters_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidate_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_medical_tests: {
         Row: {
           candidate_id: string

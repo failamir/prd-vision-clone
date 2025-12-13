@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DatabaseProvider } from "@/contexts/DatabaseContext";
 import { UserProvider } from "@/contexts/UserContext";
 import Index from "./pages/Index";
@@ -12,7 +12,6 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import CandidateDashboard from "./pages/candidate/Dashboard";
 import CandidateProfile from "./pages/candidate/Profile";
-import CandidateCVs from "./pages/candidate/CVs";
 import CandidateApplications from "./pages/candidate/Applications";
 import CandidateSavedJobs from "./pages/candidate/SavedJobs";
 import CandidateInterviewSchedule from "./pages/candidate/InterviewSchedule";
@@ -71,7 +70,7 @@ const App = () => (
               <Route path="/register" element={<Register />} />
               <Route path="/candidate/dashboard" element={<ProtectedRoute><CandidateDashboard /></ProtectedRoute>} />
               <Route path="/candidate/profile" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
-              <Route path="/candidate/cvs" element={<ProtectedRoute><CandidateCVs /></ProtectedRoute>} />
+              <Route path="/candidate/cvs" element={<Navigate to="/candidate/profile" replace />} />
               <Route path="/candidate/applications" element={<ProtectedRoute><CandidateApplications /></ProtectedRoute>} />
               <Route path="/candidate/saved-jobs" element={<ProtectedRoute><CandidateSavedJobs /></ProtectedRoute>} />
               <Route path="/candidate/interview-schedule" element={<ProtectedRoute><CandidateInterviewSchedule /></ProtectedRoute>} />
