@@ -9,11 +9,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, User, FileText, Trash2, Edit2, ExternalLink } from "lucide-react";
+import { Loader2, Upload, User, FileText, Trash2, Edit2, ExternalLink, Download, Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface CV {
+  id: string;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  is_default: boolean;
+  created_at: string;
+}
+
+interface FormLetter {
+  id: string;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  is_default: boolean;
+  created_at: string;
+}
 
 const Profile = () => {
   const { toast } = useToast();
@@ -21,7 +39,13 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 4;
+  // CV & Form Letter state
+  const [cvs, setCvs] = useState<CV[]>([]);
+  const [formLetters, setFormLetters] = useState<FormLetter[]>([]);
+  const [uploadingCV, setUploadingCV] = useState(false);
+  const [uploadingFormLetter, setUploadingFormLetter] = useState(false);
+  const [documentsTab, setDocumentsTab] = useState("cv");
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const testFileInputRef = useRef<HTMLInputElement>(null);
@@ -185,6 +209,13 @@ const Profile = () => {
       fetchEmergencyContacts();
     }
   }, [candidateId, currentStep, screeningTab]);
+
+  useEffect(() => {
+    if (candidateId && currentStep === 4) {
+      fetchCVs();
+      fetchFormLetters();
+    }
+  }, [candidateId, currentStep]);
 
   const fetchProfile = async () => {
     try {
@@ -1188,6 +1219,232 @@ const Profile = () => {
       console.error("Error deleting emergency contact:", error);
       toast({ title: "Error deleting emergency contact", variant: "destructive" });
     }
+  };
+
+  // CV Functions
+  const fetchCVs = async () => {
+    if (!candidateId) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_cvs")
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setCvs(data || []);
+    } catch (error) {
+      console.error("Error fetching CVs:", error);
+      toast({ title: "Error loading CVs", variant: "destructive" });
+    }
+  };
+
+  const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: "Invalid file type", description: "Please upload a PDF, DOC, or DOCX file", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Maximum file size is 5MB", variant: "destructive" });
+      return;
+    }
+
+    setUploadingCV(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !candidateId) return;
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage.from("cvs").upload(fileName, file);
+      if (uploadError) throw uploadError;
+
+      const { error: dbError } = await supabase.from("candidate_cvs").insert({
+        candidate_id: candidateId,
+        file_name: file.name,
+        file_path: fileName,
+        file_size: file.size,
+        file_type: file.type,
+        is_default: cvs.length === 0,
+      });
+
+      if (dbError) throw dbError;
+      toast({ title: "CV uploaded successfully" });
+      fetchCVs();
+    } catch (error) {
+      console.error("Error uploading CV:", error);
+      toast({ title: "Error uploading CV", variant: "destructive" });
+    } finally {
+      setUploadingCV(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleSetDefaultCV = async (cvId: string) => {
+    try {
+      await supabase.from("candidate_cvs").update({ is_default: false }).eq("candidate_id", candidateId);
+      const { error } = await supabase.from("candidate_cvs").update({ is_default: true }).eq("id", cvId);
+      if (error) throw error;
+      toast({ title: "Default CV updated" });
+      fetchCVs();
+    } catch (error) {
+      console.error("Error setting default CV:", error);
+      toast({ title: "Error updating default CV", variant: "destructive" });
+    }
+  };
+
+  const handleDownloadCV = async (cv: CV) => {
+    try {
+      const { data, error } = await supabase.storage.from("cvs").download(cv.file_path);
+      if (error) throw error;
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = cv.file_name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading CV:", error);
+      toast({ title: "Error downloading CV", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteCV = async (cv: CV) => {
+    if (!confirm("Are you sure you want to delete this CV?")) return;
+    try {
+      await supabase.storage.from("cvs").remove([cv.file_path]);
+      const { error } = await supabase.from("candidate_cvs").delete().eq("id", cv.id);
+      if (error) throw error;
+      toast({ title: "CV deleted successfully" });
+      fetchCVs();
+    } catch (error) {
+      console.error("Error deleting CV:", error);
+      toast({ title: "Error deleting CV", variant: "destructive" });
+    }
+  };
+
+  // Form Letter Functions
+  const fetchFormLetters = async () => {
+    if (!candidateId) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_form_letters" as any)
+        .select("*")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setFormLetters((data as unknown as FormLetter[]) || []);
+    } catch (error) {
+      console.error("Error fetching form letters:", error);
+      toast({ title: "Error loading form letters", variant: "destructive" });
+    }
+  };
+
+  const handleFormLetterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: "Invalid file type", description: "Please upload a PDF, DOC, or DOCX file", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Maximum file size is 5MB", variant: "destructive" });
+      return;
+    }
+
+    setUploadingFormLetter(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !candidateId) return;
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/form-letters/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage.from("candidate-documents").upload(fileName, file);
+      if (uploadError) throw uploadError;
+
+      const { error: dbError } = await supabase.from("candidate_form_letters" as any).insert({
+        candidate_id: candidateId,
+        file_name: file.name,
+        file_path: fileName,
+        file_size: file.size,
+        file_type: file.type,
+        is_default: formLetters.length === 0,
+      });
+
+      if (dbError) throw dbError;
+      toast({ title: "Form Letter uploaded successfully" });
+      fetchFormLetters();
+    } catch (error) {
+      console.error("Error uploading form letter:", error);
+      toast({ title: "Error uploading form letter", variant: "destructive" });
+    } finally {
+      setUploadingFormLetter(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleSetDefaultFormLetter = async (id: string) => {
+    try {
+      await supabase.from("candidate_form_letters" as any).update({ is_default: false }).eq("candidate_id", candidateId);
+      const { error } = await supabase.from("candidate_form_letters" as any).update({ is_default: true }).eq("id", id);
+      if (error) throw error;
+      toast({ title: "Default Form Letter updated" });
+      fetchFormLetters();
+    } catch (error) {
+      console.error("Error setting default form letter:", error);
+      toast({ title: "Error updating default form letter", variant: "destructive" });
+    }
+  };
+
+  const handleDownloadFormLetter = async (fl: FormLetter) => {
+    try {
+      const { data, error } = await supabase.storage.from("candidate-documents").download(fl.file_path);
+      if (error) throw error;
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fl.file_name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading form letter:", error);
+      toast({ title: "Error downloading form letter", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteFormLetter = async (fl: FormLetter) => {
+    if (!confirm("Are you sure you want to delete this form letter?")) return;
+    try {
+      await supabase.storage.from("candidate-documents").remove([fl.file_path]);
+      const { error } = await supabase.from("candidate_form_letters" as any).delete().eq("id", fl.id);
+      if (error) throw error;
+      toast({ title: "Form Letter deleted successfully" });
+      fetchFormLetters();
+    } catch (error) {
+      console.error("Error deleting form letter:", error);
+      toast({ title: "Error deleting form letter", variant: "destructive" });
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
   const progressPercentage = (currentStep / totalSteps) * 100;
@@ -2590,6 +2847,149 @@ const Profile = () => {
           </Card>
         );
 
+      case 4:
+        return (
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold text-foreground mb-6">CV & Form Letter</h3>
+            <Tabs value={documentsTab} onValueChange={setDocumentsTab}>
+              <TabsList className="mb-6">
+                <TabsTrigger value="cv">CV / Resume</TabsTrigger>
+                <TabsTrigger value="form_letter">Form Letter</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="cv">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-muted-foreground">Upload your CV/Resume documents (PDF, DOC, DOCX - Max 5MB)</p>
+                    <div>
+                      <Input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleCVUpload}
+                        disabled={uploadingCV}
+                        className="hidden"
+                        id="cv-upload"
+                      />
+                      <label htmlFor="cv-upload">
+                        <Button type="button" asChild disabled={uploadingCV}>
+                          <span>
+                            {uploadingCV ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                            Upload CV
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                  </div>
+
+                  {cvs.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No CVs uploaded yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {cvs.map((cv) => (
+                        <div key={cv.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <FileText className="w-8 h-8 text-primary" />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{cv.file_name}</span>
+                                {cv.is_default && <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />}
+                              </div>
+                              <span className="text-sm text-muted-foreground">
+                                {formatFileSize(cv.file_size)} • {new Date(cv.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {!cv.is_default && (
+                              <Button type="button" variant="outline" size="sm" onClick={() => handleSetDefaultCV(cv.id)}>
+                                Set Default
+                              </Button>
+                            )}
+                            <Button type="button" variant="outline" size="icon" onClick={() => handleDownloadCV(cv)}>
+                              <Download className="w-4 h-4" />
+                            </Button>
+                            <Button type="button" variant="outline" size="icon" onClick={() => handleDeleteCV(cv)}>
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="form_letter">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-muted-foreground">Upload your Form Letter documents (PDF, DOC, DOCX - Max 5MB)</p>
+                    <div>
+                      <Input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleFormLetterUpload}
+                        disabled={uploadingFormLetter}
+                        className="hidden"
+                        id="form-letter-upload"
+                      />
+                      <label htmlFor="form-letter-upload">
+                        <Button type="button" asChild disabled={uploadingFormLetter}>
+                          <span>
+                            {uploadingFormLetter ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                            Upload Form Letter
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                  </div>
+
+                  {formLetters.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No Form Letters uploaded yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {formLetters.map((fl) => (
+                        <div key={fl.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <FileText className="w-8 h-8 text-primary" />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{fl.file_name}</span>
+                                {fl.is_default && <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />}
+                              </div>
+                              <span className="text-sm text-muted-foreground">
+                                {formatFileSize(fl.file_size)} • {new Date(fl.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {!fl.is_default && (
+                              <Button type="button" variant="outline" size="sm" onClick={() => handleSetDefaultFormLetter(fl.id)}>
+                                Set Default
+                              </Button>
+                            )}
+                            <Button type="button" variant="outline" size="icon" onClick={() => handleDownloadFormLetter(fl)}>
+                              <Download className="w-4 h-4" />
+                            </Button>
+                            <Button type="button" variant="outline" size="icon" onClick={() => handleDeleteFormLetter(fl)}>
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </Card>
+        );
+
       default:
         return null;
     }
@@ -2638,6 +3038,14 @@ const Profile = () => {
             className={currentStep === 3 ? "" : "bg-background"}
           >
             STEP 3 : Screening
+          </Button>
+          <Button
+            type="button"
+            variant={currentStep === 4 ? "default" : "outline"}
+            onClick={() => setCurrentStep(4)}
+            className={currentStep === 4 ? "" : "bg-background"}
+          >
+            STEP 4 : CV & Form Letter
           </Button>
         </div>
 
