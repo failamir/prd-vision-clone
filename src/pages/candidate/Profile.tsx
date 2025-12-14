@@ -260,7 +260,7 @@ const Profile = () => {
           avatar_url: data.avatar_url || "",
         });
         setAvatarPreview(data.avatar_url || "");
-        
+
         // Fetch candidate's job application to determine department
         const { data: applicationData } = await supabase
           .from("job_applications")
@@ -269,7 +269,7 @@ const Profile = () => {
           .order("applied_at", { ascending: false })
           .limit(1)
           .single();
-        
+
         if (applicationData?.jobs) {
           const jobDept = (applicationData.jobs as any).department;
           setDepartment(jobDept || "Deck Department");
@@ -625,9 +625,9 @@ const Profile = () => {
       const { data, error } = await supabase.storage
         .from("candidate-documents")
         .createSignedUrl(filePath, 3600); // URL valid for 1 hour
-      
+
       if (error) throw error;
-      
+
       window.open(data.signedUrl, '_blank');
     } catch (error: any) {
       toast({
@@ -1629,8 +1629,8 @@ const Profile = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="registration_city">In which city do you register? *</Label>
-                <Select 
-                  value={profile.registration_city} 
+                <Select
+                  value={profile.registration_city}
                   onValueChange={(value) => setProfile({ ...profile, registration_city: value })}
                 >
                   <SelectTrigger>
@@ -1648,8 +1648,8 @@ const Profile = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="covid_vaccinated">COVID-19 Vaccination Status *</Label>
-                <Select 
-                  value={profile.covid_vaccinated} 
+                <Select
+                  value={profile.covid_vaccinated}
                   onValueChange={(value) => setProfile({ ...profile, covid_vaccinated: value })}
                 >
                   <SelectTrigger>
@@ -1666,8 +1666,8 @@ const Profile = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="how_found_us">How did you find us? *</Label>
-                <Select 
-                  value={profile.how_found_us} 
+                <Select
+                  value={profile.how_found_us}
                   onValueChange={(value) => {
                     setProfile({ ...profile, how_found_us: value });
                     // Clear referral name if not selecting "Referral"
@@ -1921,19 +1921,19 @@ const Profile = () => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="test_name">Test Name</Label>
-                      <Select
+                    <Select
                       value={newTest.test_name}
-                        onValueChange={(v) => setNewTest({ ...newTest, test_name: v })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select test" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Marlins">Marlins</SelectItem>
-                          <SelectItem value="NEHA">NEHA</SelectItem>
-                          <SelectItem value="CES">CES</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      onValueChange={(v) => setNewTest({ ...newTest, test_name: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select test" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Marlins">Marlins</SelectItem>
+                        <SelectItem value="NEHA">NEHA</SelectItem>
+                        <SelectItem value="CES">CES</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -2020,7 +2020,7 @@ const Profile = () => {
                       <div className="mb-6 border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                              <TableRow>
+                            <TableRow>
                               {department === "Hotel Department" ? (
                                 <>
                                   <TableHead>Hotel Name</TableHead>
@@ -2235,7 +2235,7 @@ const Profile = () => {
                       <div className="mb-6 border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                              <TableRow>
+                            <TableRow>
                               <TableHead>Institution</TableHead>
                               <TableHead>Place</TableHead>
                               <TableHead>Cert. Number</TableHead>
@@ -2293,45 +2293,45 @@ const Profile = () => {
                     <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-2">
                         <Label>Type Certificates*</Label>
-                          <Select
+                        <Select
                           value={newCertificate.type_certificate}
-                            onValueChange={(v) => setNewCertificate({ ...newCertificate, type_certificate: v })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Please select" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {department === "Hotel Department" ? (
-                                <>
-                                  <SelectItem value="Basic Safety Training (BST)">Basic Safety Training (BST)</SelectItem>
-                                  <SelectItem value="Crowd Management">Crowd Management</SelectItem>
-                                  <SelectItem value="Crisis Management">Crisis Management</SelectItem>
-                                  <SelectItem value="CID">CID</SelectItem>
-                                  <SelectItem value="COC">COC</SelectItem>
-                                  <SelectItem value="Rating Able">Rating Able</SelectItem>
-                                  <SelectItem value="CCM">CCM</SelectItem>
-                                  <SelectItem value="ETC.">ETC.</SelectItem>
-                                </>
-                              ) : (
-                                <>
-                                  <SelectItem value="BASIC SAFETY TRAINING (BST)">BASIC SAFETY TRAINING (BST)</SelectItem>
-                                  <SelectItem value="ADVANCE FIRE FIGHTING (AFF)">ADVANCE FIRE FIGHTING (AFF)</SelectItem>
-                                  <SelectItem value="MEDICAL FIRST AID (MFA)">MEDICAL FIRST AID (MFA)</SelectItem>
-                                  <SelectItem value="PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS">PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS</SelectItem>
-                                  <SelectItem value="CRISIS MANAGEMENT AND HUMAN BEHAVIOUR">CRISIS MANAGEMENT AND HUMAN BEHAVIOUR</SelectItem>
-                                  <SelectItem value="CROWD MANAGEMENT">CROWD MANAGEMENT</SelectItem>
-                                  <SelectItem value="SECURITY AWARENESS TRAINING">SECURITY AWARENESS TRAINING</SelectItem>
-                                  <SelectItem value="SEAFARERS WITH DESIGNATED SECURITY DUTIES">SEAFARERS WITH DESIGNATED SECURITY DUTIES</SelectItem>
-                                  <SelectItem value="RATING ABLE">RATING ABLE</SelectItem>
-                                  <SelectItem value="RATING WATCHKEEPING">RATING WATCHKEEPING</SelectItem>
-                                  <SelectItem value="COC">COC</SelectItem>
-                                  <SelectItem value="ELECTRO TECHNICAL RATING">ELECTRO TECHNICAL RATING</SelectItem>
-                                  <SelectItem value="ELECTRO TECHNICAL OFFICER">ELECTRO TECHNICAL OFFICER</SelectItem>
-                                  <SelectItem value="SHIP SECURITY OFFICER">SHIP SECURITY OFFICER</SelectItem>
-                                </>
-                              )}
-                            </SelectContent>
-                          </Select>
+                          onValueChange={(v) => setNewCertificate({ ...newCertificate, type_certificate: v })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Please select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {department === "Hotel Department" ? (
+                              <>
+                                <SelectItem value="Basic Safety Training (BST)">Basic Safety Training (BST)</SelectItem>
+                                <SelectItem value="Crowd Management">Crowd Management</SelectItem>
+                                <SelectItem value="Crisis Management">Crisis Management</SelectItem>
+                                <SelectItem value="CID">CID</SelectItem>
+                                <SelectItem value="COC">COC</SelectItem>
+                                <SelectItem value="Rating Able">Rating Able</SelectItem>
+                                <SelectItem value="CCM">CCM</SelectItem>
+                                <SelectItem value="ETC.">ETC.</SelectItem>
+                              </>
+                            ) : (
+                              <>
+                                <SelectItem value="BASIC SAFETY TRAINING (BST)">BASIC SAFETY TRAINING (BST)</SelectItem>
+                                <SelectItem value="ADVANCE FIRE FIGHTING (AFF)">ADVANCE FIRE FIGHTING (AFF)</SelectItem>
+                                <SelectItem value="MEDICAL FIRST AID (MFA)">MEDICAL FIRST AID (MFA)</SelectItem>
+                                <SelectItem value="PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS">PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS</SelectItem>
+                                <SelectItem value="CRISIS MANAGEMENT AND HUMAN BEHAVIOUR">CRISIS MANAGEMENT AND HUMAN BEHAVIOUR</SelectItem>
+                                <SelectItem value="CROWD MANAGEMENT">CROWD MANAGEMENT</SelectItem>
+                                <SelectItem value="SECURITY AWARENESS TRAINING">SECURITY AWARENESS TRAINING</SelectItem>
+                                <SelectItem value="SEAFARERS WITH DESIGNATED SECURITY DUTIES">SEAFARERS WITH DESIGNATED SECURITY DUTIES</SelectItem>
+                                <SelectItem value="RATING ABLE">RATING ABLE</SelectItem>
+                                <SelectItem value="RATING WATCHKEEPING">RATING WATCHKEEPING</SelectItem>
+                                <SelectItem value="COC">COC</SelectItem>
+                                <SelectItem value="ELECTRO TECHNICAL RATING">ELECTRO TECHNICAL RATING</SelectItem>
+                                <SelectItem value="ELECTRO TECHNICAL OFFICER">ELECTRO TECHNICAL OFFICER</SelectItem>
+                                <SelectItem value="SHIP SECURITY OFFICER">SHIP SECURITY OFFICER</SelectItem>
+                              </>
+                            )}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
                         <Label>Institution*</Label>
@@ -2399,7 +2399,7 @@ const Profile = () => {
                       <div className="mb-6 border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                              <TableRow>
+                            <TableRow>
                               <TableHead>Type Of Document</TableHead>
                               <TableHead>Number</TableHead>
                               <TableHead>Place Of Issuance</TableHead>
@@ -2554,7 +2554,7 @@ const Profile = () => {
                       <div className="mb-6 border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                              <TableRow>
+                            <TableRow>
                               <TableHead>School Academy</TableHead>
                               <TableHead>From Date</TableHead>
                               <TableHead>To Date</TableHead>
@@ -2878,7 +2878,7 @@ const Profile = () => {
                       <div className="mb-6 border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
-                              <TableRow>
+                            <TableRow>
                               <TableHead>Name</TableHead>
                               <TableHead>Relationship</TableHead>
                               <TableHead>Contact Number</TableHead>
@@ -3012,7 +3012,8 @@ const Profile = () => {
         </div>
 
         {/* Step Tabs */}
-        <div className="mb-6 flex gap-2">
+        {/* Step Tabs Desktop */}
+        <div className="mb-6 hidden md:flex gap-2">
           <Button
             type="button"
             variant={currentStep === 1 ? "default" : "outline"}
@@ -3037,6 +3038,23 @@ const Profile = () => {
           >
             STEP 3 : Screening
           </Button>
+        </div>
+
+        {/* Step Tabs Mobile */}
+        <div className="mb-6 block md:hidden">
+          <Select
+            value={currentStep.toString()}
+            onValueChange={(value) => setCurrentStep(parseInt(value))}
+          >
+            <SelectTrigger className="w-full bg-background">
+              <SelectValue placeholder="Select step" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">STEP 1 : Personal Detail</SelectItem>
+              <SelectItem value="2">STEP 2 : Pre Screening</SelectItem>
+              <SelectItem value="3">STEP 3 : Screening</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

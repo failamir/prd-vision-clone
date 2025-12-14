@@ -36,6 +36,18 @@ export default function ChangePassword() {
       return;
     }
 
+    const hasLetters = /[a-zA-Z]/.test(newPassword);
+    const hasNumbers = /[0-9]/.test(newPassword);
+
+    if (!hasLetters || !hasNumbers) {
+      toast({
+        title: "Password requirements not met",
+        description: "Password must contain a combination of letters and numbers.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {

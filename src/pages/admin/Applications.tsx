@@ -648,7 +648,7 @@ const AdminApplications = () => {
         .map((app: any) => app.crew_code)
         .filter(Boolean)
         .map((code: string) => {
-          const match = code.match(/SGP-(\d+)/);
+          const match = code.match(/CC-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         });
 
@@ -656,7 +656,7 @@ const AdminApplications = () => {
 
       // Generate crew codes for applications without them
       for (const app of appsWithoutCodes) {
-        const crewCode = `SGP-${String(nextNumber).padStart(4, '0')}`;
+        const crewCode = `CC-${String(nextNumber).padStart(7, '0')}`;
 
         const { error: updateError } = await supabase
           .from("job_applications")
