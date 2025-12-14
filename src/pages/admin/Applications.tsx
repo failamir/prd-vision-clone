@@ -84,6 +84,7 @@ interface Application {
     weight_kg: number;
     registration_city?: string | null;
     how_found_us?: string | null;
+    profile_step_unlocked?: number;
   };
   job: {
     title: string;
@@ -197,6 +198,10 @@ const AdminApplications = () => {
   const [employmentOfferValue, setEmploymentOfferValue] = useState<"Received" | "Not Received" | "">("");
   const [eoAcceptanceDialogOpen, setEoAcceptanceDialogOpen] = useState(false);
   const [eoAcceptanceValue, setEoAcceptanceValue] = useState<"Yes" | "No" | "">("");
+
+  // Profile Step Unlock control
+  const [profileStepDialogOpen, setProfileStepDialogOpen] = useState(false);
+  const [profileStepValue, setProfileStepValue] = useState<number>(1);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -702,7 +707,8 @@ const AdminApplications = () => {
             height_cm,
             weight_kg,
             registration_city,
-            how_found_us
+            how_found_us,
+            profile_step_unlocked
           ),
           job:jobs(title, company_name, department)
         `)
@@ -1504,6 +1510,40 @@ const AdminApplications = () => {
     }
   };
 
+  // Profile Step Unlock functions
+  const openProfileStepDialog = (app: Application) => {
+    setActiveApp(app);
+    setProfileStepValue((app.candidate as any)?.profile_step_unlocked || 1);
+    setProfileStepDialogOpen(true);
+  };
+
+  const saveProfileStep = async () => {
+    if (!activeApp) return;
+    try {
+      const { error } = await supabase
+        .from("candidate_profiles")
+        .update({ profile_step_unlocked: profileStepValue } as any)
+        .eq("id", activeApp.candidate_id);
+
+      if (error) throw error;
+
+      // Update local state
+      setApplications((prev) =>
+        prev.map((a) =>
+          a.id === activeApp.id
+            ? { ...a, candidate: { ...a.candidate, profile_step_unlocked: profileStepValue } }
+            : a
+        )
+      );
+
+      toast({ title: `Profile step unlocked set to Step ${profileStepValue}` });
+      setProfileStepDialogOpen(false);
+      setActiveApp(null);
+    } catch (e: any) {
+      toast({ title: "Failed to update profile step", description: e.message, variant: "destructive" });
+    }
+  };
+
   const openEmploymentOfferDialog = (app: Application) => {
     setActiveApp(app);
     const raw = (app.employment_offer || "") as string;
@@ -1772,6 +1812,46 @@ const AdminApplications = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Profile Step Dialog */}
+      <Dialog open={profileStepDialogOpen} onOpenChange={setProfileStepDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Profile Step Access</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Set profile step access untuk ${activeApp.candidate.full_name}` : "Pilih step yang dibuka."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Unlock Step</label>
+              <Select value={profileStepValue.toString()} onValueChange={(v) => setProfileStepValue(parseInt(v))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="- Select Step -" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Step 1 : Personal Detail Only</SelectItem>
+                  <SelectItem value="2">Step 2 : Pre Screening Unlocked</SelectItem>
+                  <SelectItem value="3">Step 3 : Screening Unlocked</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setProfileStepDialogOpen(false);
+                setActiveApp(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={saveProfileStep}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={approvedAsDialogOpen} onOpenChange={setApprovedAsDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -2508,6 +2588,7 @@ const AdminApplications = () => {
                   <TableHead className="min-w-[100px]">Notes</TableHead>
                   <TableHead className="min-w-[140px]">Employment Offer</TableHead>
                   <TableHead className="min-w-[130px]">EO Acceptance</TableHead>
+                  <TableHead className="min-w-[120px]">Profile Step</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -2801,6 +2882,24 @@ const AdminApplications = () => {
                           size="sm"
                           className="h-auto p-0 text-xs"
                           onClick={() => openEoAcceptanceDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant={
+                          (app.candidate as any)?.profile_step_unlocked === 3 ? "default" :
+                          (app.candidate as any)?.profile_step_unlocked === 2 ? "secondary" : "outline"
+                        }>
+                          Step {(app.candidate as any)?.profile_step_unlocked || 1}
+                        </Badge>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openProfileStepDialog(app)}
                         >
                           Update
                         </Button>
