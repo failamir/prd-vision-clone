@@ -495,6 +495,7 @@ export type Database = {
           phone: string | null
           place_of_birth: string | null
           professional_title: string | null
+          profile_step_unlocked: number
           referral_name: string | null
           registration_city: string | null
           salary_currency: string | null
@@ -528,6 +529,7 @@ export type Database = {
           phone?: string | null
           place_of_birth?: string | null
           professional_title?: string | null
+          profile_step_unlocked?: number
           referral_name?: string | null
           registration_city?: string | null
           salary_currency?: string | null
@@ -561,6 +563,7 @@ export type Database = {
           phone?: string | null
           place_of_birth?: string | null
           professional_title?: string | null
+          profile_step_unlocked?: number
           referral_name?: string | null
           registration_city?: string | null
           salary_currency?: string | null

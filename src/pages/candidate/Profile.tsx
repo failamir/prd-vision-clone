@@ -39,6 +39,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [stepUnlocked, setStepUnlocked] = useState(1); // Controls which steps are accessible
   const totalSteps = 3;
   // CV & Form Letter state
   const [cvs, setCvs] = useState<CV[]>([]);
@@ -232,6 +233,8 @@ const Profile = () => {
 
       if (data) {
         setCandidateId(data.id);
+        // Set step unlocked from database (controlled by admin)
+        setStepUnlocked((data as any).profile_step_unlocked || 1);
         setProfile({
           full_name: data.full_name || "",
           email: data.email || "",
@@ -3078,16 +3081,20 @@ const Profile = () => {
           <Button
             type="button"
             variant={currentStep === 2 ? "default" : "outline"}
-            onClick={() => setCurrentStep(2)}
+            onClick={() => stepUnlocked >= 2 && setCurrentStep(2)}
             className={currentStep === 2 ? "" : "bg-background"}
+            disabled={stepUnlocked < 2}
+            title={stepUnlocked < 2 ? "Step ini belum dibuka oleh Admin" : ""}
           >
             STEP 2 : Pre Screening
           </Button>
           <Button
             type="button"
             variant={currentStep === 3 ? "default" : "outline"}
-            onClick={() => setCurrentStep(3)}
+            onClick={() => stepUnlocked >= 3 && setCurrentStep(3)}
             className={currentStep === 3 ? "" : "bg-background"}
+            disabled={stepUnlocked < 3}
+            title={stepUnlocked < 3 ? "Step ini belum dibuka oleh Admin" : ""}
           >
             STEP 3 : Screening
           </Button>
@@ -3097,15 +3104,24 @@ const Profile = () => {
         <div className="mb-6 block md:hidden">
           <Select
             value={currentStep.toString()}
-            onValueChange={(value) => setCurrentStep(parseInt(value))}
+            onValueChange={(value) => {
+              const step = parseInt(value);
+              if (step <= stepUnlocked) {
+                setCurrentStep(step);
+              }
+            }}
           >
             <SelectTrigger className="w-full bg-background">
               <SelectValue placeholder="Select step" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="1">STEP 1 : Personal Detail</SelectItem>
-              <SelectItem value="2">STEP 2 : Pre Screening</SelectItem>
-              <SelectItem value="3">STEP 3 : Screening</SelectItem>
+              <SelectItem value="2" disabled={stepUnlocked < 2}>
+                STEP 2 : Pre Screening {stepUnlocked < 2 ? "(Locked)" : ""}
+              </SelectItem>
+              <SelectItem value="3" disabled={stepUnlocked < 3}>
+                STEP 3 : Screening {stepUnlocked < 3 ? "(Locked)" : ""}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -3124,10 +3140,10 @@ const Profile = () => {
               Previous
             </Button>
 
-            {currentStep < totalSteps ? (
+            {currentStep < totalSteps && currentStep < stepUnlocked ? (
               <Button
                 type="button"
-                onClick={() => setCurrentStep(Math.min(totalSteps, currentStep + 1))}
+                onClick={() => setCurrentStep(Math.min(stepUnlocked, currentStep + 1))}
               >
                 Next
               </Button>
