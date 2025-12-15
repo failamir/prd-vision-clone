@@ -36,6 +36,7 @@ import InsurancePage from "./pages/pages/InsurancePage";
 import AdminInterviews from "./pages/admin/Interviews";
 import AdminDepartures from "./pages/admin/Departures";
 import AdminMessages from "./pages/admin/Messages";
+import AdminMessageCenter from "./pages/admin/MessageCenter";
 import AdminTestimonials from "./pages/admin/Testimonials";
 import AdminRolePermissions from "./pages/admin/RolePermissions";
 import AdminContactSubmissions from "./pages/admin/ContactSubmissions";
@@ -93,6 +94,7 @@ const App = () => (
               <Route path="/admin/testimonials" element={<AdminRoute><AdminTestimonials /></AdminRoute>} />
               <Route path="/admin/role-permissions" element={<AdminRoute><AdminRolePermissions /></AdminRoute>} />
               <Route path="/admin/contact-submissions" element={<AdminRoute><AdminContactSubmissions /></AdminRoute>} />
+              <Route path="/admin/message-center" element={<AdminRoute><AdminMessageCenter /></AdminRoute>} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
