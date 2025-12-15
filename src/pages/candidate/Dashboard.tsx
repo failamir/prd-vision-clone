@@ -124,7 +124,7 @@ const Dashboard = () => {
             <p className="text-sm text-muted-foreground">Job Applications</p>
           </Card>
 
-          <Card className="p-6">
+          {/* <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
                 <FileText className="w-6 h-6 text-secondary" />
@@ -132,7 +132,7 @@ const Dashboard = () => {
             </div>
             <h3 className="text-2xl font-bold text-foreground mb-1">{stats.cvs}</h3>
             <p className="text-sm text-muted-foreground">CVs Uploaded</p>
-          </Card>
+          </Card> */}
 
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -167,7 +167,7 @@ const Dashboard = () => {
             </Link>
           </Card>
 
-          <Card className="p-6">
+          {/* <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-2">Update CV</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Keep your resume up to date
@@ -177,7 +177,7 @@ const Dashboard = () => {
                 Manage CVs
               </Button>
             </Link>
-          </Card>
+          </Card> */}
 
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-2">Track Applications</h3>

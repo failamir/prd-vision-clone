@@ -7,8 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Briefcase, Calendar, Loader2, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ApplicationStatusDialog } from "@/components/candidate/ApplicationStatusDialog";
 
-interface Application {
+export interface Application {
   id: string;
   status: string;
   cover_letter: string;
@@ -36,6 +37,8 @@ const Applications = () => {
   const { toast } = useToast();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchApplications();
@@ -142,6 +145,15 @@ const Applications = () => {
                       View Job
                     </Button>
                   </Link>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setSelectedApplication(application);
+                      setIsDialogOpen(true);
+                    }}
+                  >
+                    Track Status
+                  </Button>
                 </div>
 
                 {application.cover_letter && (
@@ -157,6 +169,11 @@ const Applications = () => {
           </div>
         )}
       </div>
+      <ApplicationStatusDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        application={selectedApplication}
+      />
     </DashboardLayout>
   );
 };

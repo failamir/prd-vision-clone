@@ -176,7 +176,7 @@ const Login = () => {
 
         <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-muted-foreground">
-            <Link to="/" className="text-secondary font-medium hover:underline">
+            <Link to="/" className="text-foreground font-medium hover:underline">
               Back to Home
             </Link>
           </p>
