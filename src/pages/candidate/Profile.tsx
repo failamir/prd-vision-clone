@@ -570,7 +570,7 @@ const Profile = () => {
       if (error) throw error;
 
       toast({
-        title: "Medical test saved successfully",
+        title: `${newTest.test_name} saved successfully`,
       });
 
       setNewTest({ test_name: "", score: "", file: null });
@@ -589,7 +589,7 @@ const Profile = () => {
     }
   };
 
-  const handleDeleteTest = async (testId: string, filePath: string | null) => {
+  const handleDeleteTest = async (testId: string, filePath: string | null, testName: string) => {
     try {
       if (filePath) {
         await supabase.storage.from("candidate-documents").remove([filePath]);
@@ -603,7 +603,7 @@ const Profile = () => {
       if (error) throw error;
 
       toast({
-        title: "Medical test deleted successfully",
+        title: `${testName} deleted successfully`,
       });
       fetchMedicalTests();
     } catch (error) {
@@ -618,6 +618,32 @@ const Profile = () => {
   const getFileUrl = (filePath: string) => {
     const { data } = supabase.storage.from("candidate-documents").getPublicUrl(filePath);
     return data.publicUrl;
+  };
+
+  const handleDownloadFile = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from("candidate-documents")
+        .download(filePath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName || "document.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error("Error downloading file:", error);
+      toast({
+        title: "Error downloading file",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleViewFile = async (filePath: string) => {
@@ -1880,14 +1906,25 @@ const Profile = () => {
                             <TableCell>{test.score}</TableCell>
                             <TableCell>
                               {test.file_path ? (
-                                <Button
-                                  variant="link"
-                                  size="sm"
-                                  onClick={() => handleViewFile(test.file_path)}
-                                  className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
-                                >
-                                  View File <ExternalLink className="w-3 h-3" />
-                                </Button>
+                                <div className="flex items-center gap-3">
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    onClick={() => handleViewFile(test.file_path)}
+                                    className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
+                                  >
+                                    View File <ExternalLink className="w-3 h-3" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDownloadFile(test.file_path, test.file_name)}
+                                    className="h-6 w-6 text-muted-foreground hover:text-primary"
+                                    title="Download"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </Button>
+                                </div>
                               ) : (
                                 <span className="text-muted-foreground">-</span>
                               )}
@@ -1905,7 +1942,7 @@ const Profile = () => {
                                   size="sm"
                                   variant="destructive"
                                   className="h-8 px-3"
-                                  onClick={() => handleDeleteTest(test.id, test.file_path)}
+                                  onClick={() => handleDeleteTest(test.id, test.file_path, test.test_name)}
                                 >
                                   Delete
                                 </Button>
@@ -1943,8 +1980,14 @@ const Profile = () => {
                       type="number"
                       step="0.01"
                       value={newTest.score}
-                      onChange={(e) => setNewTest({ ...newTest, score: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val.length <= 3 && Number(val) <= 100) {
+                          setNewTest({ ...newTest, score: val });
+                        }
+                      }}
                       placeholder="e.g., 99"
+                      max={100}
                     />
                   </div>
 
@@ -3003,8 +3046,18 @@ const Profile = () => {
     );
   }
 
+  const isSubmitting = saving || uploading || uploadingCV || uploadingFormLetter || uploadingTest || uploadingDeck || uploadingCertificate || uploadingTravel;
+
   return (
     <DashboardLayout>
+      {isSubmitting && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto">
+          <div className="bg-background p-6 rounded-lg shadow-xl flex flex-col items-center gap-4">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            <p className="font-medium text-lg">Processing...</p>
+          </div>
+        </div>
+      )}
       <div className="max-w-4xl">
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-foreground mb-2">My Profile</h2>
