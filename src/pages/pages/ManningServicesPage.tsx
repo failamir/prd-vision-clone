@@ -39,12 +39,12 @@ const ManningServicesPage: React.FC = () => {
 
             <div className="max-w-4xl mx-auto text-gray-600 text-lg leading-relaxed mt-12 space-y-6 text-left">
               <p>
-                Since the establishment of the company in the year of 2000, we have an excellent proven track record as a
-                reliable, honest and transparent manning agency. We provide wide range of manning services from selective
-                recruitment to P&I matters.
+                Since its establishment in 2000, <span className="font-semibold text-gray-900">Cipta Wira Tirta</span> has built a strong and proven track record as a
+                reliable, transparent, and professional Indonesian manning agency. We provide comprehensive manning services, ranging from selective
+                recruitment and crew placement to crew administration and P&I–related matters.
               </p>
               <p>
-                All work processes are in compliance with ISO 9001 and MLC 2006.
+                All operational processes are conducted in compliance with <span className="font-semibold text-gray-900">ISO 9001:2015</span> and the <span className="font-semibold text-gray-900">Maritime Labour Convention (MLC) 2006</span>, and are duly licensed under <span className="font-semibold text-gray-900">SIUKAK</span>, issued by the <span className="font-semibold text-gray-900">Directorate of Sea Transportation</span> of the Republic of Indonesia.
               </p>
             </div>
           </div>

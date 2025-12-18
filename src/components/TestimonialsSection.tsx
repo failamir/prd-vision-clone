@@ -18,15 +18,15 @@ export default function TestimonialsSection() {
     const fetchTestimonials = async () => {
       try {
         console.log('Fetching testimonials...');
-        
+
         // First, let's check the structure of the testimonials table
         const { data: testData, error: testError } = await supabase
           .from('testimonials')
           .select('*')
           .limit(1);
-          
+
         console.log('Testimonials table structure:', testData);
-        
+
         // Then try to fetch with the relationship
         const { data, error } = await supabase
           .from("testimonials")
@@ -45,7 +45,7 @@ export default function TestimonialsSection() {
           .limit(3);
 
         console.log('Fetched testimonials:', data);
-        
+
         if (error) {
           console.error('Supabase error:', error);
           throw error;
@@ -103,9 +103,9 @@ export default function TestimonialsSection() {
       <section className="py-12 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">What Our Candidates Say</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">What Our Crew Say</h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Hear from those who have experienced our services
+              Hear from <span className="font-bold">satisfied seafarers</span> who launched their careers with us.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -144,12 +144,12 @@ export default function TestimonialsSection() {
     <section className="py-12 bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">What Our Candidates Say</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">What Our Crew Say</h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Hear from those who have experienced our services
+            Hear from <span className="font-bold">satisfied seafarers</span> who launched their careers with us.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial) => (
             <Card key={testimonial.id} className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">

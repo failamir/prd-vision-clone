@@ -23,23 +23,23 @@ const ContactPage: React.FC = () => {
     },
     {
       name: 'Bali',
-      address: 'Jl. Raya Denpasar-Gilimanuk',
-      details: 'Tabanan, Bali 82171'
+      address: 'Jl. Tukad Badung XX No.8, Renon',
+      details: 'Denpasar Selatan, Kota Denpasar, Bali 80224'
     },
     {
       name: 'Yogyakarta',
-      address: 'Jl. Malioboro No. 123',
-      details: 'Yogyakarta 55213'
+      address: 'Jl. Ring Road Utara No.5, Kembang, Maguwoharjo',
+      details: 'Depok, Kabupaten Sleman, Daerah Istimewa Yogyakarta 55282'
     },
     {
       name: 'Surabaya',
-      address: 'Jl. Tunjungan No. 456',
-      details: 'Surabaya 60261'
+      address: 'Jl. Banyu Urip No.129A, Banyu Urip',
+      details: 'Sawahan, Surabaya, Jawa Timur 60254'
     },
     {
       name: 'Bandung',
-      address: 'Jl. Asia Afrika No. 789',
-      details: 'Bandung 40111'
+      address: 'Jl. Taman Pramuka No.181, Cihapit',
+      details: 'Bandung Weta, Kota Bandung, Jawa Barat 40114'
     }
   ];
 
@@ -127,10 +127,10 @@ const ContactPage: React.FC = () => {
                   <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:scale-110 transition-all duration-300">
                     <Mail className="w-8 h-8 text-blue-600 group-hover:text-white transition-colors duration-300" />
                   </div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">Email Us</h4>
+                  <h4 className="text-lg font-bold text-slate-900 mb-2">Business Inquiries</h4>
                   <p className="text-slate-600">
-                    <a href="mailto:apply.cwt@gmail.com" className="hover:text-blue-600">
-                      apply.cwt@gmail.com
+                    <a href="mailto:Info@wiratirta.com" className="hover:text-blue-600">
+                      Info@wiratirta.com
                     </a>
                   </p>
                 </div>

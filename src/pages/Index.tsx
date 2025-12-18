@@ -23,18 +23,18 @@ import { FadeIn } from "@/components/FadeIn";
 const heroSlides = [
   {
     image: heroCWT1,
-    title: "Creating Hero Of The Sea",
-    subtitle: "Join the world's leading cruise lines and shipping companies",
+    title: "Creating Heroes of the Seas",
+    subtitle: "Empowering Indonesian seafarers for global maritime and cruise careers",
   },
   {
     image: heroCWT2,
     title: "Your Maritime Career Starts Here",
-    subtitle: "Professional recruitment services for seafarers worldwide",
+    subtitle: "Professional recruitment, guidance, and placement for Indonesian seafarers worldwide",
   },
   {
     image: heroCWT3,
-    title: "Sail Your Dreams",
-    subtitle: "Connecting talented seafarers with premium opportunities",
+    title: "From Indonesia to the World",
+    subtitle: "Connecting Indonesian maritime talent with leading global shipping and cruise companies",
   },
 ];
 
@@ -56,18 +56,6 @@ const partners = [
     href: "https://www.fredolsencruises.com/",
     logo: logoPartner3,
     alt: "Fred Olsen Cruise Lines",
-  },
-  {
-    name: "SeaChefs",
-    href: "https://www.seachefs.com/",
-    logo: logoPartner4,
-    alt: "SeaChefs",
-  },
-  {
-    name: "SeaQuest Shipmanagement",
-    href: "http://www.sqships.com/",
-    logo: logoPartner5,
-    alt: "SeaQuest Shipmanagement",
   },
   {
     name: "Alpha Adriatic",
@@ -267,7 +255,7 @@ const Index = () => {
                     </Link>
                     <Link to="/register">
                       <Button size="lg" variant="outline" className="h-14 px-8 text-lg bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 rounded-xl transition-all hover:scale-105">
-                        Join Talent Pool
+                        Apply Now
                       </Button>
                     </Link>
                   </div>
@@ -311,8 +299,8 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <FadeIn direction="up">
             <div className="text-center mb-6">
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">Trusted by Industry Leaders</h2>
-              <p className="text-slate-600 max-w-2xl mx-auto">We partner with the world's most prestigious cruise lines and shipping companies to provide you with the best career opportunities.</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">Trusted by Global Maritime Leaders</h2>
+              <p className="text-slate-600 max-w-2xl mx-auto">Partnering with leading cruise lines and shipping companies to create global career opportunities for Indonesian seafarers.</p>
             </div>
           </FadeIn>
 
@@ -366,7 +354,7 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link to="/jobs">
                 <Button size="lg" className="h-14 px-10 text-lg bg-white text-blue-900 hover:bg-blue-50 font-bold rounded-xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all">
-                  Find Your Dream Job
+                  Apply for Jobs
                 </Button>
               </Link>
               <Link to="/recruitment-procedure">

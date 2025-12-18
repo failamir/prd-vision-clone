@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Download } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -1342,6 +1342,52 @@ const AdminApplications = () => {
     const byCandidate = medicalTestsByCandidate[app.candidate_id];
     if (!byCandidate) return null;
     return byCandidate[type] || null;
+  };
+
+  const handleDownloadFile = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from("candidate-documents")
+        .download(filePath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName || "document.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error: any) {
+      toast({
+        title: "Error downloading file",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const renderTestDownloadButton = (app: Application, type: "CES" | "NEHA" | "Marlins") => {
+    const row = getTestRow(app, type);
+    if (row?.file_path) {
+      return (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 ml-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDownloadFile(row.file_path, row.file_name || `${type}.pdf`);
+          }}
+          title="Download"
+        >
+          <Download className="w-3 h-3" />
+        </Button>
+      );
+    }
+    return null;
   };
 
   const getTestScoreText = (app: Application, type: "CES" | "NEHA" | "Marlins", fallback?: string) => {
@@ -2755,7 +2801,10 @@ const AdminApplications = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        <span>{getTestScoreText(app, "Marlins")}</span>
+                        <div className="flex items-center">
+                          <span>{getTestScoreText(app, "Marlins")}</span>
+                          {renderTestDownloadButton(app, "Marlins")}
+                        </div>
                         <Button
                           variant="link"
                           size="sm"
@@ -2768,7 +2817,10 @@ const AdminApplications = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        <span>{getTestScoreText(app, "NEHA")}</span>
+                        <div className="flex items-center">
+                          <span>{getTestScoreText(app, "NEHA")}</span>
+                          {renderTestDownloadButton(app, "NEHA")}
+                        </div>
                         <Button
                           variant="link"
                           size="sm"
@@ -2781,7 +2833,10 @@ const AdminApplications = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        <span>{getTestScoreText(app, "CES")}</span>
+                        <div className="flex items-center">
+                          <span>{getTestScoreText(app, "CES")}</span>
+                          {renderTestDownloadButton(app, "CES")}
+                        </div>
                         <Button
                           variant="link"
                           size="sm"
@@ -2891,7 +2946,7 @@ const AdminApplications = () => {
                       <div className="flex flex-col gap-1">
                         <Badge variant={
                           (app.candidate as any)?.profile_step_unlocked === 3 ? "default" :
-                          (app.candidate as any)?.profile_step_unlocked === 2 ? "secondary" : "outline"
+                            (app.candidate as any)?.profile_step_unlocked === 2 ? "secondary" : "outline"
                         }>
                           Step {(app.candidate as any)?.profile_step_unlocked || 1}
                         </Badge>

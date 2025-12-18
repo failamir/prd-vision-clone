@@ -42,7 +42,7 @@ export const Footer = () => {
                   <Instagram className="w-6 h-6" />
                 </a>
                 <a
-                  href="https://www.linkedin.com/in/wira-manning-service-852398232"
+                  href="https://www.linkedin.com/company/wira-manning-service/"
                   className="text-gray-400 hover:text-white transition-colors transform hover:scale-110"
                   aria-label="LinkedIn"
                 >

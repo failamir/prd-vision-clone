@@ -15,14 +15,13 @@ import shipVisit2Img from '@/assets/ship-visit-2.png';
 
 const AboutPage: React.FC = () => {
   const teamPhotos = [
-    { title: 'Jakarta Team', image: jakartaImg },
-    { title: 'Yogyakarta Team', image: jogjaImg },
-    { title: 'Surabaya Team', image: surabayaImg },
-    { title: 'Bali Team', image: baliImg },
-    { title: 'Bandung Team', image: bandungImg },
-    { title: 'Family Gathering to Bogor', image: familyGatheringImg },
-    { title: 'Kegiatan Badminton', image: badmintonImg },
-    { title: 'Crew Fred Olsen', image: crewImg },
+    { title: 'Jakarta Office', image: jakartaImg },
+    { title: 'Yogyakarta Office', image: jogjaImg },
+    { title: 'Surabaya Office', image: surabayaImg },
+    { title: 'Bali Office', image: baliImg },
+    { title: 'Bandung Office', image: bandungImg },
+    { title: 'Cipta Wira Tirta 25th Anniversary', image: familyGatheringImg },
+    { title: 'Fred Olsen Crew', image: crewImg },
     { title: 'Ship Visit - Norwegian Jewel', image: shipVisit2Img }
   ];
 
@@ -52,20 +51,16 @@ const AboutPage: React.FC = () => {
                 <h2 className="text-4xl font-bold text-gray-900 mb-10 tracking-tight text-left">Our History</h2>
                 <div className="space-y-8 text-xl text-gray-600 leading-relaxed font-light text-left">
                   <p>
-                    The company is established in May 2000 as a representative office for <span className="font-semibold text-gray-900">Wilhelmsen Ship Management</span> formerly
-                    known as Barber International. Initially, the company served for a cruise line company based in Miami, USA.
-                    The company has grown rapidly not only to serve cruise line companies but for other types of vessels including FPSO.
+                    The Company was established in May 2000 as a representative office of <span className="font-semibold text-gray-900">Wilhelmsen Ship Management</span>, formerly known as Barber International. Initially, the Company served a cruise line company based in Miami, USA. Over time, the Company grew rapidly, expanding its services beyond cruise lines to include other types of vessels, including FPSOs.
                   </p>
                   <p>
-                    In the year 2008, Wilhelmsen Ship Management made significant changes. The cruise ship crewing management
-                    was not part of their future plans. <span className="font-semibold text-gray-900">Cipta Wira Tirta</span> continues to serve the existing clients with similar quality of
-                    services.
+                    In 2008, Wilhelmsen Ship Management underwent significant strategic changes, and cruise ship crewing management was no longer part of its future plans. <span className="font-semibold text-gray-900">Cipta Wira Tirta</span> continued to serve its existing clients independently, maintaining the same high standards of service quality.
                   </p>
                   <p>
-                    Our reputation and commitment in providing quality crew management services, fair and professional recruitment
-                    of seafarers, excellent relationship with authorities and regulators have made the company matured into a
-                    reputable manning agent and have added more values for Indonesian seafarers in the international seafarer world.
-                    The operations of PT. Cipta Wira Tirta is in Compliance with <span className="font-semibold text-gray-900">ISO 9001 : 2015</span>, <span className="font-semibold text-gray-900">MLC 2006</span> for SRPS and SIUJPAK.
+                    The Company’s strong reputation and commitment to delivering quality crew management services, fair and professional recruitment of seafarers, and maintaining excellent relationships with authorities and regulators have established PT Cipta Wira Tirta as a reputable manning agent. These efforts have added significant value for Indonesian seafarers in the international maritime industry.
+                  </p>
+                  <p>
+                    The operations of PT Cipta Wira Tirta are conducted in compliance with <span className="font-semibold text-gray-900">ISO 9001:2015</span> and <span className="font-semibold text-gray-900">MLC 2006 (SRPS)</span>, and are duly licensed under <span className="font-semibold text-gray-900">SIUKAK</span>, issued by the <span className="font-semibold text-gray-900">Directorate of Sea Transportation</span> (<em>Direktorat Jenderal Perhubungan Laut</em>) of the Republic of Indonesia.
                   </p>
                 </div>
               </div>

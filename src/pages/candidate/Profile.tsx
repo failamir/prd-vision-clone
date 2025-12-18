@@ -1619,7 +1619,7 @@ const Profile = () => {
                 <Input id="email" type="email" value={profile.email} disabled />
               </div>
 
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2">
                 <Label htmlFor="address">Address *</Label>
                 <Input
                   id="address"
@@ -2061,212 +2061,221 @@ const Profile = () => {
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
                 ) : (
-                  <>
-                    {deckExperiences.length > 0 && (
-                      <div className="mb-6 border rounded-lg overflow-hidden">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              {department === "Hotel Department" ? (
-                                <>
-                                  <TableHead>Hotel Name</TableHead>
-                                  <TableHead>Position</TableHead>
-                                  <TableHead>Start Date</TableHead>
-                                  <TableHead>End Date</TableHead>
-                                  <TableHead>Reason</TableHead>
-                                  <TableHead>Job</TableHead>
-                                  <TableHead>Description</TableHead>
-                                </>
-                              ) : (
-                                <>
-                                  <TableHead>Vessel Name / Type</TableHead>
-                                  <TableHead>GT / LOA</TableHead>
-                                  <TableHead>Vessel Route</TableHead>
-                                  <TableHead>Position</TableHead>
-                                  <TableHead>Approve</TableHead>
-                                  <TableHead>Start Date</TableHead>
-                                  <TableHead>End Date</TableHead>
-                                  <TableHead>Job</TableHead>
-                                </>
-                              )}
-                              <TableHead className="w-[100px]"></TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {deckExperiences.map((row) => (
-                              <TableRow key={row.id}>
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    <div className="xl:col-span-1 space-y-6 order-2 xl:order-1">
+                      <div className="grid grid-cols-1 gap-4">
+                        {department === "Hotel Department" ? (
+                          <>
+                            <div className="space-y-2">
+                              <Label>Hotel Name*</Label>
+                              <Input value={newDeck.vessel_name_type} onChange={(e) => setNewDeck({ ...newDeck, vessel_name_type: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Position*</Label>
+                              <Input value={newDeck.position} onChange={(e) => setNewDeck({ ...newDeck, position: e.target.value })} />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label>Start Date*</Label>
+                                <Input type="date" value={newDeck.start_date} onChange={(e) => setNewDeck({ ...newDeck, start_date: e.target.value })} />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>End Date</Label>
+                                <Input type="date" value={newDeck.end_date} onChange={(e) => setNewDeck({ ...newDeck, end_date: e.target.value })} />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Reason*</Label>
+                              <Select value={newDeck.reason} onValueChange={(v) => setNewDeck({ ...newDeck, reason: v })}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Please select" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Finished Contract">Finished Contract</SelectItem>
+                                  <SelectItem value="Resign">Resign</SelectItem>
+                                  <SelectItem value="Terminated">Terminated</SelectItem>
+                                  <SelectItem value="Onboard">Onboard</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Job*</Label>
+                              <Input value={newDeck.job_description} onChange={(e) => setNewDeck({ ...newDeck, job_description: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Description</Label>
+                              <Textarea value={newDeck.route} onChange={(e) => setNewDeck({ ...newDeck, route: e.target.value })} />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="space-y-2">
+                              <Label>Vessel Name / Type*</Label>
+                              <Input value={newDeck.vessel_name_type} onChange={(e) => setNewDeck({ ...newDeck, vessel_name_type: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>GT / LOA (Length Over All)*</Label>
+                              <Input value={newDeck.gt_loa} onChange={(e) => setNewDeck({ ...newDeck, gt_loa: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Vessel Route*</Label>
+                              <Select value={newDeck.route} onValueChange={(v) => setNewDeck({ ...newDeck, route: v })}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Please select" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Foreign Going">Foreign Going</SelectItem>
+                                  <SelectItem value="Domestic">Domestic</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Position*</Label>
+                              <Input value={newDeck.position} onChange={(e) => setNewDeck({ ...newDeck, position: e.target.value })} />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label>Start Date*</Label>
+                                <Input type="date" value={newDeck.start_date} onChange={(e) => setNewDeck({ ...newDeck, start_date: e.target.value })} />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>End Date</Label>
+                                <Input type="date" value={newDeck.end_date} onChange={(e) => setNewDeck({ ...newDeck, end_date: e.target.value })} />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Reason for leaving or current status*</Label>
+                              <Select value={newDeck.reason} onValueChange={(v) => setNewDeck({ ...newDeck, reason: v })}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Please select" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Finished Contract">Finished Contract</SelectItem>
+                                  <SelectItem value="Resign">Resign</SelectItem>
+                                  <SelectItem value="Terminated">Terminated</SelectItem>
+                                  <SelectItem value="Onboard">Onboard</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Job Description (minimum 3)</Label>
+                              <Textarea value={newDeck.job_description} onChange={(e) => setNewDeck({ ...newDeck, job_description: e.target.value })} />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Approve</Label>
+                              <Input type="file" accept=".pdf" onChange={handleDeckFileChange} />
+                              <p className="text-sm text-muted-foreground">Filetype: Pdf, Max 8 MB</p>
+                            </div>
+                          </>
+                        )}
+
+                        <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck}>
+                          {uploadingDeck ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            "Add"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="xl:col-span-2 order-1 xl:order-2">
+                      {deckExperiences.length > 0 ? (
+                        <div className="border rounded-lg overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
                                 {department === "Hotel Department" ? (
                                   <>
-                                    <TableCell>{row.company}</TableCell>
-                                    <TableCell>{row.position}</TableCell>
-                                    <TableCell>{row.start_date ? new Date(row.start_date).toLocaleDateString() : "-"}</TableCell>
-                                    <TableCell>{row.end_date ? new Date(row.end_date).toLocaleDateString() : "-"}</TableCell>
-                                    <TableCell>{row.reason}</TableCell>
-                                    <TableCell className="max-w-[240px] truncate" title={row.job_description || ""}>
-                                      {row.job_description || "-"}
-                                    </TableCell>
-                                    <TableCell className="max-w-[240px] truncate" title={row.description || ""}>
-                                      {row.description || "-"}
-                                    </TableCell>
+                                    <TableHead>Hotel Name</TableHead>
+                                    <TableHead>Position</TableHead>
+                                    <TableHead>Start Date</TableHead>
+                                    <TableHead>End Date</TableHead>
+                                    <TableHead>Reason</TableHead>
+                                    <TableHead>Job</TableHead>
+                                    <TableHead>Description</TableHead>
                                   </>
                                 ) : (
                                   <>
-                                    <TableCell>{row.vessel_name_type}</TableCell>
-                                    <TableCell>{row.gt_loa}</TableCell>
-                                    <TableCell>{row.route}</TableCell>
-                                    <TableCell>{row.position}</TableCell>
-                                    <TableCell>
-                                      {row.file_path ? (
-                                        <Button
-                                          variant="link"
-                                          size="sm"
-                                          onClick={() => handleViewFile(row.file_path)}
-                                          className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
-                                        >
-                                          View File <ExternalLink className="w-3 h-3" />
-                                        </Button>
-                                      ) : (
-                                        <span className="text-muted-foreground">-</span>
-                                      )}
-                                    </TableCell>
-                                    <TableCell>{row.start_date ? new Date(row.start_date).toLocaleDateString() : "-"}</TableCell>
-                                    <TableCell>{row.end_date ? new Date(row.end_date).toLocaleDateString() : "-"}</TableCell>
-                                    <TableCell className="max-w-[240px] truncate" title={row.job_description || ""}>
-                                      {row.job_description || "-"}
-                                    </TableCell>
+                                    <TableHead>Vessel Name / Type</TableHead>
+                                    <TableHead>GT / LOA</TableHead>
+                                    <TableHead>Vessel Route</TableHead>
+                                    <TableHead>Position</TableHead>
+                                    <TableHead>Approve</TableHead>
+                                    <TableHead>Start Date</TableHead>
+                                    <TableHead>End Date</TableHead>
+                                    <TableHead>Job</TableHead>
                                   </>
                                 )}
-                                <TableCell>
-                                  <Button size="sm" variant="destructive" className="h-8 px-3" onClick={() => handleDeleteDeck(row.id, row.file_path)}>
-                                    Delete
-                                  </Button>
-                                </TableCell>
+                                <TableHead className="w-[100px]"></TableHead>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 gap-4">
-                      {department === "Hotel Department" ? (
-                        <>
-                          <div className="space-y-2">
-                            <Label>Hotel Name*</Label>
-                            <Input value={newDeck.vessel_name_type} onChange={(e) => setNewDeck({ ...newDeck, vessel_name_type: e.target.value })} />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Position*</Label>
-                            <Input value={newDeck.position} onChange={(e) => setNewDeck({ ...newDeck, position: e.target.value })} />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>Start Date*</Label>
-                              <Input type="date" value={newDeck.start_date} onChange={(e) => setNewDeck({ ...newDeck, start_date: e.target.value })} />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>End Date</Label>
-                              <Input type="date" value={newDeck.end_date} onChange={(e) => setNewDeck({ ...newDeck, end_date: e.target.value })} />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Reason*</Label>
-                            <Select value={newDeck.reason} onValueChange={(v) => setNewDeck({ ...newDeck, reason: v })}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Please select" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Finished Contract">Finished Contract</SelectItem>
-                                <SelectItem value="Resign">Resign</SelectItem>
-                                <SelectItem value="Terminated">Terminated</SelectItem>
-                                <SelectItem value="Onboard">Onboard</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Job*</Label>
-                            <Input value={newDeck.job_description} onChange={(e) => setNewDeck({ ...newDeck, job_description: e.target.value })} />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Description</Label>
-                            <Textarea value={newDeck.route} onChange={(e) => setNewDeck({ ...newDeck, route: e.target.value })} />
-                          </div>
-                        </>
+                            </TableHeader>
+                            <TableBody>
+                              {deckExperiences.map((row) => (
+                                <TableRow key={row.id}>
+                                  {department === "Hotel Department" ? (
+                                    <>
+                                      <TableCell>{row.company}</TableCell>
+                                      <TableCell>{row.position}</TableCell>
+                                      <TableCell>{row.start_date ? new Date(row.start_date).toLocaleDateString() : "-"}</TableCell>
+                                      <TableCell>{row.end_date ? new Date(row.end_date).toLocaleDateString() : "-"}</TableCell>
+                                      <TableCell>{row.reason}</TableCell>
+                                      <TableCell className="max-w-[240px] truncate" title={row.job_description || ""}>
+                                        {row.job_description || "-"}
+                                      </TableCell>
+                                      <TableCell className="max-w-[240px] truncate" title={row.description || ""}>
+                                        {row.description || "-"}
+                                      </TableCell>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <TableCell>{row.vessel_name_type}</TableCell>
+                                      <TableCell>{row.gt_loa}</TableCell>
+                                      <TableCell>{row.route}</TableCell>
+                                      <TableCell>{row.position}</TableCell>
+                                      <TableCell>
+                                        {row.file_path ? (
+                                          <Button
+                                            variant="link"
+                                            size="sm"
+                                            onClick={() => handleViewFile(row.file_path)}
+                                            className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
+                                          >
+                                            View File <ExternalLink className="w-3 h-3" />
+                                          </Button>
+                                        ) : (
+                                          <span className="text-muted-foreground">-</span>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>{row.start_date ? new Date(row.start_date).toLocaleDateString() : "-"}</TableCell>
+                                      <TableCell>{row.end_date ? new Date(row.end_date).toLocaleDateString() : "-"}</TableCell>
+                                      <TableCell className="max-w-[240px] truncate" title={row.job_description || ""}>
+                                        {row.job_description || "-"}
+                                      </TableCell>
+                                    </>
+                                  )}
+                                  <TableCell>
+                                    <Button size="sm" variant="destructive" className="h-8 px-3" onClick={() => handleDeleteDeck(row.id, row.file_path)}>
+                                      Delete
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
                       ) : (
-                        <>
-                          <div className="space-y-2">
-                            <Label>Vessel Name / Type*</Label>
-                            <Input value={newDeck.vessel_name_type} onChange={(e) => setNewDeck({ ...newDeck, vessel_name_type: e.target.value })} />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>GT / LOA (Length Over All)*</Label>
-                            <Input value={newDeck.gt_loa} onChange={(e) => setNewDeck({ ...newDeck, gt_loa: e.target.value })} />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Vessel Route*</Label>
-                            <Select value={newDeck.route} onValueChange={(v) => setNewDeck({ ...newDeck, route: v })}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Please select" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Foreign Going">Foreign Going</SelectItem>
-                                <SelectItem value="Domestic">Domestic</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Position*</Label>
-                            <Input value={newDeck.position} onChange={(e) => setNewDeck({ ...newDeck, position: e.target.value })} />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>Start Date*</Label>
-                              <Input type="date" value={newDeck.start_date} onChange={(e) => setNewDeck({ ...newDeck, start_date: e.target.value })} />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>End Date</Label>
-                              <Input type="date" value={newDeck.end_date} onChange={(e) => setNewDeck({ ...newDeck, end_date: e.target.value })} />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Reason for leaving or current status*</Label>
-                            <Select value={newDeck.reason} onValueChange={(v) => setNewDeck({ ...newDeck, reason: v })}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Please select" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Finished Contract">Finished Contract</SelectItem>
-                                <SelectItem value="Resign">Resign</SelectItem>
-                                <SelectItem value="Terminated">Terminated</SelectItem>
-                                <SelectItem value="Onboard">Onboard</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Job Description (minimum 3)</Label>
-                            <Textarea value={newDeck.job_description} onChange={(e) => setNewDeck({ ...newDeck, job_description: e.target.value })} />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Approve</Label>
-                            <Input type="file" accept=".pdf" onChange={handleDeckFileChange} />
-                            <p className="text-sm text-muted-foreground">Filetype: Pdf, Max 8 MB</p>
-                          </div>
-                        </>
+                        <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg text-muted-foreground bg-muted/30">
+                          <p>No experiences added yet.</p>
+                          <p className="text-sm">Fill out the form to add your experience.</p>
+                        </div>
                       )}
-
-                      <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck}>
-                        {uploadingDeck ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Saving...
-                          </>
-                        ) : (
-                          "Add"
-                        )}
-                      </Button>
                     </div>
-                  </>
+                  </div>
                 )}
               </TabsContent>
 
