@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useDatabase } from "@/contexts/DatabaseContext";
+import logo from "@/assets/logo-dark.png";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -78,13 +79,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           {/* Logo */}
           <div className="p-6 border-b border-border">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">CWT</span>
-              </div>
-              <div>
-                <div className="font-bold text-foreground">Cipta Wira Tirta</div>
-                <div className="text-xs text-muted-foreground">Candidate Dashboard</div>
-              </div>
+              <img src={logo} alt="Cipta Wira Tirta" className="h-10 w-auto" />
             </Link>
           </div>
 

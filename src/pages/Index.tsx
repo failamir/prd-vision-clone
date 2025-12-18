@@ -250,7 +250,7 @@ const Index = () => {
                   <div className="flex flex-col sm:flex-row gap-5">
                     <Link to="/jobs">
                       <Button size="lg" className="h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-900/20 rounded-xl transition-all hover:scale-105">
-                        Explore Opportunities
+                        View Job Openings
                       </Button>
                     </Link>
                     <Link to="/register">

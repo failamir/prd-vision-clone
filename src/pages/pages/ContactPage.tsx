@@ -166,7 +166,7 @@ const ContactPage: React.FC = () => {
                       Facebook
                     </a>
                     <a
-                      href="https://id.linkedin.com/in/pt-cipta-wira-tirta-5a2b6a374"
+                      href="https://www.linkedin.com/company/wira-manning-service/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-blue-600 cursor-pointer"
