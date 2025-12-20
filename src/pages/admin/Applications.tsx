@@ -85,6 +85,7 @@ interface Application {
     registration_city?: string | null;
     how_found_us?: string | null;
     profile_step_unlocked?: number;
+    avatar_url?: string;
   };
   job: {
     title: string;
@@ -708,7 +709,8 @@ const AdminApplications = () => {
             weight_kg,
             registration_city,
             how_found_us,
-            profile_step_unlocked
+            profile_step_unlocked,
+            avatar_url
           ),
           job:jobs(title, company_name, department)
         `)
@@ -1284,7 +1286,7 @@ const AdminApplications = () => {
         dash(app.contact_no || app.candidate?.phone),
         dash(app.candidate?.email),
         dash(app.emergency_contact),
-        dash(app.photo_url),
+        dash(app.candidate?.avatar_url || app.photo_url),
         dash(app.cv_url),
         dash(app.letter_form_url),
         dash(app.vaccin_covid_booster ? "Yes" : "-"),
@@ -2593,6 +2595,7 @@ const AdminApplications = () => {
                   </TableHead>
                   <TableHead className="min-w-[150px]">Remarks/Record</TableHead>
                   <TableHead className="min-w-[150px]">Crew Code</TableHead>
+                  <TableHead className="min-w-[80px]">Photo</TableHead>
                   <TableHead className="min-w-[120px]">First Name</TableHead>
                   <TableHead className="min-w-[120px]">Last Name</TableHead>
                   <TableHead className="min-w-[130px]">Office Registered</TableHead>
@@ -2613,7 +2616,6 @@ const AdminApplications = () => {
                   <TableHead className="min-w-[120px]">Contact No</TableHead>
                   <TableHead className="min-w-[180px]">Email</TableHead>
                   <TableHead className="min-w-[150px]">Emergency Contact</TableHead>
-                  <TableHead className="min-w-[80px]">Photo</TableHead>
                   <TableHead className="min-w-[80px]">CV</TableHead>
                   <TableHead className="min-w-[100px]">Form Letter</TableHead>
                   <TableHead className="min-w-[140px]">Vaccin Covid Booster</TableHead>
@@ -2667,6 +2669,15 @@ const AdminApplications = () => {
                       </div>
                     </TableCell>
                     <TableCell>{app.crew_code || "-"}</TableCell>
+                    <TableCell>
+                      {app.candidate?.avatar_url || app.photo_url ? (
+                        <img
+                          src={app.candidate?.avatar_url || app.photo_url}
+                          alt="Photo"
+                          className="w-10 h-10 rounded object-cover"
+                        />
+                      ) : "-"}
+                    </TableCell>
                     <TableCell className="font-medium">{app.candidate.full_name.split(" ")[0]}</TableCell>
                     <TableCell className="font-medium">{app.candidate.full_name.split(" ").slice(1).join(" ")}</TableCell>
                     <TableCell>{app.candidate.registration_city || app.office_registered || "-"}</TableCell>
@@ -2704,11 +2715,6 @@ const AdminApplications = () => {
                     <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
                     <TableCell>{app.candidate.email}</TableCell>
                     <TableCell>{app.emergency_contact || "-"}</TableCell>
-                    <TableCell>
-                      {app.photo_url ? (
-                        <img src={app.photo_url} alt="Photo" className="w-10 h-10 rounded object-cover" />
-                      ) : "-"}
-                    </TableCell>
                     <TableCell>
                       {app.cv_url ? (
                         <Button variant="link" size="sm" className="h-auto p-0">View file</Button>

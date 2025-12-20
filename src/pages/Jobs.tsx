@@ -7,7 +7,21 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MapPin, Briefcase, DollarSign, Clock, Filter, Loader2, Bookmark } from "lucide-react";
+import { Search, MapPin, Briefcase, DollarSign, Clock, Filter, Loader2, Bookmark, X } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,6 +47,11 @@ const Jobs = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
+
+  // Advanced filters
+  const [minSalary, setMinSalary] = useState([0]);
+  const [datePosted, setDatePosted] = useState("all");
+  const [urgentOnly, setUrgentOnly] = useState(false);
 
   useEffect(() => {
     fetchJobs();
@@ -164,8 +183,34 @@ const Jobs = () => {
     const matchesType = typeFilter === "" || typeFilter === "all" ||
       job.job_type.toLowerCase() === typeFilter.toLowerCase();
 
-    return matchesSearch && matchesLocation && matchesType;
+    const matchesSalary = (job.salary_min || 0) >= minSalary[0];
+
+    const matchesUrgent = !urgentOnly || job.is_urgent;
+
+    let matchesDate = true;
+    if (datePosted !== "all") {
+      const jobDate = new Date(job.created_at);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - jobDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (datePosted === "today") matchesDate = diffDays <= 1;
+      else if (datePosted === "3days") matchesDate = diffDays <= 3;
+      else if (datePosted === "week") matchesDate = diffDays <= 7;
+      else if (datePosted === "month") matchesDate = diffDays <= 30;
+    }
+
+    return matchesSearch && matchesLocation && matchesType && matchesSalary && matchesUrgent && matchesDate;
   });
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setLocationFilter("");
+    setTypeFilter("");
+    setMinSalary([0]);
+    setDatePosted("all");
+    setUrgentOnly(false);
+  };
 
   const formatSalary = (min: number | null, max: number | null, currency: string) => {
     if (!min && !max) return "Competitive";
@@ -247,10 +292,102 @@ const Jobs = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <p className="text-muted-foreground">{filteredJobs.length} jobs found</p>
-            <Button variant="outline" size="sm">
-              <Filter className="w-4 h-4 mr-2" />
-              More Filters
-            </Button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Filter className="w-4 h-4 mr-2" />
+                  More Filters
+                  {(minSalary[0] > 0 || datePosted !== "all" || urgentOnly) && (
+                    <Badge variant="secondary" className="ml-2 h-5 px-1.5">
+                      {[minSalary[0] > 0, datePosted !== "all", urgentOnly].filter(Boolean).length}
+                    </Badge>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle>Filter Jobs</SheetTitle>
+                  <SheetDescription>
+                    Refine your job search with more specific criteria.
+                  </SheetDescription>
+                </SheetHeader>
+
+                <div className="py-6 space-y-8">
+                  {/* Salary Filter */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Label className="text-base font-medium">Minimum Salary</Label>
+                      <span className="text-sm text-muted-foreground">
+                        ${minSalary[0].toLocaleString()}
+                      </span>
+                    </div>
+                    <Slider
+                      value={minSalary}
+                      onValueChange={setMinSalary}
+                      max={20000}
+                      step={500}
+                      className="py-4"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>$0</span>
+                      <span>$20k+</span>
+                    </div>
+                  </div>
+
+                  {/* Date Posted Filter */}
+                  <div className="space-y-4">
+                    <Label className="text-base font-medium">Date Posted</Label>
+                    <RadioGroup value={datePosted} onValueChange={setDatePosted}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="all" id="all" />
+                        <Label htmlFor="all">Any time</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="today" id="today" />
+                        <Label htmlFor="today">Past 24 hours</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="3days" id="3days" />
+                        <Label htmlFor="3days">Past 3 days</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="week" id="week" />
+                        <Label htmlFor="week">Past week</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="month" id="month" />
+                        <Label htmlFor="month">Past month</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Urgent Filter */}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="urgent"
+                      checked={urgentOnly}
+                      onCheckedChange={(checked) => setUrgentOnly(checked as boolean)}
+                    />
+                    <Label htmlFor="urgent" className="text-base font-medium cursor-pointer">
+                      Show Urgent Jobs Only
+                    </Label>
+                  </div>
+                </div>
+
+                <SheetFooter className="flex-col sm:flex-col gap-3 sm:space-x-0">
+                  <SheetClose asChild>
+                    <Button type="submit" className="w-full">Show {filteredJobs.length} Jobs</Button>
+                  </SheetClose>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={clearFilters}
+                  >
+                    Clear All Filters
+                  </Button>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           </div>
 
           {loading ? (
