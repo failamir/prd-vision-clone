@@ -248,12 +248,12 @@ const Index = () => {
                 </FadeIn>
                 <FadeIn delay={600} direction="up">
                   <div className="flex flex-col sm:flex-row gap-5">
-                    <Link to="/jobs">
+                    <Link to="/jobs" target="_blank">
                       <Button size="lg" className="h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg shadow-blue-900/20 rounded-xl transition-all hover:scale-105">
                         View Job Openings
                       </Button>
                     </Link>
-                    <Link to="/register">
+                    <Link to="/jobs" target="_blank" rel="noopener noreferrer">
                       <Button size="lg" variant="outline" className="h-14 px-8 text-lg bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 rounded-xl transition-all hover:scale-105">
                         Apply Now
                       </Button>
