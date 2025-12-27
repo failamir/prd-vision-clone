@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter } from "lucide-react";
 import { RoleManagementDialog } from "@/components/admin/RoleManagementDialog";
+import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
 import {
   Table,
   TableBody,
@@ -67,7 +68,7 @@ const AdminUsers = () => {
   const [editEmail, setEditEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -139,11 +140,8 @@ const AdminUsers = () => {
     fetchUsers();
   };
 
-  const openCreateUser = () => {
-    setEditingUser(null);
-    setEditFullName("");
-    setEditEmail("");
-    setEditDialogOpen(true);
+  const openCreateUserDialog = () => {
+    setCreateDialogOpen(true);
   };
 
   const openEditUser = (user: User) => {
@@ -278,7 +276,7 @@ const AdminUsers = () => {
             <p className="text-muted-foreground mt-2">Manage all registered users</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={openCreateUser}>
+            <Button variant="outline" size="sm" onClick={openCreateUserDialog}>
               <Plus className="w-4 h-4 mr-2" />
               Add User
             </Button>
@@ -475,6 +473,12 @@ const AdminUsers = () => {
             onRoleUpdated={handleRoleUpdated}
           />
         )}
+
+        <CreateUserDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onUserCreated={fetchUsers}
+        />
 
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
           <DialogContent className="bg-background">
