@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter } from "lucide-react";
+import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter, Download, Upload } from "lucide-react";
 import { RoleManagementDialog } from "@/components/admin/RoleManagementDialog";
 import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
+import * as XLSX from "xlsx";
 import {
   Table,
   TableBody,
@@ -69,6 +70,8 @@ const AdminUsers = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -142,6 +145,96 @@ const AdminUsers = () => {
 
   const openCreateUserDialog = () => {
     setCreateDialogOpen(true);
+  };
+
+  const handleExport = () => {
+    const exportData = filteredUsers.map((user) => ({
+      "Full Name": user.full_name,
+      "Email": user.email,
+      "Roles": user.roles.join(", "),
+      "Registered": formatDate(user.created_at),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Users");
+    XLSX.writeFile(wb, `users_export_${new Date().toISOString().split("T")[0]}.xlsx`);
+
+    toast({ title: "Data berhasil diexport" });
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json<{
+        "Full Name"?: string;
+        "Email"?: string;
+        "Password"?: string;
+        "City"?: string;
+        "Role"?: string;
+      }>(worksheet);
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const row of jsonData) {
+        const fullName = row["Full Name"];
+        const email = row["Email"];
+        const password = row["Password"] || "defaultPassword123";
+        const city = row["City"] || "";
+        const role = row["Role"] || "candidate";
+
+        if (!fullName || !email) {
+          errorCount++;
+          continue;
+        }
+
+        try {
+          const response = await supabase.functions.invoke("create-user", {
+            body: { email, password, fullName, city, role },
+          });
+
+          if (response.error) {
+            console.error("Error creating user:", response.error);
+            errorCount++;
+          } else {
+            successCount++;
+          }
+        } catch (err) {
+          console.error("Error importing user:", err);
+          errorCount++;
+        }
+      }
+
+      toast({
+        title: "Import selesai",
+        description: `Berhasil: ${successCount}, Gagal: ${errorCount}`,
+      });
+
+      await fetchUsers();
+    } catch (error) {
+      console.error("Error reading file:", error);
+      toast({
+        title: "Gagal membaca file",
+        variant: "destructive",
+      });
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   const openEditUser = (user: User) => {
@@ -276,6 +369,21 @@ const AdminUsers = () => {
             <p className="text-muted-foreground mt-2">Manage all registered users</p>
           </div>
           <div className="flex items-center gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImportFile}
+              accept=".xlsx,.xls"
+              className="hidden"
+            />
+            <Button variant="outline" size="sm" onClick={handleImportClick} disabled={importing}>
+              {importing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+              Import
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExport}>
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
             <Button variant="outline" size="sm" onClick={openCreateUserDialog}>
               <Plus className="w-4 h-4 mr-2" />
               Add User
