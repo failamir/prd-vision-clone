@@ -15,8 +15,8 @@ interface DatabaseContextType {
 const DatabaseContext = createContext<DatabaseContextType | undefined>(undefined);
 
 const SECONDARY_CONFIG = {
-  url: 'https://flbieqiieplhuebceewp.supabase.co',
-  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsYmllcWlpZXBsaHVlYmNlZXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MjczNzYsImV4cCI6MjA2OTIwMzM3Nn0.oYkic-WUKgHXrOj_t-hFETwfOZRcNPSuLmw_JE5wc8g',
+  url: 'https://ycfcdgaqmhtrtqgvszwx.supabase.co',
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljZmNkZ2FxbWh0cnRxZ3Zzend4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1MDQ0NDcsImV4cCI6MjA4MzA4MDQ0N30.Wi2CITijxTuHUL6RxGqKFERuVXQGJiOf-eYJTer1MIw',
 };
 
 const secondaryClient = createClient<Database>(SECONDARY_CONFIG.url, SECONDARY_CONFIG.key, {
