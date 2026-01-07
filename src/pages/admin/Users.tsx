@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter, Download, Upload } from "lucide-react";
+import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter, Download, Upload, Archive, ArchiveRestore } from "lucide-react";
 import { RoleManagementDialog } from "@/components/admin/RoleManagementDialog";
 import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
 import * as XLSX from "xlsx";
@@ -50,6 +50,8 @@ interface User {
   email: string;
   created_at: string;
   roles: string[];
+  is_archived: boolean;
+  archived_at: string | null;
 }
 
 const AdminUsers = () => {
@@ -60,15 +62,18 @@ const AdminUsers = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [archiveFilter, setArchiveFilter] = useState<string>("active");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(5);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editFullName, setEditFullName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -99,6 +104,8 @@ const AdminUsers = () => {
             email: profile.email,
             created_at: profile.created_at,
             roles: roles?.map(r => r.role) || ["candidate"],
+            is_archived: profile.is_archived || false,
+            archived_at: profile.archived_at,
           };
         })
       );
@@ -249,6 +256,47 @@ const AdminUsers = () => {
     setDeleteDialogOpen(true);
   };
 
+  const openArchiveUser = (user: User) => {
+    setSelectedUser(user);
+    setArchiveDialogOpen(true);
+  };
+
+  const handleArchiveUser = async () => {
+    if (!selectedUser) return;
+
+    setArchiving(true);
+    try {
+      const newArchivedState = !selectedUser.is_archived;
+      const { error } = await supabase
+        .from("candidate_profiles")
+        .update({ 
+          is_archived: newArchivedState,
+          archived_at: newArchivedState ? new Date().toISOString() : null
+        })
+        .eq("user_id", selectedUser.id);
+
+      if (error) throw error;
+
+      toast({ 
+        title: newArchivedState 
+          ? "User berhasil diarsipkan" 
+          : "User berhasil dipulihkan dari arsip" 
+      });
+      setArchiveDialogOpen(false);
+      setSelectedUser(null);
+      await fetchUsers();
+    } catch (error: any) {
+      console.error("Error archiving user:", error);
+      toast({
+        title: "Gagal mengubah status arsip user",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setArchiving(false);
+    }
+  };
+
   const handleSaveUser = async () => {
     if (!editFullName || !editEmail) {
       toast({
@@ -339,7 +387,12 @@ const AdminUsers = () => {
     const matchesRole =
       roleFilter === "all" || user.roles.some((role) => role === roleFilter);
 
-    return matchesSearch && matchesRole;
+    const matchesArchive =
+      archiveFilter === "all" ||
+      (archiveFilter === "active" && !user.is_archived) ||
+      (archiveFilter === "archived" && user.is_archived);
+
+    return matchesSearch && matchesRole && matchesArchive;
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
@@ -451,6 +504,42 @@ const AdminUsers = () => {
                 Candidate
               </Button>
             </div>
+            <div className="flex items-center gap-2">
+              <Archive className="w-4 h-4 text-muted-foreground" />
+              <Button
+                type="button"
+                variant={archiveFilter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setArchiveFilter("all");
+                  setPage(1);
+                }}
+              >
+                All
+              </Button>
+              <Button
+                type="button"
+                variant={archiveFilter === "active" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setArchiveFilter("active");
+                  setPage(1);
+                }}
+              >
+                Active
+              </Button>
+              <Button
+                type="button"
+                variant={archiveFilter === "archived" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setArchiveFilter("archived");
+                  setPage(1);
+                }}
+              >
+                Archived
+              </Button>
+            </div>
           </div>
           <Table>
             <TableHeader>
@@ -458,6 +547,7 @@ const AdminUsers = () => {
                 <TableHead>User</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Roles</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Registered</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -492,6 +582,11 @@ const AdminUsers = () => {
                     </div>
                   </TableCell>
                   <TableCell>
+                    <Badge className={user.is_archived ? "bg-gray-100 text-gray-800" : "bg-green-100 text-green-800"}>
+                      {user.is_archived ? "Archived" : "Active"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="w-4 h-4 mr-2" />
                       {formatDate(user.created_at)}
@@ -514,6 +609,27 @@ const AdminUsers = () => {
                       >
                         <Edit3 className="w-4 h-4 mr-2" />
                         Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={user.is_archived 
+                          ? "text-green-600 border-green-200 hover:bg-green-50" 
+                          : "text-orange-600 border-orange-200 hover:bg-orange-50"
+                        }
+                        onClick={() => openArchiveUser(user)}
+                      >
+                        {user.is_archived ? (
+                          <>
+                            <ArchiveRestore className="w-4 h-4 mr-2" />
+                            Restore
+                          </>
+                        ) : (
+                          <>
+                            <Archive className="w-4 h-4 mr-2" />
+                            Archive
+                          </>
+                        )}
                       </Button>
                       <Button
                         variant="outline"
@@ -648,6 +764,29 @@ const AdminUsers = () => {
               <AlertDialogAction onClick={handleDeleteUser} disabled={deleting}>
                 {deleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
+          <AlertDialogContent className="bg-background">
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {selectedUser?.is_archived ? "Pulihkan user dari arsip?" : "Arsipkan user?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {selectedUser?.is_archived 
+                  ? "User akan dipulihkan dan dapat mengakses sistem kembali."
+                  : "User yang diarsipkan tidak akan muncul di daftar aktif, tetapi datanya tetap tersimpan."
+                }
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={archiving}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleArchiveUser} disabled={archiving}>
+                {archiving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {selectedUser?.is_archived ? "Restore" : "Archive"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
