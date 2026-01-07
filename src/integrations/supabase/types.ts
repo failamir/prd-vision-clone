@@ -473,6 +473,7 @@ export type Database = {
       candidate_profiles: {
         Row: {
           address: string | null
+          archived_at: string | null
           avatar_url: string | null
           bio: string | null
           city: string | null
@@ -489,6 +490,7 @@ export type Database = {
           height_cm: number | null
           how_found_us: string | null
           id: string
+          is_archived: boolean
           is_profile_public: boolean | null
           ktp_number: string | null
           linkedin_url: string | null
@@ -507,6 +509,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          archived_at?: string | null
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
@@ -523,6 +526,7 @@ export type Database = {
           height_cm?: number | null
           how_found_us?: string | null
           id?: string
+          is_archived?: boolean
           is_profile_public?: boolean | null
           ktp_number?: string | null
           linkedin_url?: string | null
@@ -541,6 +545,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          archived_at?: string | null
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
@@ -557,6 +562,7 @@ export type Database = {
           height_cm?: number | null
           how_found_us?: string | null
           id?: string
+          is_archived?: boolean
           is_profile_public?: boolean | null
           ktp_number?: string | null
           linkedin_url?: string | null
