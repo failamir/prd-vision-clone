@@ -20,19 +20,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const applicationSchema = z.object({
-  cv_id: z.string().min(1, "Please select a CV"),
   cover_letter: z
     .string()
     .min(50, "Cover letter must be at least 50 characters")
@@ -41,10 +34,18 @@ const applicationSchema = z.object({
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
 
-interface CV {
+interface CandidateProfile {
   id: string;
-  file_name: string;
-  is_default: boolean;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  date_of_birth: string | null;
+  gender: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  registration_city: string | null;
+  profile_step_unlocked: number;
 }
 
 interface ApplicationDialogProps {
@@ -64,15 +65,16 @@ export const ApplicationDialog = ({
 }: ApplicationDialogProps) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [cvs, setCvs] = useState<CV[]>([]);
   const [loading, setLoading] = useState(false);
-  const [candidateId, setCandidateId] = useState<string>("");
+  const [checkingProfile, setCheckingProfile] = useState(true);
+  const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [hasApplied, setHasApplied] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationSchema),
     defaultValues: {
-      cv_id: "",
       cover_letter: "",
     },
   });
@@ -87,23 +89,23 @@ export const ApplicationDialog = ({
 
   useEffect(() => {
     if (open) {
-      fetchCVs();
-      checkIfAlreadyApplied();
+      checkProfileAndApplication();
     }
   }, [open]);
 
-  const fetchCVs = async () => {
+  const checkProfileAndApplication = async () => {
+    setCheckingProfile(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: profile } = await supabase
+      const { data: profileData } = await supabase
         .from("candidate_profiles")
-        .select("id")
+        .select("id, full_name, email, phone, date_of_birth, gender, address, city, country, registration_city, profile_step_unlocked")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (!profile) {
+      if (!profileData) {
         toast({
           title: "Profile not found",
           description: "Please complete your profile first",
@@ -112,78 +114,56 @@ export const ApplicationDialog = ({
         return;
       }
 
-      setCandidateId(profile.id);
+      setProfile(profileData);
 
-      const { data, error } = await supabase
-        .from("candidate_cvs")
-        .select("id, file_name, is_default")
-        .eq("candidate_id", profile.id)
-        .order("is_default", { ascending: false })
-        .order("created_at", { ascending: false });
+      // Check required fields for application
+      const required: { field: keyof CandidateProfile; label: string }[] = [
+        { field: "full_name", label: "Full Name" },
+        { field: "phone", label: "Phone Number" },
+        { field: "date_of_birth", label: "Date of Birth" },
+        { field: "gender", label: "Gender" },
+        { field: "address", label: "Address" },
+        { field: "city", label: "City" },
+        { field: "country", label: "Country" },
+      ];
 
-      if (error) throw error;
+      const missing = required
+        .filter(r => !profileData[r.field])
+        .map(r => r.label);
 
-      setCvs(data || []);
+      setMissingFields(missing);
+      setProfileComplete(missing.length === 0);
 
-      // Auto-select default CV if available
-      const defaultCV = data?.find(cv => cv.is_default);
-      if (defaultCV) {
-        form.setValue("cv_id", defaultCV.id);
-      }
-    } catch (error) {
-      console.error("Error fetching CVs:", error);
-      toast({
-        title: "Error loading CVs",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const checkIfAlreadyApplied = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from("candidate_profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!profile) return;
-
-      const { data } = await supabase
+      // Check if already applied
+      const { data: existingApp } = await supabase
         .from("job_applications")
         .select("id")
-        .eq("candidate_id", profile.id)
+        .eq("candidate_id", profileData.id)
         .eq("job_id", jobId)
         .maybeSingle();
 
-      setHasApplied(!!data);
+      setHasApplied(!!existingApp);
     } catch (error) {
-      console.error("Error checking application status:", error);
+      console.error("Error checking profile:", error);
+    } finally {
+      setCheckingProfile(false);
     }
   };
 
   const onSubmit = async (values: ApplicationFormValues) => {
+    if (!profile) return;
+    
     setLoading(true);
     try {
-      // Fetch candidate's registration_city to sync with office_registered
-      const { data: profile } = await supabase
-        .from("candidate_profiles")
-        .select("registration_city")
-        .eq("id", candidateId)
-        .maybeSingle();
-
       const { error } = await supabase
         .from("job_applications")
         .insert({
-          candidate_id: candidateId,
+          candidate_id: profile.id,
           job_id: jobId,
-          cv_id: values.cv_id,
           cover_letter: values.cover_letter,
           status: "pending",
-          office_registered: profile?.registration_city || null,
+          office_registered: profile.registration_city || null,
+          contact_no: profile.phone || null,
         });
 
       if (error) throw error;
@@ -225,91 +205,93 @@ export const ApplicationDialog = ({
         <DialogHeader>
           <DialogTitle>Apply for {jobTitle}</DialogTitle>
           <DialogDescription>
-            Submit your application with a CV and cover letter
+            Submit your application for this position
           </DialogDescription>
         </DialogHeader>
 
-        {cvs.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="text-muted-foreground mb-4">
-              You need to upload a CV before applying
-            </p>
-            <Button onClick={() => window.location.href = "/candidate/cvs"}>
-              Upload CV
-            </Button>
+        {checkingProfile ? (
+          <div className="py-8 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
+        ) : !profileComplete ? (
+          <div className="py-6 space-y-4">
+            <div className="flex items-start gap-3 p-4 bg-destructive/10 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-destructive">Profile Incomplete</h4>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Please complete your profile before applying. The following information is missing:
+                </p>
+                <ul className="list-disc list-inside text-sm text-muted-foreground mt-2">
+                  {missingFields.map((field) => (
+                    <li key={field}>{field}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <Link to="/candidate/profile">
+              <Button className="w-full">Complete Profile</Button>
+            </Link>
           </div>
         ) : (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="cv_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select CV *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-background">
-                          <SelectValue placeholder="Choose a CV to submit" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-background z-50">
-                        {cvs.map((cv) => (
-                          <SelectItem key={cv.id} value={cv.id}>
-                            {cv.file_name} {cv.is_default ? "(Default)" : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="cover_letter"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cover Letter *</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Explain why you're a great fit for this position..."
-                        className="min-h-[200px] resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <p className="text-sm text-muted-foreground">
-                      {field.value.length}/2000 characters
-                    </p>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                  className="flex-1"
-                  disabled={loading}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" className="flex-1" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    "Submit Application"
-                  )}
-                </Button>
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-4 bg-green-500/10 rounded-lg">
+              <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-green-700">Profile Ready</h4>
+                <p className="text-sm text-muted-foreground">
+                  Your profile data will be used for this application.
+                </p>
               </div>
-            </form>
-          </Form>
+            </div>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="cover_letter"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cover Letter *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Explain why you're a great fit for this position..."
+                          className="min-h-[200px] resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <p className="text-sm text-muted-foreground">
+                        {field.value.length}/2000 characters
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setOpen(false)}
+                    className="flex-1"
+                    disabled={loading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="flex-1" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Application"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
         )}
       </DialogContent>
     </Dialog>
