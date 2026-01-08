@@ -2762,12 +2762,26 @@ const AdminApplications = () => {
                     <TableCell>{app.emergency_contact || "-"}</TableCell>
                     <TableCell>
                       {app.cv_url ? (
-                        <Button variant="link" size="sm" className="h-auto p-0">View file</Button>
+                        <a
+                          href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/cvs/${app.cv_url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline text-sm"
+                        >
+                          View CV
+                        </a>
                       ) : "-"}
                     </TableCell>
                     <TableCell>
                       {app.letter_form_url ? (
-                        <Button variant="link" size="sm" className="h-auto p-0">View file</Button>
+                        <a
+                          href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${app.letter_form_url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline text-sm"
+                        >
+                          View Form
+                        </a>
                       ) : "-"}
                     </TableCell>
                     <TableCell>{app.vaccin_covid_booster ? "Yes" : "-"}</TableCell>
