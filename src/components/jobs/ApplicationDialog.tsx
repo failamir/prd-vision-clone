@@ -71,6 +71,7 @@ export const ApplicationDialog = ({
   const [hasApplied, setHasApplied] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [missingDocuments, setMissingDocuments] = useState<string[]>([]);
 
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationSchema),
@@ -132,7 +133,30 @@ export const ApplicationDialog = ({
         .map(r => r.label);
 
       setMissingFields(missing);
-      setProfileComplete(missing.length === 0);
+
+      // Check for CV and Form Letter
+      const { data: cvData } = await supabase
+        .from("candidate_cvs")
+        .select("id")
+        .eq("candidate_id", profileData.id)
+        .limit(1);
+
+      const { data: formLetterData } = await supabase
+        .from("candidate_form_letters" as any)
+        .select("id")
+        .eq("candidate_id", profileData.id)
+        .limit(1);
+
+      const missingDocs: string[] = [];
+      if (!cvData || cvData.length === 0) {
+        missingDocs.push("CV");
+      }
+      if (!formLetterData || (formLetterData as any[]).length === 0) {
+        missingDocs.push("Form Letter");
+      }
+      setMissingDocuments(missingDocs);
+
+      setProfileComplete(missing.length === 0 && missingDocs.length === 0);
 
       // Check if already applied
       const { data: existingApp } = await supabase
@@ -248,13 +272,28 @@ export const ApplicationDialog = ({
               <div>
                 <h4 className="font-semibold text-destructive">Profile Incomplete</h4>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Please complete your profile before applying. The following information is missing:
+                  Please complete your profile before applying. The following is missing:
                 </p>
-                <ul className="list-disc list-inside text-sm text-muted-foreground mt-2">
-                  {missingFields.map((field) => (
-                    <li key={field}>{field}</li>
-                  ))}
-                </ul>
+                {missingFields.length > 0 && (
+                  <>
+                    <p className="text-sm font-medium mt-2">Profile Information:</p>
+                    <ul className="list-disc list-inside text-sm text-muted-foreground">
+                      {missingFields.map((field) => (
+                        <li key={field}>{field}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {missingDocuments.length > 0 && (
+                  <>
+                    <p className="text-sm font-medium mt-2">Required Documents:</p>
+                    <ul className="list-disc list-inside text-sm text-muted-foreground">
+                      {missingDocuments.map((doc) => (
+                        <li key={doc}>{doc}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </div>
             </div>
             <Link to="/candidate/profile">
