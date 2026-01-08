@@ -350,6 +350,7 @@ const AdminApplications = () => {
   const openRemarksDialog = (app: Application) => {
     setActiveApplication(app);
     setSelectedRemark(app.remarks || app.status || "");
+    setProfileStepValue((app.candidate as any)?.profile_step_unlocked || 1);
     setRemarksDialogOpen(true);
   };
 
@@ -581,6 +582,7 @@ const AdminApplications = () => {
     }
 
     try {
+      // Update remarks in job_applications
       const { error } = await supabase
         .from("job_applications")
         .update({ remarks: value })
@@ -588,12 +590,34 @@ const AdminApplications = () => {
 
       if (error) throw error;
 
-      toast({ title: "Remarks updated" });
+      // Update profile_step_unlocked in candidate_profiles
+      if (activeApplication.candidate_id) {
+        const { error: profileError } = await supabase
+          .from("candidate_profiles")
+          .update({ profile_step_unlocked: profileStepValue } as any)
+          .eq("id", activeApplication.candidate_id);
+
+        if (profileError) throw profileError;
+      }
+
+      // Update local state
+      setApplications((prev) =>
+        prev.map((a) =>
+          a.id === activeApplication.id
+            ? { 
+                ...a, 
+                remarks: value,
+                candidate: { ...a.candidate, profile_step_unlocked: profileStepValue } 
+              }
+            : a
+        )
+      );
+
+      toast({ title: "Remarks dan Profile Step updated" });
       setRemarksDialogOpen(false);
       setActiveApplication(null);
-      fetchApplications();
     } catch (error) {
-      toast({ title: "Error updating remarks", variant: "destructive" });
+      toast({ title: "Error updating", variant: "destructive" });
     }
   };
 
@@ -1675,10 +1699,10 @@ const AdminApplications = () => {
       <Dialog open={remarksDialogOpen} onOpenChange={setRemarksDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Update Remarks / Status</DialogTitle>
+            <DialogTitle>Update Remarks / Profile Step</DialogTitle>
             <DialogDescription>
               {activeApplication
-                ? `Update status for ${activeApplication.candidate.full_name}`
+                ? `Update remarks dan profile step untuk ${activeApplication.candidate.full_name}`
                 : "Select a status for this application."}
             </DialogDescription>
           </DialogHeader>
@@ -1698,6 +1722,22 @@ const AdminApplications = () => {
                       {option}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Profile Step Unlocked</label>
+              <Select
+                value={String(profileStepValue)}
+                onValueChange={(v) => setProfileStepValue(Number(v))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select step" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Step 1</SelectItem>
+                  <SelectItem value="2">Step 2</SelectItem>
+                  <SelectItem value="3">Step 3</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -2593,7 +2633,7 @@ const AdminApplications = () => {
                       onCheckedChange={(checked) => checked ? handleSelectAll() : handleDeselectAll()}
                     />
                   </TableHead>
-                  <TableHead className="min-w-[150px]">Remarks/Record</TableHead>
+                  <TableHead className="min-w-[180px]">Remarks/Record</TableHead>
                   <TableHead className="min-w-[150px]">Crew Code</TableHead>
                   <TableHead className="min-w-[80px]">Photo</TableHead>
                   <TableHead className="min-w-[120px]">First Name</TableHead>
@@ -2636,7 +2676,6 @@ const AdminApplications = () => {
                   <TableHead className="min-w-[100px]">Notes</TableHead>
                   <TableHead className="min-w-[140px]">Employment Offer</TableHead>
                   <TableHead className="min-w-[130px]">EO Acceptance</TableHead>
-                  <TableHead className="min-w-[120px]">Profile Step</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -2658,13 +2697,19 @@ const AdminApplications = () => {
                         <Badge variant="secondary" className="text-xs">
                           {app.remarks || app.status}
                         </Badge>
+                        <Badge variant={
+                          (app.candidate as any)?.profile_step_unlocked === 3 ? "default" :
+                            (app.candidate as any)?.profile_step_unlocked === 2 ? "secondary" : "outline"
+                        } className="text-xs">
+                          Step {(app.candidate as any)?.profile_step_unlocked || 1}
+                        </Badge>
                         <Button
                           variant="link"
                           size="sm"
                           className="h-auto p-0 text-xs"
                           onClick={() => openRemarksDialog(app)}
                         >
-                          Update Remarks
+                          Update
                         </Button>
                       </div>
                     </TableCell>
@@ -2943,24 +2988,6 @@ const AdminApplications = () => {
                           size="sm"
                           className="h-auto p-0 text-xs"
                           onClick={() => openEoAcceptanceDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <Badge variant={
-                          (app.candidate as any)?.profile_step_unlocked === 3 ? "default" :
-                            (app.candidate as any)?.profile_step_unlocked === 2 ? "secondary" : "outline"
-                        }>
-                          Step {(app.candidate as any)?.profile_step_unlocked || 1}
-                        </Badge>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openProfileStepDialog(app)}
                         >
                           Update
                         </Button>
