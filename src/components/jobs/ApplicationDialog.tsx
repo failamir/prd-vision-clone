@@ -150,11 +150,37 @@ export const ApplicationDialog = ({
     }
   };
 
+  const getCandidateDocuments = async (candidateId: string) => {
+    // Get default CV
+    const { data: cvData } = await supabase
+      .from("candidate_cvs")
+      .select("file_path")
+      .eq("candidate_id", candidateId)
+      .eq("is_default", true)
+      .maybeSingle();
+
+    // Get default Form Letter
+    const { data: formLetterData } = await supabase
+      .from("candidate_form_letters" as any)
+      .select("file_path")
+      .eq("candidate_id", candidateId)
+      .eq("is_default", true)
+      .maybeSingle();
+
+    return {
+      cv_url: cvData?.file_path || null,
+      letter_form_url: (formLetterData as any)?.file_path || null,
+    };
+  };
+
   const onSubmit = async (values: ApplicationFormValues) => {
     if (!profile) return;
     
     setLoading(true);
     try {
+      // Get candidate's default CV and Form Letter
+      const documents = await getCandidateDocuments(profile.id);
+
       const { error } = await supabase
         .from("job_applications")
         .insert({
@@ -164,6 +190,8 @@ export const ApplicationDialog = ({
           status: "pending",
           office_registered: profile.registration_city || null,
           contact_no: profile.phone || null,
+          cv_url: documents.cv_url,
+          letter_form_url: documents.letter_form_url,
         });
 
       if (error) throw error;
