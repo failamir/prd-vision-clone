@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
+import bmiReferenceImage from "@/assets/bmi-reference.png";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -2322,28 +2323,19 @@ const AdminApplications = () => {
         </DialogContent>
       </Dialog>
       <Dialog open={referenceDialogOpen} onOpenChange={setReferenceDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Candidate Reference</DialogTitle>
+            <DialogTitle>BMI Reference Chart</DialogTitle>
             <DialogDescription>
-              Latest reference from candidate{activeApplication ? `: ${activeApplication.candidate.full_name}` : ""}
+              Body Mass Index (BMI) Classification
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            {referenceLoading ? (
-              <p className="text-sm text-muted-foreground">Loading...</p>
-            ) : latestReference ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                <div><span className="font-medium">Full Name:</span> {latestReference.full_name}</div>
-                <div><span className="font-medium">Company:</span> {latestReference.company || "-"}</div>
-                <div><span className="font-medium">Position:</span> {latestReference.position || "-"}</div>
-                <div><span className="font-medium">Phone:</span> {latestReference.phone}</div>
-                <div><span className="font-medium">Email:</span> {latestReference.email || "-"}</div>
-                <div><span className="font-medium">Relationship:</span> {latestReference.relationship || "-"}</div>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No reference found.</p>
-            )}
+          <div className="flex justify-center">
+            <img 
+              src={bmiReferenceImage} 
+              alt="BMI Reference Chart" 
+              className="max-w-full h-auto rounded-lg border"
+            />
           </div>
           <DialogFooter>
             <Button type="button" onClick={() => setReferenceDialogOpen(false)}>Close</Button>
