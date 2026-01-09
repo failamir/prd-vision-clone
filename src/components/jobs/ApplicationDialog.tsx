@@ -202,31 +202,68 @@ export const ApplicationDialog = ({
     
     setLoading(true);
     try {
-      // Get candidate's default CV and Form Letter
-      const documents = await getCandidateDocuments(profile.id);
-
-      const { error } = await supabase
+      // Check if already applied to this job
+      const { data: existingApp, error: checkError } = await supabase
         .from("job_applications")
-        .insert({
-          candidate_id: profile.id,
-          job_id: jobId,
-          cover_letter: values.cover_letter,
-          status: "pending",
-          office_registered: profile.registration_city || null,
-          contact_no: profile.phone || null,
-          cv_url: documents.cv_url,
-          letter_form_url: documents.letter_form_url,
+        .select("id, second_position")
+        .eq("candidate_id", profile.id)
+        .eq("job_id", jobId)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      // Get the job title for second_position
+      const { data: jobData } = await supabase
+        .from("jobs")
+        .select("title")
+        .eq("id", jobId)
+        .single();
+
+      if (existingApp) {
+        // Update second_position instead of creating duplicate
+        const { error: updateError } = await supabase
+          .from("job_applications")
+          .update({ 
+            second_position: jobData?.title || existingApp.second_position,
+            cover_letter: values.cover_letter,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", existingApp.id);
+
+        if (updateError) throw updateError;
+
+        toast({
+          title: "Application updated!",
+          description: "Your second position preference has been recorded.",
         });
+      } else {
+        // New application
+        const documents = await getCandidateDocuments(profile.id);
 
-      if (error) throw error;
+        const { error } = await supabase
+          .from("job_applications")
+          .insert({
+            candidate_id: profile.id,
+            job_id: jobId,
+            cover_letter: values.cover_letter,
+            status: "pending",
+            office_registered: profile.registration_city || null,
+            contact_no: profile.phone || null,
+            cv_url: documents.cv_url,
+            letter_form_url: documents.letter_form_url,
+          });
 
-      toast({
-        title: "Application submitted successfully!",
-        description: "The employer will review your application soon.",
-      });
+        if (error) throw error;
+
+        toast({
+          title: "Application submitted successfully!",
+          description: "The employer will review your application soon.",
+        });
+      }
 
       setOpen(false);
       form.reset();
+      setHasApplied(true);
       onSuccess?.();
     } catch (error: any) {
       console.error("Error submitting application:", error);
@@ -240,13 +277,8 @@ export const ApplicationDialog = ({
     }
   };
 
-  if (hasApplied) {
-    return (
-      <Button disabled className="w-full">
-        Already Applied
-      </Button>
-    );
-  }
+  // Allow re-applying to update second position
+  // Removed the hasApplied block to allow updates
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
