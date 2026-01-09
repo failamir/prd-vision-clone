@@ -1809,7 +1809,15 @@ const Profile = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <p className="text-muted-foreground">Upload your Form Letter documents (PDF, DOC, DOCX - Max 5MB)</p>
-                      <div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => window.open('/templates/Form_Letter_Template.docx', '_blank')}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download Template
+                        </Button>
                         <Input
                           type="file"
                           accept=".pdf,.doc,.docx"
