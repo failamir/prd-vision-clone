@@ -2293,161 +2293,170 @@ const Profile = () => {
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
                 ) : (
-                  <>
-                    {deckCertificates.length > 0 && (
-                      <div className="mb-6 border rounded-lg overflow-hidden">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Institution</TableHead>
-                              <TableHead>Place</TableHead>
-                              <TableHead>Cert. Number</TableHead>
-                              <TableHead>Date Of Issue</TableHead>
-                              <TableHead>File</TableHead>
-                              <TableHead>Type Certificates</TableHead>
-                              <TableHead className="w-[100px]"></TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {deckCertificates.map((row) => (
-                              <TableRow key={row.id}>
-                                <TableCell>{row.institution}</TableCell>
-                                <TableCell>{row.place}</TableCell>
-                                <TableCell>{row.cert_number}</TableCell>
-                                <TableCell>
-                                  {row.date_of_issue
-                                    ? new Date(row.date_of_issue).toLocaleDateString()
-                                    : "-"}
-                                </TableCell>
-                                <TableCell>
-                                  {row.file_path ? (
-                                    <Button
-                                      variant="link"
-                                      size="sm"
-                                      onClick={() => handleViewFile(row.file_path)}
-                                      className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
-                                    >
-                                      View File <ExternalLink className="w-3 h-3" />
-                                    </Button>
-                                  ) : (
-                                    <span className="text-muted-foreground">-</span>
-                                  )}
-                                </TableCell>
-                                <TableCell className="max-w-[260px] truncate" title={row.type_certificate || ""}>
-                                  {row.type_certificate || "-"}
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    className="h-8 px-3"
-                                    onClick={() => handleDeleteCertificate(row.id, row.file_path)}
-                                  >
-                                    Delete
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    {/* Form Card - Left Side */}
+                    <div className="xl:col-span-1 space-y-6 order-2 xl:order-1">
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-2">
+                          <Label>Type Certificates*</Label>
+                          <Select
+                            value={newCertificate.type_certificate}
+                            onValueChange={(v) => setNewCertificate({ ...newCertificate, type_certificate: v })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Please select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {department === "Hotel Department" ? (
+                                <>
+                                  <SelectItem value="Basic Safety Training (BST)">Basic Safety Training (BST)</SelectItem>
+                                  <SelectItem value="Crowd Management">Crowd Management</SelectItem>
+                                  <SelectItem value="Crisis Management">Crisis Management</SelectItem>
+                                  <SelectItem value="CID">CID</SelectItem>
+                                  <SelectItem value="COC">COC</SelectItem>
+                                  <SelectItem value="Rating Able">Rating Able</SelectItem>
+                                  <SelectItem value="CCM">CCM</SelectItem>
+                                  <SelectItem value="ETC.">ETC.</SelectItem>
+                                </>
+                              ) : (
+                                <>
+                                  <SelectItem value="BASIC SAFETY TRAINING (BST)">BASIC SAFETY TRAINING (BST)</SelectItem>
+                                  <SelectItem value="ADVANCE FIRE FIGHTING (AFF)">ADVANCE FIRE FIGHTING (AFF)</SelectItem>
+                                  <SelectItem value="MEDICAL FIRST AID (MFA)">MEDICAL FIRST AID (MFA)</SelectItem>
+                                  <SelectItem value="PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS">PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS</SelectItem>
+                                  <SelectItem value="CRISIS MANAGEMENT AND HUMAN BEHAVIOUR">CRISIS MANAGEMENT AND HUMAN BEHAVIOUR</SelectItem>
+                                  <SelectItem value="CROWD MANAGEMENT">CROWD MANAGEMENT</SelectItem>
+                                  <SelectItem value="SECURITY AWARENESS TRAINING">SECURITY AWARENESS TRAINING</SelectItem>
+                                  <SelectItem value="SEAFARERS WITH DESIGNATED SECURITY DUTIES">SEAFARERS WITH DESIGNATED SECURITY DUTIES</SelectItem>
+                                  <SelectItem value="RATING ABLE">RATING ABLE</SelectItem>
+                                  <SelectItem value="RATING WATCHKEEPING">RATING WATCHKEEPING</SelectItem>
+                                  <SelectItem value="COC">COC</SelectItem>
+                                  <SelectItem value="ELECTRO TECHNICAL RATING">ELECTRO TECHNICAL RATING</SelectItem>
+                                  <SelectItem value="ELECTRO TECHNICAL OFFICER">ELECTRO TECHNICAL OFFICER</SelectItem>
+                                  <SelectItem value="SHIP SECURITY OFFICER">SHIP SECURITY OFFICER</SelectItem>
+                                </>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Institution*</Label>
+                          <Input
+                            value={newCertificate.institution}
+                            onChange={(e) => setNewCertificate({ ...newCertificate, institution: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Place</Label>
+                          <Input
+                            value={newCertificate.place}
+                            onChange={(e) => setNewCertificate({ ...newCertificate, place: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Cert. Number*</Label>
+                          <Input
+                            value={newCertificate.cert_number}
+                            onChange={(e) => setNewCertificate({ ...newCertificate, cert_number: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Date Of Issue*</Label>
+                          <Input
+                            type="date"
+                            value={newCertificate.date_of_issue}
+                            onChange={(e) => setNewCertificate({ ...newCertificate, date_of_issue: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>File*</Label>
+                          <Input type="file" accept=".pdf" onChange={handleCertificateFileChange} />
+                          <p className="text-sm text-destructive">Filetype: Pdf, Max 8 MB</p>
+                        </div>
 
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-2">
-                        <Label>Type Certificates*</Label>
-                        <Select
-                          value={newCertificate.type_certificate}
-                          onValueChange={(v) => setNewCertificate({ ...newCertificate, type_certificate: v })}
+                        <Button
+                          type="button"
+                          onClick={handleAddCertificate}
+                          disabled={uploadingCertificate}
+                          className="bg-destructive hover:bg-destructive/90"
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Please select" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {department === "Hotel Department" ? (
-                              <>
-                                <SelectItem value="Basic Safety Training (BST)">Basic Safety Training (BST)</SelectItem>
-                                <SelectItem value="Crowd Management">Crowd Management</SelectItem>
-                                <SelectItem value="Crisis Management">Crisis Management</SelectItem>
-                                <SelectItem value="CID">CID</SelectItem>
-                                <SelectItem value="COC">COC</SelectItem>
-                                <SelectItem value="Rating Able">Rating Able</SelectItem>
-                                <SelectItem value="CCM">CCM</SelectItem>
-                                <SelectItem value="ETC.">ETC.</SelectItem>
-                              </>
-                            ) : (
-                              <>
-                                <SelectItem value="BASIC SAFETY TRAINING (BST)">BASIC SAFETY TRAINING (BST)</SelectItem>
-                                <SelectItem value="ADVANCE FIRE FIGHTING (AFF)">ADVANCE FIRE FIGHTING (AFF)</SelectItem>
-                                <SelectItem value="MEDICAL FIRST AID (MFA)">MEDICAL FIRST AID (MFA)</SelectItem>
-                                <SelectItem value="PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS">PROFICIENCY IN SURVIVAL CRAFT AND RESCUE BOATS</SelectItem>
-                                <SelectItem value="CRISIS MANAGEMENT AND HUMAN BEHAVIOUR">CRISIS MANAGEMENT AND HUMAN BEHAVIOUR</SelectItem>
-                                <SelectItem value="CROWD MANAGEMENT">CROWD MANAGEMENT</SelectItem>
-                                <SelectItem value="SECURITY AWARENESS TRAINING">SECURITY AWARENESS TRAINING</SelectItem>
-                                <SelectItem value="SEAFARERS WITH DESIGNATED SECURITY DUTIES">SEAFARERS WITH DESIGNATED SECURITY DUTIES</SelectItem>
-                                <SelectItem value="RATING ABLE">RATING ABLE</SelectItem>
-                                <SelectItem value="RATING WATCHKEEPING">RATING WATCHKEEPING</SelectItem>
-                                <SelectItem value="COC">COC</SelectItem>
-                                <SelectItem value="ELECTRO TECHNICAL RATING">ELECTRO TECHNICAL RATING</SelectItem>
-                                <SelectItem value="ELECTRO TECHNICAL OFFICER">ELECTRO TECHNICAL OFFICER</SelectItem>
-                                <SelectItem value="SHIP SECURITY OFFICER">SHIP SECURITY OFFICER</SelectItem>
-                              </>
-                            )}
-                          </SelectContent>
-                        </Select>
+                          {uploadingCertificate ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            "Save"
+                          )}
+                        </Button>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Institution*</Label>
-                        <Input
-                          value={newCertificate.institution}
-                          onChange={(e) => setNewCertificate({ ...newCertificate, institution: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Place</Label>
-                        <Input
-                          value={newCertificate.place}
-                          onChange={(e) => setNewCertificate({ ...newCertificate, place: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Cert. Number*</Label>
-                        <Input
-                          value={newCertificate.cert_number}
-                          onChange={(e) => setNewCertificate({ ...newCertificate, cert_number: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Date Of Issue*</Label>
-                        <Input
-                          type="date"
-                          value={newCertificate.date_of_issue}
-                          onChange={(e) => setNewCertificate({ ...newCertificate, date_of_issue: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>File*</Label>
-                        <Input type="file" accept=".pdf" onChange={handleCertificateFileChange} />
-                        <p className="text-sm text-destructive">Filetype: Pdf, Max 8 MB</p>
-                      </div>
-
-                      <Button
-                        type="button"
-                        onClick={handleAddCertificate}
-                        disabled={uploadingCertificate}
-                        className="bg-destructive hover:bg-destructive/90"
-                      >
-                        {uploadingCertificate ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Saving...
-                          </>
-                        ) : (
-                          "Save"
-                        )}
-                      </Button>
                     </div>
-                  </>
+
+                    {/* Data Card - Right Side */}
+                    <div className="xl:col-span-2 order-1 xl:order-2">
+                      {deckCertificates.length > 0 ? (
+                        <div className="border rounded-lg overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Institution</TableHead>
+                                <TableHead>Cert. Number</TableHead>
+                                <TableHead>Date Of Issue</TableHead>
+                                <TableHead>File</TableHead>
+                                <TableHead className="w-[100px]"></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {deckCertificates.map((row) => (
+                                <TableRow key={row.id}>
+                                  <TableCell className="max-w-[160px] truncate" title={row.type_certificate || ""}>
+                                    {row.type_certificate || "-"}
+                                  </TableCell>
+                                  <TableCell>{row.institution}</TableCell>
+                                  <TableCell>{row.cert_number}</TableCell>
+                                  <TableCell>
+                                    {row.date_of_issue
+                                      ? new Date(row.date_of_issue).toLocaleDateString()
+                                      : "-"}
+                                  </TableCell>
+                                  <TableCell>
+                                    {row.file_path ? (
+                                      <Button
+                                        variant="link"
+                                        size="sm"
+                                        onClick={() => handleViewFile(row.file_path)}
+                                        className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
+                                      >
+                                        View File <ExternalLink className="w-3 h-3" />
+                                      </Button>
+                                    ) : (
+                                      <span className="text-muted-foreground">-</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="h-8 px-3"
+                                      onClick={() => handleDeleteCertificate(row.id, row.file_path)}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg text-muted-foreground bg-muted/30">
+                          <p>No certificates added yet.</p>
+                          <p className="text-sm">Fill out the form to add your certificate.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </TabsContent>
 
