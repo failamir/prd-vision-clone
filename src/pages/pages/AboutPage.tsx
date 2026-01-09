@@ -2,27 +2,29 @@ import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { FadeIn } from '@/components/FadeIn';
-import jakartaImg from '@/assets/jakarta.png';
-import jogjaImg from '@/assets/jogja.png';
-import surabayaImg from '@/assets/surabaya.png';
-import baliImg from '@/assets/bali.png';
-import bandungImg from '@/assets/bandung.png';
-import familyGatheringImg from '@/assets/family-gathering.png';
-import shipVisit1Img from '@/assets/ship-visit-1.png';
-import badmintonImg from '@/assets/badminton.png';
-import crewImg from '@/assets/crew.png';
-import shipVisit2Img from '@/assets/ship-visit-2.png';
+import anniversary25thImg from '@/assets/25th-anniversary.jpg';
+import baliTeamImg from '@/assets/bali-team.jpeg';
+import bandungTeamImg from '@/assets/bandung-team.jpg';
+import jakartaTeamImg from '@/assets/jakarta-team.jpg';
+import manningServicesImg from '@/assets/manning-services.jpg';
+import shipVisitBorealisImg from '@/assets/ship-visit-borealis.jpeg';
+import shipVisitNorwegianSpiritImg from '@/assets/ship-visit-norwegian-spirit.jpeg';
+import shipVisitNorwegianSunImg from '@/assets/ship-visit-norwegian-sun.jpeg';
+import surabayaTeamImg from '@/assets/surabaya-team.jpeg';
+import yogyakartaTeamImg from '@/assets/yogyakarta-team.jpg';
 
 const AboutPage: React.FC = () => {
   const teamPhotos = [
-    { title: 'Jakarta Office', image: jakartaImg },
-    { title: 'Yogyakarta Office', image: jogjaImg },
-    { title: 'Surabaya Office', image: surabayaImg },
-    { title: 'Bali Office', image: baliImg },
-    { title: 'Bandung Office', image: bandungImg },
-    { title: 'Cipta Wira Tirta 25th Anniversary', image: familyGatheringImg },
-    { title: 'Fred Olsen Crew', image: crewImg },
-    { title: 'Ship Visit - Norwegian Jewel', image: shipVisit2Img }
+    { title: '25th Anniversary PT. Cipta Wira Tirta', image: anniversary25thImg },
+    { title: 'Bali Team', image: baliTeamImg },
+    { title: 'Bandung Team', image: bandungTeamImg },
+    { title: 'Jakarta Team', image: jakartaTeamImg },
+    { title: 'Manning Services', image: manningServicesImg },
+    { title: 'Ship Visit - Borealis', image: shipVisitBorealisImg },
+    { title: 'Ship Visit - Norwegian Spirit', image: shipVisitNorwegianSpiritImg },
+    { title: 'Ship Visit - Norwegian Sun', image: shipVisitNorwegianSunImg },
+    { title: 'Surabaya Team', image: surabayaTeamImg },
+    { title: 'Yogyakarta Team', image: yogyakartaTeamImg },
   ];
 
   return (
@@ -57,7 +59,7 @@ const AboutPage: React.FC = () => {
                     In 2008, Wilhelmsen Ship Management underwent significant strategic changes, and cruise ship crewing management was no longer part of its future plans. <span className="font-semibold text-gray-900">Cipta Wira Tirta</span> continued to serve its existing clients independently, maintaining the same high standards of service quality.
                   </p>
                   <p>
-                    The Company’s strong reputation and commitment to delivering quality crew management services, fair and professional recruitment of seafarers, and maintaining excellent relationships with authorities and regulators have established PT Cipta Wira Tirta as a reputable manning agent. These efforts have added significant value for Indonesian seafarers in the international maritime industry.
+                    The Company's strong reputation and commitment to delivering quality crew management services, fair and professional recruitment of seafarers, and maintaining excellent relationships with authorities and regulators have established PT Cipta Wira Tirta as a reputable manning agent. These efforts have added significant value for Indonesian seafarers in the international maritime industry.
                   </p>
                   <p>
                     The operations of PT Cipta Wira Tirta are conducted in compliance with <span className="font-semibold text-gray-900">ISO 9001:2015</span> and <span className="font-semibold text-gray-900">MLC 2006 (SRPS)</span>, and are duly licensed under <span className="font-semibold text-gray-900">SIUKAK</span>, issued by the <span className="font-semibold text-gray-900">Directorate of Sea Transportation</span> (<em>Direktorat Jenderal Perhubungan Laut</em>) of the Republic of Indonesia.
@@ -80,10 +82,7 @@ const AboutPage: React.FC = () => {
                     <img
                       src={photo.image}
                       alt={photo.title}
-                      className={`w-full h-full object-cover transition-transform duration-700 object-[center_60%] ${photo.title === 'Crew Fred Olsen'
-                        ? 'scale-105 group-hover:scale-115'
-                        : 'group-hover:scale-110'
-                        }`}
+                      className="w-full h-full object-cover transition-transform duration-700 object-center group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                       <p className="text-white font-semibold text-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
