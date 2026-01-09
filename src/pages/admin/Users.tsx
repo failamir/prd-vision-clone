@@ -391,7 +391,16 @@ const AdminUsers = () => {
   const handleResetStaffPasswords = async () => {
     setResettingPasswords(true);
     try {
-      const { data, error } = await supabase.functions.invoke("reset-staff-passwords");
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error("Anda harus login sebagai admin");
+      }
+
+      const { data, error } = await supabase.functions.invoke("reset-staff-passwords", {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      });
       
       if (error) throw error;
 
