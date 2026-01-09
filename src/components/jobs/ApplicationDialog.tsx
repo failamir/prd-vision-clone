@@ -80,16 +80,19 @@ export const ApplicationDialog = ({
     },
   });
 
-  // Handle auto-open from URL parameter
+  // Check profile on mount if autoOpen is true
   useEffect(() => {
-    if (autoOpen && !hasApplied) {
-      setOpen(true);
-      onAutoOpenTriggered?.();
+    if (autoOpen) {
+      checkProfileAndApplication().then(() => {
+        setOpen(true);
+        onAutoOpenTriggered?.();
+      });
     }
-  }, [autoOpen, hasApplied, onAutoOpenTriggered]);
+  }, [autoOpen]);
 
+  // Check profile when dialog opens manually
   useEffect(() => {
-    if (open) {
+    if (open && !autoOpen) {
       checkProfileAndApplication();
     }
   }, [open]);
