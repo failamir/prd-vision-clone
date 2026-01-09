@@ -350,8 +350,9 @@ const AdminApplications = () => {
 
   const openRemarksDialog = (app: Application) => {
     setActiveApplication(app);
-    setSelectedRemark(app.remarks || app.status || "");
-    setProfileStepValue((app.candidate as any)?.profile_step_unlocked || 1);
+    const step = (app.candidate as any)?.profile_step_unlocked || 1;
+    setProfileStepValue(step);
+    setSelectedRemark(`Step ${step}`);
     setRemarksDialogOpen(true);
   };
 
@@ -576,17 +577,13 @@ const AdminApplications = () => {
   const handleSaveRemarks = async () => {
     if (!activeApplication) return;
 
-    const value = selectedRemark.trim();
-    if (!value) {
-      toast({ title: "Remarks cannot be empty", variant: "destructive" });
-      return;
-    }
+    const remarkValue = `Step ${profileStepValue}`;
 
     try {
       // Update remarks in job_applications
       const { error } = await supabase
         .from("job_applications")
-        .update({ remarks: value })
+        .update({ remarks: remarkValue })
         .eq("id", activeApplication.id);
 
       if (error) throw error;
@@ -607,14 +604,14 @@ const AdminApplications = () => {
           a.id === activeApplication.id
             ? { 
                 ...a, 
-                remarks: value,
+                remarks: remarkValue,
                 candidate: { ...a.candidate, profile_step_unlocked: profileStepValue } 
               }
             : a
         )
       );
 
-      toast({ title: "Remarks dan Profile Step updated" });
+      toast({ title: "Remarks updated" });
       setRemarksDialogOpen(false);
       setActiveApplication(null);
     } catch (error) {
@@ -1700,37 +1697,23 @@ const AdminApplications = () => {
       <Dialog open={remarksDialogOpen} onOpenChange={setRemarksDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Update Remarks / Profile Step</DialogTitle>
+            <DialogTitle>Update Remarks</DialogTitle>
             <DialogDescription>
               {activeApplication
-                ? `Update remarks dan profile step untuk ${activeApplication.candidate.full_name}`
-                : "Select a status for this application."}
+                ? `Update remarks untuk ${activeApplication.candidate.full_name}`
+                : "Select a step for this application."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">Status / Remarks</label>
-              <Select
-                value={selectedRemark}
-                onValueChange={setSelectedRemark}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {remarkOptions.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1 block">Profile Step Unlocked</label>
+              <label className="text-sm font-medium mb-1 block">Remarks</label>
               <Select
                 value={String(profileStepValue)}
-                onValueChange={(v) => setProfileStepValue(Number(v))}
+                onValueChange={(v) => {
+                  const step = Number(v);
+                  setProfileStepValue(step);
+                  setSelectedRemark(`Step ${step}`);
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select step" />
