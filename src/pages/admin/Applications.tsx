@@ -2649,7 +2649,19 @@ const AdminApplications = () => {
                   <TableHead className="min-w-[180px]">Email</TableHead>
                   <TableHead className="min-w-[150px]">Emergency Contact</TableHead>
                   <TableHead className="min-w-[80px]">CV</TableHead>
-                  <TableHead className="min-w-[100px]">Form Letter</TableHead>
+                  <TableHead className="min-w-[140px]">
+                    <div className="flex items-center gap-1">
+                      <span>Form Letter</span>
+                      <a
+                        href="/templates/Form_Letter_Template.docx"
+                        download="Form_Letter_Template.docx"
+                        className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-muted"
+                        title="Download Template"
+                      >
+                        <Download className="h-3 w-3" />
+                      </a>
+                    </div>
+                  </TableHead>
                   <TableHead className="min-w-[140px]">Vaccin Covid Booster</TableHead>
                   <TableHead className="min-w-[80px]">BST/CC</TableHead>
                   <TableHead className="min-w-[100px]">Suitable</TableHead>
