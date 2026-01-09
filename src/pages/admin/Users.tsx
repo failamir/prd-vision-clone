@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter, Download, Upload, Archive, ArchiveRestore } from "lucide-react";
+import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter, Download, Upload, Archive, ArchiveRestore, KeyRound } from "lucide-react";
 import { RoleManagementDialog } from "@/components/admin/RoleManagementDialog";
 import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
 import * as XLSX from "xlsx";
@@ -83,6 +83,8 @@ const AdminUsers = () => {
   const [archiving, setArchiving] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [resettingPasswords, setResettingPasswords] = useState(false);
+  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     fetchUsers();
@@ -386,6 +388,30 @@ const AdminUsers = () => {
     }
   };
 
+  const handleResetStaffPasswords = async () => {
+    setResettingPasswords(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("reset-staff-passwords");
+      
+      if (error) throw error;
+
+      toast({
+        title: "Password berhasil direset",
+        description: data?.message || "Semua staff user password telah diubah",
+      });
+      setResetPasswordDialogOpen(false);
+    } catch (error: any) {
+      console.error("Error resetting passwords:", error);
+      toast({
+        title: "Gagal reset password",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setResettingPasswords(false);
+    }
+  };
+
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.full_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -447,6 +473,14 @@ const AdminUsers = () => {
             <Button variant="outline" size="sm" onClick={openCreateUserDialog}>
               <Plus className="w-4 h-4 mr-2" />
               Add User
+            </Button>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={() => setResetPasswordDialogOpen(true)}
+            >
+              <KeyRound className="w-4 h-4 mr-2" />
+              Reset Staff Passwords
             </Button>
           </div>
         </div>
@@ -815,6 +849,25 @@ const AdminUsers = () => {
               <AlertDialogAction onClick={handleArchiveUser} disabled={archiving}>
                 {archiving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {selectedUser?.is_archived ? "Restore" : "Archive"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
+          <AlertDialogContent className="bg-background">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset Password Semua Staff?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Semua user dengan role selain candidate akan password-nya direset ke "c1pt4w1r4". 
+                Tindakan ini tidak bisa dibatalkan.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={resettingPasswords}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleResetStaffPasswords} disabled={resettingPasswords}>
+                {resettingPasswords && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Reset Passwords
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
