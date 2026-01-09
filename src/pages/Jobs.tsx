@@ -435,10 +435,6 @@ const Jobs = () => {
                               <Briefcase className="w-4 h-4 mr-2" />
                               {job.job_type}
                             </div>
-                            <div className="flex items-center text-sm text-foreground font-medium">
-                              <DollarSign className="w-4 h-4 mr-1" />
-                              {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
-                            </div>
                             <div className="flex items-center text-sm text-muted-foreground">
                               <Clock className="w-4 h-4 mr-2" />
                               {getTimeAgo(job.created_at)}
