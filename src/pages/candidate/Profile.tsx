@@ -2466,152 +2466,163 @@ const Profile = () => {
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
                 ) : (
-                  <>
-                    {travelDocuments.length > 0 && (
-                      <div className="mb-6 border rounded-lg overflow-hidden">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Type Of Document</TableHead>
-                              <TableHead>Number</TableHead>
-                              <TableHead>Place Of Issuance</TableHead>
-                              <TableHead>Date Of Issuance</TableHead>
-                              <TableHead>Date Of Expiry</TableHead>
-                              <TableHead>File</TableHead>
-                              <TableHead className="w-[100px]"></TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {travelDocuments.map((row) => (
-                              <TableRow key={row.id}>
-                                <TableCell>{row.document_type}</TableCell>
-                                <TableCell>{row.document_number}</TableCell>
-                                <TableCell>{row.issuing_authority}</TableCell>
-                                <TableCell>
-                                  {row.issue_date
-                                    ? new Date(row.issue_date).toLocaleDateString()
-                                    : "-"}
-                                </TableCell>
-                                <TableCell>
-                                  {row.expiry_date
-                                    ? new Date(row.expiry_date).toLocaleDateString()
-                                    : "-"}
-                                </TableCell>
-                                <TableCell>
-                                  {row.file_path ? (
-                                    <Button
-                                      variant="link"
-                                      size="sm"
-                                      onClick={() => handleViewFile(row.file_path)}
-                                      className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
-                                    >
-                                      View File <ExternalLink className="w-3 h-3" />
-                                    </Button>
-                                  ) : (
-                                    <span className="text-muted-foreground">-</span>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    className="h-8 px-3"
-                                    onClick={() => handleDeleteTravel(row.id, row.file_path)}
-                                  >
-                                    Delete
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    {/* Form Card - Left (smaller) */}
+                    <div className="xl:col-span-1">
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-2">
+                          <Label>Type Of Document*</Label>
+                          <Select
+                            value={newTravel.document_type}
+                            onValueChange={(v) => setNewTravel({ ...newTravel, document_type: v })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Please select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="PASSPORT">PASSPORT</SelectItem>
+                              <SelectItem value="SEAMAN BOOK">SEAMAN BOOK</SelectItem>
+                              <SelectItem value="VISA (US / LIBERIA / PANAMA )">VISA (US / LIBERIA / PANAMA )</SelectItem>
+                              <SelectItem value="Vaccination YF">Vaccination YF</SelectItem>
+                              <SelectItem value="Vaccination Covid19">Vaccination Covid19</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-2">
-                        <Label>Type Of Document*</Label>
-                        <Select
-                          value={newTravel.document_type}
-                          onValueChange={(v) => setNewTravel({ ...newTravel, document_type: v })}
+                        <div className="space-y-2">
+                          <Label>Document Number*</Label>
+                          <Input
+                            value={newTravel.document_number}
+                            onChange={(e) => setNewTravel({ ...newTravel, document_number: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Issuing Authority</Label>
+                          <Input
+                            value={newTravel.issuing_authority}
+                            onChange={(e) =>
+                              setNewTravel({ ...newTravel, issuing_authority: e.target.value })
+                            }
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Issue Date*</Label>
+                            <Input
+                              type="date"
+                              value={newTravel.issue_date}
+                              onChange={(e) =>
+                                setNewTravel({ ...newTravel, issue_date: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Expiry Date*</Label>
+                            <Input
+                              type="date"
+                              value={newTravel.expiry_date}
+                              onChange={(e) =>
+                                setNewTravel({ ...newTravel, expiry_date: e.target.value })
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>File*</Label>
+                          <Input type="file" accept=".pdf" onChange={handleTravelFileChange} />
+                          <p className="text-sm text-destructive">Filetype: Pdf, Max 8 MB</p>
+                        </div>
+
+                        <Button
+                          type="button"
+                          onClick={handleAddTravel}
+                          disabled={uploadingTravel}
+                          className="bg-destructive hover:bg-destructive/90"
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Please select" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="PASSPORT">PASSPORT</SelectItem>
-                            <SelectItem value="SEAMAN BOOK">SEAMAN BOOK</SelectItem>
-                            <SelectItem value="VISA (US / LIBERIA / PANAMA )">VISA (US / LIBERIA / PANAMA )</SelectItem>
-                            <SelectItem value="Vaccination YF">Vaccination YF</SelectItem>
-                            <SelectItem value="Vaccination Covid19">Vaccination Covid19</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          {uploadingTravel ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            "Save"
+                          )}
+                        </Button>
                       </div>
-
-                      <div className="space-y-2">
-                        <Label>Document Number*</Label>
-                        <Input
-                          value={newTravel.document_number}
-                          onChange={(e) => setNewTravel({ ...newTravel, document_number: e.target.value })}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Issuing Authority</Label>
-                        <Input
-                          value={newTravel.issuing_authority}
-                          onChange={(e) =>
-                            setNewTravel({ ...newTravel, issuing_authority: e.target.value })
-                          }
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Issue Date*</Label>
-                          <Input
-                            type="date"
-                            value={newTravel.issue_date}
-                            onChange={(e) =>
-                              setNewTravel({ ...newTravel, issue_date: e.target.value })
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Expiry Date*</Label>
-                          <Input
-                            type="date"
-                            value={newTravel.expiry_date}
-                            onChange={(e) =>
-                              setNewTravel({ ...newTravel, expiry_date: e.target.value })
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>File*</Label>
-                        <Input type="file" accept=".pdf" onChange={handleTravelFileChange} />
-                        <p className="text-sm text-destructive">Filetype: Pdf, Max 8 MB</p>
-                      </div>
-
-                      <Button
-                        type="button"
-                        onClick={handleAddTravel}
-                        disabled={uploadingTravel}
-                        className="bg-destructive hover:bg-destructive/90"
-                      >
-                        {uploadingTravel ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Saving...
-                          </>
-                        ) : (
-                          "Save"
-                        )}
-                      </Button>
                     </div>
-                  </>
+
+                    {/* Table Card - Right (larger) */}
+                    <div className="xl:col-span-2">
+                      {travelDocuments.length > 0 ? (
+                        <div className="border rounded-lg overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Type Of Document</TableHead>
+                                <TableHead>Number</TableHead>
+                                <TableHead>Place Of Issuance</TableHead>
+                                <TableHead>Date Of Issuance</TableHead>
+                                <TableHead>Date Of Expiry</TableHead>
+                                <TableHead>File</TableHead>
+                                <TableHead className="w-[100px]"></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {travelDocuments.map((row) => (
+                                <TableRow key={row.id}>
+                                  <TableCell>{row.document_type}</TableCell>
+                                  <TableCell>{row.document_number}</TableCell>
+                                  <TableCell>{row.issuing_authority}</TableCell>
+                                  <TableCell>
+                                    {row.issue_date
+                                      ? new Date(row.issue_date).toLocaleDateString()
+                                      : "-"}
+                                  </TableCell>
+                                  <TableCell>
+                                    {row.expiry_date
+                                      ? new Date(row.expiry_date).toLocaleDateString()
+                                      : "-"}
+                                  </TableCell>
+                                  <TableCell>
+                                    {row.file_path ? (
+                                      <Button
+                                        variant="link"
+                                        size="sm"
+                                        onClick={() => handleViewFile(row.file_path)}
+                                        className="text-primary hover:underline inline-flex items-center gap-1 h-auto p-0"
+                                      >
+                                        View File <ExternalLink className="w-3 h-3" />
+                                      </Button>
+                                    ) : (
+                                      <span className="text-muted-foreground">-</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="h-8 px-3"
+                                      onClick={() => handleDeleteTravel(row.id, row.file_path)}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg text-muted-foreground bg-muted/30 h-full">
+                          <p>No travel documents added yet.</p>
+                          <p className="text-sm">Fill out the form to add your travel document.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </TabsContent>
 
