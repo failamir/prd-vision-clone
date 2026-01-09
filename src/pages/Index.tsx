@@ -4,9 +4,9 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MapPin, Clock, Ship, Calendar, X, ArrowRight } from "lucide-react";
-import heroCWT1 from "@/assets/CWT1.png";
-import heroCWT2 from "@/assets/CWT2.png";
-import heroCWT3 from "@/assets/CWT3.png";
+import heroCruise1 from "@/assets/hero-cruise-1.jpg";
+import heroCruise2 from "@/assets/hero-cruise-2.jpg";
+import heroCruise3 from "@/assets/hero-cruise-3.jpg";
 import logoPartner1 from "@/assets/logo-partner-1.png";
 import logoPartner2 from "@/assets/logo-partner-2.png";
 import logoPartner3 from "@/assets/logo-partner-3.png";
@@ -22,17 +22,17 @@ import { FadeIn } from "@/components/FadeIn";
 
 const heroSlides = [
   {
-    image: heroCWT1,
+    image: heroCruise1,
     title: "Creating Heroes of the Seas",
     subtitle: "Empowering Indonesian seafarers for global maritime and cruise careers",
   },
   {
-    image: heroCWT2,
+    image: heroCruise2,
     title: "Your Maritime Career Starts Here",
     subtitle: "Professional recruitment, guidance, and placement for Indonesian seafarers worldwide",
   },
   {
-    image: heroCWT3,
+    image: heroCruise3,
     title: "From Indonesia to the World",
     subtitle: "Connecting Indonesian maritime talent with leading global shipping and cruise companies",
   },
