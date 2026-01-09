@@ -2632,357 +2632,217 @@ const Profile = () => {
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
                 ) : (
-                  <>
-                    {educations.length > 0 && (
-                      <div className="mb-6 border rounded-lg overflow-hidden">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>School Academy</TableHead>
-                              <TableHead>From Date</TableHead>
-                              <TableHead>To Date</TableHead>
-                              <TableHead>Qualification Attained</TableHead>
-                              <TableHead className="w-[100px]"></TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {educations.map((row) => (
-                              <TableRow key={row.id}>
-                                <TableCell>{row.institution}</TableCell>
-                                <TableCell>
-                                  {row.start_date
-                                    ? new Date(row.start_date).toLocaleDateString()
-                                    : "-"}
-                                </TableCell>
-                                <TableCell>
-                                  {row.end_date
-                                    ? new Date(row.end_date).toLocaleDateString()
-                                    : "-"}
-                                </TableCell>
-                                <TableCell>{row.degree}</TableCell>
-                                <TableCell>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    className="h-8 px-3"
-                                    onClick={() => handleDeleteEducation(row.id)}
-                                  >
-                                    Delete
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-2">
-                        <Label>School Academy*</Label>
-                        <Input
-                          value={newEducation.institution}
-                          onChange={(e) =>
-                            setNewEducation({ ...newEducation, institution: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    {/* Form Card - Left (smaller) */}
+                    <div className="xl:col-span-1">
+                      <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-2">
-                          <Label>From Date*</Label>
+                          <Label>School Academy*</Label>
                           <Input
-                            type="date"
-                            value={newEducation.start_date}
+                            value={newEducation.institution}
                             onChange={(e) =>
-                              setNewEducation({ ...newEducation, start_date: e.target.value })
+                              setNewEducation({ ...newEducation, institution: e.target.value })
                             }
                           />
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>From Date*</Label>
+                            <Input
+                              type="date"
+                              value={newEducation.start_date}
+                              onChange={(e) =>
+                                setNewEducation({ ...newEducation, start_date: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>To Date*</Label>
+                            <Input
+                              type="date"
+                              value={newEducation.end_date}
+                              onChange={(e) =>
+                                setNewEducation({ ...newEducation, end_date: e.target.value })
+                              }
+                            />
+                          </div>
+                        </div>
                         <div className="space-y-2">
-                          <Label>To Date*</Label>
+                          <Label>Qualification Attained*</Label>
                           <Input
-                            type="date"
-                            value={newEducation.end_date}
+                            value={newEducation.degree}
                             onChange={(e) =>
-                              setNewEducation({ ...newEducation, end_date: e.target.value })
+                              setNewEducation({ ...newEducation, degree: e.target.value })
                             }
                           />
                         </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Qualification Attained*</Label>
-                        <Input
-                          value={newEducation.degree}
-                          onChange={(e) =>
-                            setNewEducation({ ...newEducation, degree: e.target.value })
-                          }
-                        />
-                      </div>
 
-                      <Button type="button" onClick={handleAddEducation}>
-                        Save
-                      </Button>
+                        <Button type="button" onClick={handleAddEducation}>
+                          Save
+                        </Button>
+                      </div>
                     </div>
-                  </>
+
+                    {/* Table Card - Right (larger) */}
+                    <div className="xl:col-span-2">
+                      {educations.length > 0 ? (
+                        <div className="border rounded-lg overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>School Academy</TableHead>
+                                <TableHead>From Date</TableHead>
+                                <TableHead>To Date</TableHead>
+                                <TableHead>Qualification Attained</TableHead>
+                                <TableHead className="w-[100px]"></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {educations.map((row) => (
+                                <TableRow key={row.id}>
+                                  <TableCell>{row.institution}</TableCell>
+                                  <TableCell>
+                                    {row.start_date
+                                      ? new Date(row.start_date).toLocaleDateString()
+                                      : "-"}
+                                  </TableCell>
+                                  <TableCell>
+                                    {row.end_date
+                                      ? new Date(row.end_date).toLocaleDateString()
+                                      : "-"}
+                                  </TableCell>
+                                  <TableCell>{row.degree}</TableCell>
+                                  <TableCell>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="h-8 px-3"
+                                      onClick={() => handleDeleteEducation(row.id)}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg text-muted-foreground bg-muted/30 h-full">
+                          <p>No education records added yet.</p>
+                          <p className="text-sm">Fill out the form to add your education.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </TabsContent>
 
               <TabsContent value="references" className="mt-6">
-                {references.length > 0 && (
-                  <div className="mb-6 border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Previous Employers Name</TableHead>
-                          <TableHead>Company</TableHead>
-                          <TableHead>Position</TableHead>
-                          <TableHead>Contact Number</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Relationship</TableHead>
-                          <TableHead className="w-[100px]"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {references.map((row) => (
-                          <TableRow key={row.id}>
-                            <TableCell>{row.full_name}</TableCell>
-                            <TableCell>{row.company || "-"}</TableCell>
-                            <TableCell>{row.position || "-"}</TableCell>
-                            <TableCell>{row.phone}</TableCell>
-                            <TableCell>{row.email || "-"}</TableCell>
-                            <TableCell>{row.relationship || "-"}</TableCell>
-                            <TableCell>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                className="h-8 px-3"
-                                type="button"
-                                onClick={() => handleDeleteReference(row.id)}
-                              >
-                                Delete
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                  {/* Form Card - Left (smaller) */}
+                  <div className="xl:col-span-1">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Full Name*</Label>
+                        <Input
+                          value={newReference.full_name}
+                          onChange={(e) =>
+                            setNewReference({ ...newReference, full_name: e.target.value })
+                          }
+                        />
+                      </div>
 
+                      <div className="space-y-2">
+                        <Label>Company</Label>
+                        <Input
+                          value={newReference.company}
+                          onChange={(e) => setNewReference({ ...newReference, company: e.target.value })}
+                        />
+                      </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Full Name*</Label>
-                    <Input
-                      value={newReference.full_name}
-                      onChange={(e) =>
-                        setNewReference({ ...newReference, full_name: e.target.value })
-                      }
-                    />
-                  </div>
+                      <div className="space-y-2">
+                        <Label>Position</Label>
+                        <Input
+                          value={newReference.position}
+                          onChange={(e) => setNewReference({ ...newReference, position: e.target.value })}
+                        />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label>Company</Label>
-                    <Input
-                      value={newReference.company}
-                      onChange={(e) => setNewReference({ ...newReference, company: e.target.value })}
-                    />
-                  </div>
+                      <div className="space-y-2">
+                        <Label>Phone*</Label>
+                        <Input
+                          value={newReference.phone}
+                          onChange={(e) =>
+                            setNewReference({ ...newReference, phone: e.target.value })
+                          }
+                        />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label>Position</Label>
-                    <Input
-                      value={newReference.position}
-                      onChange={(e) => setNewReference({ ...newReference, position: e.target.value })}
-                    />
-                  </div>
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input
+                          type="email"
+                          value={newReference.email}
+                          onChange={(e) =>
+                            setNewReference({ ...newReference, email: e.target.value })
+                          }
+                        />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label>Phone*</Label>
-                    <Input
-                      value={newReference.phone}
-                      onChange={(e) =>
-                        setNewReference({ ...newReference, phone: e.target.value })
-                      }
-                    />
+                      <div className="space-y-2">
+                        <Label>Relationship</Label>
+                        <Input
+                          value={newReference.relationship}
+                          onChange={(e) =>
+                            setNewReference({ ...newReference, relationship: e.target.value })
+                          }
+                        />
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={handleAddReference}
+                        disabled={!newReference.full_name || !newReference.phone}
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        Save
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input
-                      type="email"
-                      value={newReference.email}
-                      onChange={(e) =>
-                        setNewReference({ ...newReference, email: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Relationship</Label>
-                    <Input
-                      value={newReference.relationship}
-                      onChange={(e) =>
-                        setNewReference({ ...newReference, relationship: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <Button
-                    type="button"
-                    onClick={handleAddReference}
-                    disabled={!newReference.full_name || !newReference.phone}
-                    className="bg-destructive hover:bg-destructive/90"
-                  >
-                    Save
-                  </Button>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="next_of_kin" className="mt-6">
-                {nextOfKins.length > 0 && (
-                  <div className="mb-6 border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Relationship</TableHead>
-                          <TableHead>Place Birth</TableHead>
-                          <TableHead>Date of Birth</TableHead>
-                          <TableHead>Signature</TableHead>
-                          <TableHead className="w-[100px]"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {nextOfKins.map((row) => (
-                          <TableRow key={row.id}>
-                            <TableCell>{row.full_name}</TableCell>
-                            <TableCell>{row.relationship}</TableCell>
-                            <TableCell>{row.place_of_birth}</TableCell>
-                            <TableCell>{row.date_of_birth}</TableCell>
-                            <TableCell>{row.signature}</TableCell>
-                            <TableCell>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                className="h-8 px-3"
-                                onClick={() => handleDeleteNextOfKin(row.id)}
-                              >
-                                Delete
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="space-y-2">
-                    <Label>Name*</Label>
-                    <Input
-                      value={newNextOfKin.full_name}
-                      onChange={(e) => setNewNextOfKin({ ...newNextOfKin, full_name: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Relationship*</Label>
-                    <Select
-                      value={newNextOfKin.relationship}
-                      onValueChange={(v) => setNewNextOfKin({ ...newNextOfKin, relationship: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Please select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Wife">Wife</SelectItem>
-                        <SelectItem value="Husband">Husband</SelectItem>
-                        <SelectItem value="Mother">Mother</SelectItem>
-                        <SelectItem value="Father">Father</SelectItem>
-                        <SelectItem value="Son">Son</SelectItem>
-                        <SelectItem value="Daughter">Daughter</SelectItem>
-                        <SelectItem value="Uncle">Uncle</SelectItem>
-                        <SelectItem value="Aunty">Aunty</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Place Birth</Label>
-                    <Input
-                      value={newNextOfKin.place_of_birth}
-                      onChange={(e) =>
-                        setNewNextOfKin({ ...newNextOfKin, place_of_birth: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Date of Birth</Label>
-                    <Input
-                      type="date"
-                      value={newNextOfKin.date_of_birth}
-                      onChange={(e) =>
-                        setNewNextOfKin({ ...newNextOfKin, date_of_birth: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Signature</Label>
-                    <Input
-                      value={newNextOfKin.signature}
-                      onChange={(e) =>
-                        setNewNextOfKin({ ...newNextOfKin, signature: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <Button
-                    type="button"
-                    onClick={handleAddNextOfKin}
-                    className="bg-destructive hover:bg-destructive/90"
-                  >
-                    Save
-                  </Button>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="emergency_contact" className="mt-6">
-                {loadingEmergencyContacts ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                  </div>
-                ) : (
-                  <>
-                    {emergencyContacts.length > 0 && (
-                      <div className="mb-6 border rounded-lg overflow-hidden">
+                  {/* Table Card - Right (larger) */}
+                  <div className="xl:col-span-2">
+                    {references.length > 0 ? (
+                      <div className="border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Name</TableHead>
-                              <TableHead>Relationship</TableHead>
+                              <TableHead>Previous Employers Name</TableHead>
+                              <TableHead>Company</TableHead>
+                              <TableHead>Position</TableHead>
                               <TableHead>Contact Number</TableHead>
-                              <TableHead>E Mail Address</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Relationship</TableHead>
                               <TableHead className="w-[100px]"></TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {emergencyContacts.map((row) => (
+                            {references.map((row) => (
                               <TableRow key={row.id}>
                                 <TableCell>{row.full_name}</TableCell>
-                                <TableCell>{row.relationship}</TableCell>
+                                <TableCell>{row.company || "-"}</TableCell>
+                                <TableCell>{row.position || "-"}</TableCell>
                                 <TableCell>{row.phone}</TableCell>
                                 <TableCell>{row.email || "-"}</TableCell>
+                                <TableCell>{row.relationship || "-"}</TableCell>
                                 <TableCell>
                                   <Button
                                     size="sm"
                                     variant="destructive"
                                     className="h-8 px-3"
                                     type="button"
-                                    onClick={() => handleDeleteEmergencyContact(row.id)}
+                                    onClick={() => handleDeleteReference(row.id)}
                                   >
                                     Delete
                                   </Button>
@@ -2992,27 +2852,34 @@ const Profile = () => {
                           </TableBody>
                         </Table>
                       </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg text-muted-foreground bg-muted/30 h-full">
+                        <p>No references added yet.</p>
+                        <p className="text-sm">Fill out the form to add your reference.</p>
+                      </div>
                     )}
+                  </div>
+                </div>
+              </TabsContent>
 
+              <TabsContent value="next_of_kin" className="mt-6">
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                  {/* Form Card - Left (smaller) */}
+                  <div className="xl:col-span-1">
                     <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-2">
-                        <Label>Full Name*</Label>
+                        <Label>Name*</Label>
                         <Input
-                          value={newEmergencyContact.full_name}
-                          onChange={(e) =>
-                            setNewEmergencyContact({ ...newEmergencyContact, full_name: e.target.value })
-                          }
-                          placeholder="Name of Wife/Husband/Mother/Father"
+                          value={newNextOfKin.full_name}
+                          onChange={(e) => setNewNextOfKin({ ...newNextOfKin, full_name: e.target.value })}
                         />
                       </div>
 
                       <div className="space-y-2">
                         <Label>Relationship*</Label>
                         <Select
-                          value={newEmergencyContact.relationship}
-                          onValueChange={(v) =>
-                            setNewEmergencyContact({ ...newEmergencyContact, relationship: v })
-                          }
+                          value={newNextOfKin.relationship}
+                          onValueChange={(v) => setNewNextOfKin({ ...newNextOfKin, relationship: v })}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Please select" />
@@ -3031,40 +2898,220 @@ const Profile = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Phone*</Label>
+                        <Label>Place Birth</Label>
                         <Input
-                          value={newEmergencyContact.phone}
+                          value={newNextOfKin.place_of_birth}
                           onChange={(e) =>
-                            setNewEmergencyContact({
-                              ...newEmergencyContact,
-                              phone: e.target.value,
-                            })
+                            setNewNextOfKin({ ...newNextOfKin, place_of_birth: e.target.value })
                           }
-                          placeholder="Phone Number +62 83"
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label>E Mail Address</Label>
+                        <Label>Date of Birth</Label>
                         <Input
-                          type="email"
-                          value={newEmergencyContact.email}
+                          type="date"
+                          value={newNextOfKin.date_of_birth}
                           onChange={(e) =>
-                            setNewEmergencyContact({ ...newEmergencyContact, email: e.target.value })
+                            setNewNextOfKin({ ...newNextOfKin, date_of_birth: e.target.value })
                           }
-                          placeholder="Ignore if not there"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Signature</Label>
+                        <Input
+                          value={newNextOfKin.signature}
+                          onChange={(e) =>
+                            setNewNextOfKin({ ...newNextOfKin, signature: e.target.value })
+                          }
                         />
                       </div>
 
                       <Button
                         type="button"
-                        onClick={handleAddEmergencyContact}
+                        onClick={handleAddNextOfKin}
                         className="bg-destructive hover:bg-destructive/90"
                       >
                         Save
                       </Button>
                     </div>
-                  </>
+                  </div>
+
+                  {/* Table Card - Right (larger) */}
+                  <div className="xl:col-span-2">
+                    {nextOfKins.length > 0 ? (
+                      <div className="border rounded-lg overflow-hidden">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Relationship</TableHead>
+                              <TableHead>Place Birth</TableHead>
+                              <TableHead>Date of Birth</TableHead>
+                              <TableHead>Signature</TableHead>
+                              <TableHead className="w-[100px]"></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {nextOfKins.map((row) => (
+                              <TableRow key={row.id}>
+                                <TableCell>{row.full_name}</TableCell>
+                                <TableCell>{row.relationship}</TableCell>
+                                <TableCell>{row.place_of_birth}</TableCell>
+                                <TableCell>{row.date_of_birth}</TableCell>
+                                <TableCell>{row.signature}</TableCell>
+                                <TableCell>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    className="h-8 px-3"
+                                    onClick={() => handleDeleteNextOfKin(row.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg text-muted-foreground bg-muted/30 h-full">
+                        <p>No next of kin records added yet.</p>
+                        <p className="text-sm">Fill out the form to add your next of kin.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="emergency_contact" className="mt-6">
+                {loadingEmergencyContacts ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    {/* Form Card - Left (smaller) */}
+                    <div className="xl:col-span-1">
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-2">
+                          <Label>Full Name*</Label>
+                          <Input
+                            value={newEmergencyContact.full_name}
+                            onChange={(e) =>
+                              setNewEmergencyContact({ ...newEmergencyContact, full_name: e.target.value })
+                            }
+                            placeholder="Name of Wife/Husband/Mother/Father"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Relationship*</Label>
+                          <Select
+                            value={newEmergencyContact.relationship}
+                            onValueChange={(v) =>
+                              setNewEmergencyContact({ ...newEmergencyContact, relationship: v })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Please select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Wife">Wife</SelectItem>
+                              <SelectItem value="Husband">Husband</SelectItem>
+                              <SelectItem value="Mother">Mother</SelectItem>
+                              <SelectItem value="Father">Father</SelectItem>
+                              <SelectItem value="Son">Son</SelectItem>
+                              <SelectItem value="Daughter">Daughter</SelectItem>
+                              <SelectItem value="Uncle">Uncle</SelectItem>
+                              <SelectItem value="Aunty">Aunty</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Phone*</Label>
+                          <Input
+                            value={newEmergencyContact.phone}
+                            onChange={(e) =>
+                              setNewEmergencyContact({
+                                ...newEmergencyContact,
+                                phone: e.target.value,
+                              })
+                            }
+                            placeholder="Phone Number +62 83"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>E Mail Address</Label>
+                          <Input
+                            type="email"
+                            value={newEmergencyContact.email}
+                            onChange={(e) =>
+                              setNewEmergencyContact({ ...newEmergencyContact, email: e.target.value })
+                            }
+                            placeholder="Ignore if not there"
+                          />
+                        </div>
+
+                        <Button
+                          type="button"
+                          onClick={handleAddEmergencyContact}
+                          className="bg-destructive hover:bg-destructive/90"
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Table Card - Right (larger) */}
+                    <div className="xl:col-span-2">
+                      {emergencyContacts.length > 0 ? (
+                        <div className="border rounded-lg overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Relationship</TableHead>
+                                <TableHead>Contact Number</TableHead>
+                                <TableHead>E Mail Address</TableHead>
+                                <TableHead className="w-[100px]"></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {emergencyContacts.map((row) => (
+                                <TableRow key={row.id}>
+                                  <TableCell>{row.full_name}</TableCell>
+                                  <TableCell>{row.relationship}</TableCell>
+                                  <TableCell>{row.phone}</TableCell>
+                                  <TableCell>{row.email || "-"}</TableCell>
+                                  <TableCell>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="h-8 px-3"
+                                      type="button"
+                                      onClick={() => handleDeleteEmergencyContact(row.id)}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-lg text-muted-foreground bg-muted/30 h-full">
+                          <p>No emergency contacts added yet.</p>
+                          <p className="text-sm">Fill out the form to add your emergency contact.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </TabsContent>
             </Tabs>
