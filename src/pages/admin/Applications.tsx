@@ -602,11 +602,11 @@ const AdminApplications = () => {
       setApplications((prev) =>
         prev.map((a) =>
           a.id === activeApplication.id
-            ? { 
-                ...a, 
-                remarks: remarkValue,
-                candidate: { ...a.candidate, profile_step_unlocked: profileStepValue } 
-              }
+            ? {
+              ...a,
+              remarks: remarkValue,
+              candidate: { ...a.candidate, profile_step_unlocked: profileStepValue }
+            }
             : a
         )
       );
@@ -2314,9 +2314,9 @@ const AdminApplications = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-center">
-            <img 
-              src={bmiReferenceImage} 
-              alt="BMI Reference Chart" 
+            <img
+              src={bmiReferenceImage}
+              alt="BMI Reference Chart"
               className="max-w-full h-auto rounded-lg border"
             />
           </div>
@@ -2598,7 +2598,7 @@ const AdminApplications = () => {
           </div>
 
           {/* Scrollable Table */}
-          <div className="overflow-x-auto border rounded-lg">
+          <div className="table-responsive overflow-x-auto border rounded-lg">
             <Table>
               <TableHeader>
                 <TableRow>

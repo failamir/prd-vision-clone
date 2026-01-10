@@ -392,6 +392,48 @@ All colors MUST be HSL.
     animation: partners-marquee-scroll 15s linear infinite;
   }
 
+  /* Mobile Responsive Utilities */
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
+  }
+
+  @media (max-width: 768px) {
+    .table-responsive {
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-responsive table {
+      min-width: 600px;
+      /* Ensure table doesn't collapse too much */
+    }
+  }
+
+  /* Ensure tabs can scroll horizontally on mobile */
+  @media (max-width: 768px) {
+    [role="tablist"] {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+
+    [role="tablist"]::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    [role="tablist"]::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    [role="tablist"]::-webkit-scrollbar-thumb {
+      background: hsl(var(--muted-foreground) / 0.3);
+      border-radius: 2px;
+    }
+  }
+
 }
 
 @keyframes partners-marquee-scroll {

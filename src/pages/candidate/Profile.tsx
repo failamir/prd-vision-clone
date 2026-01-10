@@ -64,6 +64,7 @@ const Profile = () => {
   const [deckExperiences, setDeckExperiences] = useState<any[]>([]);
   const [loadingDeck, setLoadingDeck] = useState(false);
   const [uploadingDeck, setUploadingDeck] = useState(false);
+  const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
   const [newDeck, setNewDeck] = useState({
     vessel_name_type: "",
     gt_loa: "",
@@ -78,6 +79,7 @@ const Profile = () => {
   const [deckCertificates, setDeckCertificates] = useState<any[]>([]);
   const [loadingCertificate, setLoadingCertificate] = useState(false);
   const [uploadingCertificate, setUploadingCertificate] = useState(false);
+  const [editingCertificateId, setEditingCertificateId] = useState<string | null>(null);
   const [newCertificate, setNewCertificate] = useState({
     type_certificate: "",
     institution: "",
@@ -89,6 +91,7 @@ const Profile = () => {
   const [travelDocuments, setTravelDocuments] = useState<any[]>([]);
   const [loadingTravel, setLoadingTravel] = useState(false);
   const [uploadingTravel, setUploadingTravel] = useState(false);
+  const [editingTravelId, setEditingTravelId] = useState<string | null>(null);
   const [newTravel, setNewTravel] = useState({
     document_type: "",
     document_number: "",
@@ -98,6 +101,7 @@ const Profile = () => {
     file: null as File | null,
   });
   const [nextOfKins, setNextOfKins] = useState<any[]>([]);
+  const [editingNextOfKinId, setEditingNextOfKinId] = useState<string | null>(null);
   const [newNextOfKin, setNewNextOfKin] = useState({
     full_name: "",
     relationship: "",
@@ -107,6 +111,7 @@ const Profile = () => {
   });
   const [educations, setEducations] = useState<any[]>([]);
   const [loadingEducation, setLoadingEducation] = useState(false);
+  const [editingEducationId, setEditingEducationId] = useState<string | null>(null);
   const [newEducation, setNewEducation] = useState({
     institution: "",
     start_date: "",
@@ -114,6 +119,7 @@ const Profile = () => {
     degree: "",
   });
   const [references, setReferences] = useState<any[]>([]);
+  const [editingReferenceId, setEditingReferenceId] = useState<string | null>(null);
   const [newReference, setNewReference] = useState({
     full_name: "",
     company: "",
@@ -124,6 +130,7 @@ const Profile = () => {
   });
   const [emergencyContacts, setEmergencyContacts] = useState<any[]>([]);
   const [loadingEmergencyContacts, setLoadingEmergencyContacts] = useState(false);
+  const [editingEmergencyContactId, setEditingEmergencyContactId] = useState<string | null>(null);
   const [newEmergencyContact, setNewEmergencyContact] = useState({
     full_name: "",
     relationship: "",
@@ -1249,6 +1256,176 @@ const Profile = () => {
       toast({ title: "Error deleting emergency contact", variant: "destructive" });
     }
   };
+  // ============================
+  // EDIT HANDLERS TO BE ADDED AFTER LINE 1258
+  // ============================
+
+  // Edit Handlers for Step 3
+  const handleEditDeck = (row: any) => {
+    setEditingDeckId(row.id);
+    setNewDeck({
+      vessel_name_type: row.vessel_name_type || "",
+      gt_loa: row.gt_loa || "",
+      route: row.route || "",
+      position: row.position || "",
+      start_date: row.start_date || "",
+      end_date: row.end_date || "",
+      reason: row.reason || "",
+      job_description: row.job_description || "",
+      file: null,
+    });
+  };
+
+  const handleCancelDeckEdit = () => {
+    setEditingDeckId(null);
+    setNewDeck({
+      vessel_name_type: "",
+      gt_loa: "",
+      route: "",
+      position: "",
+      start_date: "",
+      end_date: "",
+      reason: "",
+      job_description: "",
+      file: null,
+    });
+  };
+
+  const handleEditCertificate = (row: any) => {
+    setEditingCertificateId(row.id);
+    setNewCertificate({
+      type_certificate: row.type_certificate || "",
+      institution: row.institution || "",
+      place: row.place || "",
+      cert_number: row.cert_number || "",
+      date_of_issue: row.date_of_issue || "",
+      file: null,
+    });
+  };
+
+  const handleCancelCertificateEdit = () => {
+    setEditingCertificateId(null);
+    setNewCertificate({
+      type_certificate: "",
+      institution: "",
+      place: "",
+      cert_number: "",
+      date_of_issue: "",
+      file: null,
+    });
+  };
+
+  const handleEditTravel = (row: any) => {
+    setEditingTravelId(row.id);
+    setNewTravel({
+      document_type: row.document_type || "",
+      document_number: row.document_number || "",
+      issuing_authority: row.issuing_authority || "",
+      issue_date: row.issue_date || "",
+      expiry_date: row.expiry_date || "",
+      file: null,
+    });
+  };
+
+  const handleCancelTravelEdit = () => {
+    setEditingTravelId(null);
+    setNewTravel({
+      document_type: "",
+      document_number: "",
+      issuing_authority: "",
+      issue_date: "",
+      expiry_date: "",
+      file: null,
+    });
+  };
+
+  const handleEditEducation = (row: any) => {
+    setEditingEducationId(row.id);
+    setNewEducation({
+      institution: row.institution || "",
+      start_date: row.start_date || "",
+      end_date: row.end_date || "",
+      degree: row.degree || "",
+    });
+  };
+
+  const handleCancelEducationEdit = () => {
+    setEditingEducationId(null);
+    setNewEducation({
+      institution: "",
+      start_date: "",
+      end_date: "",
+      degree: "",
+    });
+  };
+
+  const handleEditReference = (row: any) => {
+    setEditingReferenceId(row.id);
+    setNewReference({
+      full_name: row.full_name || "",
+      company: row.company || "",
+      position: row.position || "",
+      phone: row.phone || "",
+      email: row.email || "",
+      relationship: row.relationship || "",
+    });
+  };
+
+  const handleCancelReferenceEdit = () => {
+    setEditingReferenceId(null);
+    setNewReference({
+      full_name: "",
+      company: "",
+      position: "",
+      phone: "",
+      email: "",
+      relationship: "",
+    });
+  };
+
+  const handleEditNextOfKin = (row: any) => {
+    setEditingNextOfKinId(row.id);
+    setNewNextOfKin({
+      full_name: row.full_name || "",
+      relationship: row.relationship || "",
+      place_of_birth: row.place_of_birth || "",
+      date_of_birth: row.date_of_birth || "",
+      signature: row.signature || "",
+    });
+  };
+
+  const handleCancelNextOfKinEdit = () => {
+    setEditingNextOfKinId(null);
+    setNewNextOfKin({
+      full_name: "",
+      relationship: "",
+      place_of_birth: "",
+      date_of_birth: "",
+      signature: "",
+    });
+  };
+
+  const handleEditEmergencyContact = (row: any) => {
+    setEditingEmergencyContactId(row.id);
+    setNewEmergencyContact({
+      full_name: row.full_name || "",
+      relationship: row.relationship || "",
+      phone: row.phone || "",
+      email: row.email || "",
+      address: row.address || "",
+    });
+  };
+
+  const handleCancelEmergencyContactEdit = () => {
+    setEditingEmergencyContactId(null);
+    setNewEmergencyContact({
+      full_name: "",
+      relationship: "",
+      phone: "",
+      email: "",
+      address: "",
+    });
+  };
 
   // CV Functions
   const fetchCVs = async () => {
@@ -1900,7 +2077,7 @@ const Profile = () => {
             ) : (
               <>
                 {medicalTests.length > 0 && (
-                  <div className="mb-6 border rounded-lg overflow-hidden">
+                  <div className="table-responsive mb-6 border rounded-lg overflow-hidden">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -2178,22 +2355,35 @@ const Profile = () => {
                           </>
                         )}
 
-                        <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck}>
-                          {uploadingDeck ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Saving...
-                            </>
-                          ) : (
-                            "Add"
+                        <div className="flex gap-2">
+                          {editingDeckId && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={handleCancelDeckEdit}
+                            >
+                              Cancel
+                            </Button>
                           )}
-                        </Button>
+                          <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck} className="flex-1">
+                            {uploadingDeck ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Saving...
+                              </>
+                            ) : editingDeckId ? (
+                              "Update"
+                            ) : (
+                              "Add"
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </div>
 
                     <div className="xl:col-span-2 order-1 xl:order-2">
                       {deckExperiences.length > 0 ? (
-                        <div className="border rounded-lg overflow-hidden">
+                        <div className="table-responsive border rounded-lg overflow-hidden">
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -2267,9 +2457,24 @@ const Profile = () => {
                                     </>
                                   )}
                                   <TableCell>
-                                    <Button size="sm" variant="destructive" className="h-8 px-3" onClick={() => handleDeleteDeck(row.id, row.file_path)}>
-                                      Delete
-                                    </Button>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-8 px-3"
+                                        onClick={() => handleEditDeck(row)}
+                                      >
+                                        Edit
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        className="h-8 px-3"
+                                        onClick={() => handleDeleteDeck(row.id, row.file_path)}
+                                      >
+                                        Delete
+                                      </Button>
+                                    </div>
                                   </TableCell>
                                 </TableRow>
                               ))}
@@ -2395,7 +2600,7 @@ const Profile = () => {
                     {/* Data Card - Right Side */}
                     <div className="xl:col-span-2 order-1 xl:order-2">
                       {deckCertificates.length > 0 ? (
-                        <div className="border rounded-lg overflow-hidden">
+                        <div className="table-responsive border rounded-lg overflow-hidden">
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -2557,7 +2762,7 @@ const Profile = () => {
                     {/* Table Card - Right (larger) */}
                     <div className="xl:col-span-2">
                       {travelDocuments.length > 0 ? (
-                        <div className="border rounded-lg overflow-hidden">
+                        <div className="table-responsive border rounded-lg overflow-hidden">
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -2686,7 +2891,7 @@ const Profile = () => {
                     {/* Table Card - Right (larger) */}
                     <div className="xl:col-span-2">
                       {educations.length > 0 ? (
-                        <div className="border rounded-lg overflow-hidden">
+                        <div className="table-responsive border rounded-lg overflow-hidden">
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -2814,7 +3019,7 @@ const Profile = () => {
                   {/* Table Card - Right (larger) */}
                   <div className="xl:col-span-2">
                     {references.length > 0 ? (
-                      <div className="border rounded-lg overflow-hidden">
+                      <div className="table-responsive border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -2941,7 +3146,7 @@ const Profile = () => {
                   {/* Table Card - Right (larger) */}
                   <div className="xl:col-span-2">
                     {nextOfKins.length > 0 ? (
-                      <div className="border rounded-lg overflow-hidden">
+                      <div className="table-responsive border rounded-lg overflow-hidden">
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -3070,7 +3275,7 @@ const Profile = () => {
                     {/* Table Card - Right (larger) */}
                     <div className="xl:col-span-2">
                       {emergencyContacts.length > 0 ? (
-                        <div className="border rounded-lg overflow-hidden">
+                        <div className="table-responsive border rounded-lg overflow-hidden">
                           <Table>
                             <TableHeader>
                               <TableRow>
