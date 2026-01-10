@@ -3145,7 +3145,7 @@ const Profile = () => {
           </div>
         </div>
       )}
-      <div className="max-w-4xl">
+      <div className="max-w-8xl">
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-foreground mb-2">My Profile</h2>
           <p className="text-muted-foreground">Complete your profile in {totalSteps} easy steps</p>
