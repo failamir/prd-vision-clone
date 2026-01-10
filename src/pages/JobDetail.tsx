@@ -291,12 +291,6 @@ const JobDetail = () => {
                     <span className="text-foreground">{job.job_type}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <DollarSign className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-foreground font-medium">
-                      {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
                     <Users className="w-4 h-4 text-muted-foreground" />
                     <span className="text-foreground">{job.positions_available} positions</span>
                   </div>
