@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Phone, Monitor, Plus, Minus, MapPin, Send, Loader2 } from 'lucide-react';
+import { Mail, Phone, Monitor, Plus, Minus, MapPin, Send, Loader2, AlertCircle } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { FadeIn } from '@/components/FadeIn';
@@ -44,17 +44,68 @@ const ContactPage: React.FC = () => {
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
   };
 
   const { toast } = useToast(); // Assuming useToast is available via hook
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case 'name':
+        if (!value.trim()) return 'Name is required';
+        return '';
+      case 'email':
+        if (!value.trim()) return 'Email is required';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Please enter a valid email address';
+        return '';
+      case 'subject':
+        if (!value.trim()) return 'Subject is required';
+        return '';
+      case 'message':
+        if (!value.trim()) return 'Message is required';
+        return '';
+      default:
+        return '';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate all fields
+    const newErrors: Record<string, string> = {};
+    newErrors.name = validateField('name', formData.name);
+    newErrors.email = validateField('email', formData.email);
+    newErrors.subject = validateField('subject', formData.subject);
+    newErrors.message = validateField('message', formData.message);
+
+    // Filter out empty errors
+    const filteredErrors = Object.fromEntries(
+      Object.entries(newErrors).filter(([_, v]) => v !== '')
+    );
+
+    if (Object.keys(filteredErrors).length > 0) {
+      setErrors(filteredErrors);
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -235,7 +286,7 @@ const ContactPage: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Your Name
+                        Your Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -243,14 +294,21 @@ const ContactPage: React.FC = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         placeholder="Your Name"
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                        required
+                        className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none ${errors.name ? 'border-red-500' : 'border-gray-200'}`}
+                        aria-invalid={!!errors.name}
+                        aria-describedby={errors.name ? 'name-error' : undefined}
                       />
+                      {errors.name && (
+                        <p id="name-error" className="mt-2 text-sm text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.name}
+                        </p>
+                      )}
                     </div>
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Your Email
+                        Your Email <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
@@ -258,15 +316,22 @@ const ContactPage: React.FC = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         placeholder="your-email@example.com"
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                        required
+                        className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none ${errors.email ? 'border-red-500' : 'border-gray-200'}`}
+                        aria-invalid={!!errors.email}
+                        aria-describedby={errors.email ? 'email-error' : undefined}
                       />
+                      {errors.email && (
+                        <p id="email-error" className="mt-2 text-sm text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.email}
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Subject
+                      Subject <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -274,14 +339,21 @@ const ContactPage: React.FC = () => {
                       value={formData.subject}
                       onChange={handleInputChange}
                       placeholder="How can we help?"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                      required
+                      className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none ${errors.subject ? 'border-red-500' : 'border-gray-200'}`}
+                      aria-invalid={!!errors.subject}
+                      aria-describedby={errors.subject ? 'subject-error' : undefined}
                     />
+                    {errors.subject && (
+                      <p id="subject-error" className="mt-2 text-sm text-red-500 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.subject}
+                      </p>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Your Message
+                      Your Message <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       name="message"
@@ -289,9 +361,16 @@ const ContactPage: React.FC = () => {
                       onChange={handleInputChange}
                       rows={5}
                       placeholder="Write your message here..."
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none resize-none"
-                      required
+                      className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none resize-none ${errors.message ? 'border-red-500' : 'border-gray-200'}`}
+                      aria-invalid={!!errors.message}
+                      aria-describedby={errors.message ? 'message-error' : undefined}
                     />
+                    {errors.message && (
+                      <p id="message-error" className="mt-2 text-sm text-red-500 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.message}
+                      </p>
+                    )}
                   </div>
 
                   <button

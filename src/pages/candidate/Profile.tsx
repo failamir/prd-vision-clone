@@ -847,9 +847,18 @@ const Profile = () => {
 
   const handleAddDeck = async () => {
     if (!candidateId) return;
-    if (!newDeck.vessel_name_type || !newDeck.gt_loa || !newDeck.position || !newDeck.start_date || !newDeck.reason) {
-      toast({ title: "Please fill required fields", variant: "destructive" });
-      return;
+    
+    // Different validation based on department
+    if (department === "Hotel Department") {
+      if (!newDeck.vessel_name_type || !newDeck.position || !newDeck.start_date || !newDeck.reason || !newDeck.job_description) {
+        toast({ title: "Please fill required fields", variant: "destructive" });
+        return;
+      }
+    } else {
+      if (!newDeck.vessel_name_type || !newDeck.gt_loa || !newDeck.position || !newDeck.start_date || !newDeck.reason) {
+        toast({ title: "Please fill required fields", variant: "destructive" });
+        return;
+      }
     }
 
     setUploadingDeck(true);
