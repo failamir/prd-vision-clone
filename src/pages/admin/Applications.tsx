@@ -745,19 +745,23 @@ const AdminApplications = () => {
       if (candidateIds.length > 0) {
         const uniqueCandidateIds = Array.from(new Set(candidateIds)) as string[];
 
+        // Fetch travel documents that contain C1D or VISA in document_type
         const { data: travelDocs, error: travelError } = await supabase
           .from("candidate_travel_documents" as any)
           .select("candidate_id, expiry_date, document_type")
           .in("candidate_id", uniqueCandidateIds)
-          .ilike("document_type", "%C1D%")
           .order("expiry_date", { ascending: false });
 
         if (travelError) throw travelError;
 
         const latestVisaByCandidate: Record<string, string | null> = {};
         (travelDocs || []).forEach((row: any) => {
-          if (latestVisaByCandidate[row.candidate_id] === undefined) {
-            latestVisaByCandidate[row.candidate_id] = row.expiry_date;
+          const docType = (row.document_type || "").toUpperCase();
+          // Match C1D or VISA document types
+          if (docType.includes("C1D") || docType.includes("VISA")) {
+            if (latestVisaByCandidate[row.candidate_id] === undefined) {
+              latestVisaByCandidate[row.candidate_id] = row.expiry_date;
+            }
           }
         });
 
