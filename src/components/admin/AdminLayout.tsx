@@ -15,8 +15,19 @@ import {
   Plane,
   MessageSquare,
   Key,
-  Mail
+  Mail,
+  User as UserIcon,
+  ChevronDown
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { DatabaseToggle } from "@/components/DatabaseToggle";
 import { useUser } from "@/contexts/UserContext";
@@ -30,8 +41,24 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useUser();
+  const { user, profile } = useUser();
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [userRoles, setUserRoles] = useState<string[]>([]);
+
+  // Fetch user roles
+  useEffect(() => {
+    const fetchRoles = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+      if (data) {
+        setUserRoles(data.map(r => r.role));
+      }
+    };
+    fetchRoles();
+  }, [user]);
 
   const fetchUnread = async () => {
     if (!user) return;
@@ -181,6 +208,63 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
       {/* Main content */}
       <main className="lg:ml-64 min-h-screen">
+        {/* Top Navbar */}
+        <header className="sticky top-0 z-20 bg-background border-b">
+          <div className="flex items-center justify-between px-4 lg:px-8 h-14">
+            {/* Left side - spacer for mobile menu button */}
+            <div className="lg:hidden w-10" />
+            
+            {/* Right side - User info */}
+            <div className="ml-auto flex items-center gap-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 h-auto py-1.5 px-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || user?.email} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        {profile?.full_name 
+                          ? profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+                          : user?.email?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden sm:flex flex-col items-start text-left">
+                      <span className="text-sm font-medium leading-none">
+                        {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+                      </span>
+                      <span className="text-xs text-muted-foreground leading-tight mt-0.5">
+                        {userRoles.length > 0 
+                          ? userRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')
+                          : 'No role'}
+                      </span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{profile?.full_name || 'User'}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-xs text-muted-foreground" disabled>
+                    <UserIcon className="h-4 w-4 mr-2" />
+                    {userRoles.length > 0 
+                      ? userRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')
+                      : 'No assigned role'}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </header>
+        
         <div className="p-8">
           {children}
         </div>
