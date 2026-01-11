@@ -877,6 +877,9 @@ const Profile = () => {
         if (uploadError) throw uploadError;
       }
 
+      // Determine experience_type based on department
+      const experienceType = department === "Hotel" || department === "Hotel Department" ? "Hotel" : "Ship";
+
       const { error } = await supabase
         .from("candidate_experience" as any)
         .insert({
@@ -891,6 +894,7 @@ const Profile = () => {
           job_description: newDeck.job_description,
           file_path: filePath,
           file_name: fileName,
+          experience_type: experienceType,
         });
       if (error) throw error;
 
