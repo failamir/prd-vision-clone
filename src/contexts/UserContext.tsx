@@ -18,30 +18,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      // Try standard profiles table first
-      let { data, error } = await (supabase as any)
-        .from('profiles')
+      // Try candidate_profiles table first with user_id
+      const { data, error } = await supabase
+        .from('candidate_profiles')
         .select('*')
-        .eq('id', userId)
-        .single();
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (error) {
-        // Fallback to candidate_profiles when profiles table doesn't exist or not found
-        const fallback = await supabase
-          .from('candidate_profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-        if (!fallback.error && fallback.data) {
-          data = fallback.data as any;
-        } else if (fallback.error) {
-          throw fallback.error;
-        }
+      if (!error && data) {
+        setProfile(data);
+      } else {
+        // No profile found, set to null
+        setProfile(null);
       }
-
-      setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      setProfile(null);
     }
   };
 
