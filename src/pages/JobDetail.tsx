@@ -276,7 +276,7 @@ const JobDetail = () => {
                       )}
                     </div>
                     {job.department && (
-                      <p className="text-secondary font-medium">{job.department}</p>
+                      <p className="text-muted-foreground font-medium">{job.department} Department</p>
                     )}
                   </div>
                 </div>
