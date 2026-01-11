@@ -2858,16 +2858,16 @@ const AdminApplications = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12 sticky left-0 z-20 bg-background">
+                  <TableHead className="w-[60px] min-w-[60px] sticky left-0 z-20 bg-background">
                     <Checkbox
                       checked={selectedIds.size === applications.length && applications.length > 0}
                       onCheckedChange={(checked) => checked ? handleSelectAll() : handleDeselectAll()}
                     />
                   </TableHead>
-                  <TableHead className="min-w-[180px] sticky left-[48px] z-20 bg-background">Remarks/Record</TableHead>
-                  <TableHead className="min-w-[150px] sticky left-[228px] z-20 bg-background">Crew Code</TableHead>
-                  <TableHead className="min-w-[80px] sticky left-[378px] z-20 bg-background">Photo</TableHead>
-                  <TableHead className="min-w-[120px] sticky left-[458px] z-20 bg-background">First Name</TableHead>
+                  <TableHead className="min-w-[180px] sticky left-[60px] z-20 bg-background">Remarks/Record</TableHead>
+                  <TableHead className="min-w-[150px] sticky left-[240px] z-20 bg-background">Crew Code</TableHead>
+                  <TableHead className="min-w-[80px] sticky left-[390px] z-20 bg-background">Photo</TableHead>
+                  <TableHead className="min-w-[120px] sticky left-[470px] z-20 bg-background">First Name</TableHead>
                   <TableHead className="min-w-[120px]">Last Name</TableHead>
                   <TableHead className="min-w-[130px]">Office Registered</TableHead>
                   <TableHead className="min-w-[120px]">Date of Entry</TableHead>
@@ -2929,13 +2929,13 @@ const AdminApplications = () => {
                   return filtered.slice(startIndex, endIndex);
                 })().map((app) => (
                   <TableRow key={app.id}>
-                    <TableCell className="sticky left-0 z-10 bg-background">
+                    <TableCell className="w-[60px] min-w-[60px] sticky left-0 z-10 bg-background">
                       <Checkbox
                         checked={selectedIds.has(app.id)}
                         onCheckedChange={() => handleToggleSelect(app.id)}
                       />
                     </TableCell>
-                    <TableCell className="sticky left-[48px] z-10 bg-background">
+                    <TableCell className="sticky left-[60px] z-10 bg-background">
                       <div className="flex flex-col gap-1">
                         <Button
                           variant="outline"
@@ -2956,8 +2956,8 @@ const AdminApplications = () => {
                         </Button>
                       </div>
                     </TableCell>
-                    <TableCell className="sticky left-[228px] z-10 bg-background">{app.crew_code || "-"}</TableCell>
-                    <TableCell className="sticky left-[378px] z-10 bg-background">
+                    <TableCell className="sticky left-[240px] z-10 bg-background">{app.crew_code || "-"}</TableCell>
+                    <TableCell className="sticky left-[390px] z-10 bg-background">
                       {app.candidate?.avatar_url || app.photo_url ? (
                         <img
                           src={app.candidate?.avatar_url || app.photo_url}
@@ -2966,7 +2966,7 @@ const AdminApplications = () => {
                         />
                       ) : "-"}
                     </TableCell>
-                    <TableCell className="font-medium sticky left-[458px] z-10 bg-background">{app.candidate.full_name.split(" ")[0]}</TableCell>
+                    <TableCell className="font-medium sticky left-[470px] z-10 bg-background">{app.candidate.full_name.split(" ")[0]}</TableCell>
                     <TableCell className="font-medium">{app.candidate.full_name.split(" ").slice(1).join(" ")}</TableCell>
                     <TableCell>{app.candidate.registration_city || app.office_registered || "-"}</TableCell>
                     <TableCell>{formatDate(app.applied_at || app.date_of_entry)}</TableCell>
