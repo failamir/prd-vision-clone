@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ChevronDown, ChevronUp, Download } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Download, Eye } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -205,6 +205,18 @@ const AdminApplications = () => {
   const [profileStepDialogOpen, setProfileStepDialogOpen] = useState(false);
   const [profileStepValue, setProfileStepValue] = useState<number>(1);
 
+  // Candidate View Dialog
+  const [candidateViewDialogOpen, setCandidateViewDialogOpen] = useState(false);
+  const [viewingCandidate, setViewingCandidate] = useState<Application | null>(null);
+  const [candidateExperiences, setCandidateExperiences] = useState<any[]>([]);
+  const [candidateEducation, setCandidateEducation] = useState<any[]>([]);
+  const [candidateCertificates, setCandidateCertificates] = useState<any[]>([]);
+  const [candidateTravelDocs, setCandidateTravelDocs] = useState<any[]>([]);
+  const [candidateEmergencyContacts, setCandidateEmergencyContacts] = useState<any[]>([]);
+  const [candidateNextOfKin, setCandidateNextOfKin] = useState<any[]>([]);
+  const [candidateReferences, setCandidateReferences] = useState<any[]>([]);
+  const [loadingCandidateData, setLoadingCandidateData] = useState(false);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -354,6 +366,43 @@ const AdminApplications = () => {
     setProfileStepValue(step);
     setSelectedRemark(`Step ${step}`);
     setRemarksDialogOpen(true);
+  };
+
+  const openCandidateViewDialog = async (app: Application) => {
+    setViewingCandidate(app);
+    setCandidateViewDialogOpen(true);
+    setLoadingCandidateData(true);
+
+    const candidateId = app.candidate_id;
+    if (!candidateId) {
+      setLoadingCandidateData(false);
+      return;
+    }
+
+    try {
+      // Fetch all candidate related data in parallel
+      const [expRes, eduRes, certRes, travelRes, emergencyRes, nokRes, refRes] = await Promise.all([
+        supabase.from("candidate_experience").select("*").eq("candidate_id", candidateId).order("start_date", { ascending: false }),
+        supabase.from("candidate_education").select("*").eq("candidate_id", candidateId).order("start_date", { ascending: false }),
+        supabase.from("candidate_certificates").select("*").eq("candidate_id", candidateId).order("date_of_issue", { ascending: false }),
+        supabase.from("candidate_travel_documents").select("*").eq("candidate_id", candidateId).order("expiry_date", { ascending: false }),
+        supabase.from("candidate_emergency_contacts").select("*").eq("candidate_id", candidateId),
+        supabase.from("candidate_next_of_kin").select("*").eq("candidate_id", candidateId),
+        supabase.from("candidate_references").select("*").eq("candidate_id", candidateId),
+      ]);
+
+      setCandidateExperiences(expRes.data || []);
+      setCandidateEducation(eduRes.data || []);
+      setCandidateCertificates(certRes.data || []);
+      setCandidateTravelDocs(travelRes.data || []);
+      setCandidateEmergencyContacts(emergencyRes.data || []);
+      setCandidateNextOfKin(nokRes.data || []);
+      setCandidateReferences(refRes.data || []);
+    } catch (error) {
+      toast({ title: "Error loading candidate data", variant: "destructive" });
+    } finally {
+      setLoadingCandidateData(false);
+    }
   };
 
   const fetchLatestReference = async (candidateId: string) => {
@@ -2309,6 +2358,209 @@ const AdminApplications = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Candidate View Dialog */}
+      <Dialog open={candidateViewDialogOpen} onOpenChange={setCandidateViewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              <div className="flex items-center gap-3">
+                {viewingCandidate?.candidate?.avatar_url && (
+                  <img
+                    src={viewingCandidate.candidate.avatar_url}
+                    alt="Photo"
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                )}
+                <div>
+                  <div className="text-lg">{viewingCandidate?.candidate?.full_name || "-"}</div>
+                  <div className="text-sm font-normal text-muted-foreground">{viewingCandidate?.candidate?.email}</div>
+                </div>
+              </div>
+            </DialogTitle>
+            <DialogDescription>
+              Application for: {viewingCandidate?.job?.title} at {viewingCandidate?.job?.company_name}
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingCandidateData ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Personal Information */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Personal Information</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Phone:</span> {viewingCandidate?.candidate?.phone || "-"}</div>
+                  <div><span className="text-muted-foreground">Gender:</span> {viewingCandidate?.candidate?.gender || "-"}</div>
+                  <div><span className="text-muted-foreground">DOB:</span> {formatDate(viewingCandidate?.candidate?.date_of_birth)}</div>
+                  <div><span className="text-muted-foreground">Height:</span> {viewingCandidate?.candidate?.height_cm ? `${viewingCandidate.candidate.height_cm} cm` : "-"}</div>
+                  <div><span className="text-muted-foreground">Weight:</span> {viewingCandidate?.candidate?.weight_kg ? `${viewingCandidate.candidate.weight_kg} kg` : "-"}</div>
+                  <div><span className="text-muted-foreground">Office:</span> {viewingCandidate?.candidate?.registration_city || "-"}</div>
+                  <div><span className="text-muted-foreground">Step:</span> Step {(viewingCandidate?.candidate as any)?.profile_step_unlocked || 1}</div>
+                  <div><span className="text-muted-foreground">Status:</span> {viewingCandidate?.remarks || viewingCandidate?.status || "-"}</div>
+                  <div><span className="text-muted-foreground">Crew Code:</span> {viewingCandidate?.crew_code || "-"}</div>
+                </div>
+              </div>
+
+              {/* Application Details */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Application Details</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Position:</span> {viewingCandidate?.job?.title || "-"}</div>
+                  <div><span className="text-muted-foreground">Department:</span> {viewingCandidate?.job?.department || "-"}</div>
+                  <div><span className="text-muted-foreground">Company:</span> {viewingCandidate?.job?.company_name || "-"}</div>
+                  <div><span className="text-muted-foreground">Applied:</span> {formatDate(viewingCandidate?.applied_at || viewingCandidate?.date_of_entry)}</div>
+                  <div><span className="text-muted-foreground">Suitable:</span> {viewingCandidate?.suitable || "-"}</div>
+                  <div><span className="text-muted-foreground">Interview Result:</span> {viewingCandidate?.interview_result || "-"}</div>
+                </div>
+              </div>
+
+              {/* Work Experience */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Work Experience ({candidateExperiences.length})</h3>
+                {candidateExperiences.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No experience records</p>
+                ) : (
+                  <div className="space-y-2">
+                    {candidateExperiences.slice(0, 3).map((exp, idx) => (
+                      <div key={idx} className="border rounded p-2 text-sm">
+                        <div className="font-medium">{exp.position}</div>
+                        <div className="text-muted-foreground">{exp.company || exp.vessel_name_type || "-"}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {exp.start_date ? formatDate(exp.start_date) : ""} - {exp.end_date ? formatDate(exp.end_date) : "Present"}
+                        </div>
+                      </div>
+                    ))}
+                    {candidateExperiences.length > 3 && (
+                      <p className="text-xs text-muted-foreground">+{candidateExperiences.length - 3} more experiences</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Education */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Education ({candidateEducation.length})</h3>
+                {candidateEducation.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No education records</p>
+                ) : (
+                  <div className="space-y-2">
+                    {candidateEducation.slice(0, 3).map((edu, idx) => (
+                      <div key={idx} className="border rounded p-2 text-sm">
+                        <div className="font-medium">{edu.degree}</div>
+                        <div className="text-muted-foreground">{edu.institution}</div>
+                        <div className="text-xs text-muted-foreground">{edu.field_of_study || ""}</div>
+                      </div>
+                    ))}
+                    {candidateEducation.length > 3 && (
+                      <p className="text-xs text-muted-foreground">+{candidateEducation.length - 3} more education records</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Certificates */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Certificates ({candidateCertificates.length})</h3>
+                {candidateCertificates.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No certificates</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {candidateCertificates.map((cert, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-xs">
+                        {cert.type_certificate}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Travel Documents */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Travel Documents ({candidateTravelDocs.length})</h3>
+                {candidateTravelDocs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No travel documents</p>
+                ) : (
+                  <div className="space-y-2">
+                    {candidateTravelDocs.map((doc, idx) => (
+                      <div key={idx} className="border rounded p-2 text-sm flex justify-between">
+                        <div>
+                          <div className="font-medium">{doc.document_type}</div>
+                          <div className="text-xs text-muted-foreground">No: {doc.document_number || "-"}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-muted-foreground">Expires: {formatDate(doc.expiry_date)}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Emergency Contacts & Next of Kin */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 text-primary">Emergency Contacts ({candidateEmergencyContacts.length})</h3>
+                  {candidateEmergencyContacts.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No emergency contacts</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {candidateEmergencyContacts.map((contact, idx) => (
+                        <div key={idx} className="border rounded p-2 text-sm">
+                          <div className="font-medium">{contact.full_name}</div>
+                          <div className="text-muted-foreground">{contact.relationship}</div>
+                          <div className="text-xs text-muted-foreground">{contact.phone}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 text-primary">Next of Kin ({candidateNextOfKin.length})</h3>
+                  {candidateNextOfKin.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No next of kin</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {candidateNextOfKin.map((nok, idx) => (
+                        <div key={idx} className="border rounded p-2 text-sm">
+                          <div className="font-medium">{nok.full_name}</div>
+                          <div className="text-muted-foreground">{nok.relationship}</div>
+                          <div className="text-xs text-muted-foreground">DOB: {formatDate(nok.date_of_birth)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* References */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">References ({candidateReferences.length})</h3>
+                {candidateReferences.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No references</p>
+                ) : (
+                  <div className="space-y-2">
+                    {candidateReferences.map((ref, idx) => (
+                      <div key={idx} className="border rounded p-2 text-sm">
+                        <div className="font-medium">{ref.full_name}</div>
+                        <div className="text-muted-foreground">{ref.company} - {ref.position}</div>
+                        <div className="text-xs text-muted-foreground">{ref.phone}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button type="button" onClick={() => setCandidateViewDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={referenceDialogOpen} onOpenChange={setReferenceDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -2685,15 +2937,15 @@ const AdminApplications = () => {
                     </TableCell>
                     <TableCell className="sticky left-[48px] z-10 bg-background">
                       <div className="flex flex-col gap-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {app.remarks || app.status}
-                        </Badge>
-                        <Badge variant={
-                          (app.candidate as any)?.profile_step_unlocked === 3 ? "default" :
-                            (app.candidate as any)?.profile_step_unlocked === 2 ? "secondary" : "outline"
-                        } className="text-xs">
-                          Step {(app.candidate as any)?.profile_step_unlocked || 1}
-                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs gap-1"
+                          onClick={() => openCandidateViewDialog(app)}
+                        >
+                          <Eye className="w-3 h-3" />
+                          View
+                        </Button>
                         <Button
                           variant="link"
                           size="sm"
