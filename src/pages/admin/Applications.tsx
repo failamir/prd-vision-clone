@@ -144,6 +144,7 @@ const AdminApplications = () => {
   const [referenceLoading, setReferenceLoading] = useState(false);
   const [latestReference, setLatestReference] = useState<any | null>(null);
   const [latestExperienceByCandidate, setLatestExperienceByCandidate] = useState<Record<string, any>>({});
+  const [allExperiencesByCandidate, setAllExperiencesByCandidate] = useState<Record<string, any[]>>({});
   const [latestEducationByCandidate, setLatestEducationByCandidate] = useState<Record<string, any>>({});
   const [experienceDialogOpen, setExperienceDialogOpen] = useState(false);
   const [activeExperience, setActiveExperience] = useState<any | null>(null);
@@ -850,13 +851,21 @@ const AdminApplications = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      const map: Record<string, any> = {};
+      const latestMap: Record<string, any> = {};
+      const allMap: Record<string, any[]> = {};
       (data || []).forEach((row: any) => {
-        if (!map[row.candidate_id]) {
-          map[row.candidate_id] = row;
+        // Latest experience per candidate
+        if (!latestMap[row.candidate_id]) {
+          latestMap[row.candidate_id] = row;
         }
+        // All experiences per candidate
+        if (!allMap[row.candidate_id]) {
+          allMap[row.candidate_id] = [];
+        }
+        allMap[row.candidate_id].push(row);
       });
-      setLatestExperienceByCandidate(map);
+      setLatestExperienceByCandidate(latestMap);
+      setAllExperiencesByCandidate(allMap);
     } catch (e) { }
   };
 
@@ -978,43 +987,46 @@ const AdminApplications = () => {
     });
   };
 
-  const getLatestExperienceText = (candidateId?: string, fallback?: string) => {
+  const getLatestExperienceText = (candidateId?: string, jobDepartment?: string, fallback?: string) => {
     if (!candidateId) return fallback || "-";
-    const exp = latestExperienceByCandidate[candidateId];
-    if (!exp) return fallback || "-";
-    const parts = [exp.position, exp.company, exp.vessel_name_type].filter(Boolean).join(" / ");
+    const allExps = allExperiencesByCandidate[candidateId];
+    if (!allExps || allExps.length === 0) return fallback || "-";
+
+    // Filter experiences based on job department
+    const department = (jobDepartment || "").toLowerCase();
+    const isHotelDepartment = department.includes("hotel");
+    const targetType = isHotelDepartment ? "hotel" : "ship";
+    const filteredExps = allExps.filter((exp: any) => {
+      const expType = (exp.experience_type || "Hotel").toLowerCase();
+      return expType === targetType;
+    });
+
+    if (filteredExps.length === 0) return fallback || "-";
+    const exp = filteredExps[0]; // Latest experience of this type
+
+    const parts = [exp.position, exp.company || exp.vessel_name_type].filter(Boolean).join(" @ ");
     const start = exp.start_date ? formatDate(exp.start_date) : "";
     const end = exp.is_current ? "Present" : (exp.end_date ? formatDate(exp.end_date) : "");
     const period = (start || end) ? ` (${[start, end].filter(Boolean).join(" - ")})` : "";
     return `${parts}${period}`;
   };
 
-  const getShipExperienceFlag = (candidateId?: string) => {
+  const getShipExperienceFlag = (candidateId?: string, jobDepartment?: string) => {
     if (!candidateId) return "-";
-    const exp = latestExperienceByCandidate[candidateId];
-    if (!exp) return "-";
+    const allExps = allExperiencesByCandidate[candidateId];
+    if (!allExps || allExps.length === 0) return "N";
 
-    const rawType = (exp.experience_type || "").toString().toLowerCase();
-    const rawPosition = (exp.position || "").toString().toLowerCase();
-    const rawVessel = (exp.vessel_name_type || "").toString().toLowerCase();
+    // Check if candidate has any experience matching the job department
+    const department = (jobDepartment || "").toLowerCase();
+    const isHotelDepartment = department.includes("hotel");
+    const targetType = isHotelDepartment ? "hotel" : "ship";
+    
+    const hasMatchingExperience = allExps.some((exp: any) => {
+      const expType = (exp.experience_type || "Hotel").toLowerCase();
+      return expType === targetType;
+    });
 
-    const isDeckOrEngine =
-      rawType.includes("deck") ||
-      rawType.includes("engine") ||
-      rawPosition.includes("deck") ||
-      rawPosition.includes("eng") ||
-      rawVessel.includes("deck") ||
-      rawVessel.includes("engine");
-
-    const isHotelOrOther =
-      rawType.includes("hotel") ||
-      rawType.includes("other") ||
-      rawPosition.includes("hotel") ||
-      rawVessel.includes("hotel");
-
-    if (isDeckOrEngine) return "Yes";
-    if (isHotelOrOther) return "No";
-    return "-";
+    return hasMatchingExperience ? "Y" : "N";
   };
 
   const getLatestEducationText = (candidateId?: string, fallback?: string) => {
@@ -1354,9 +1366,9 @@ const AdminApplications = () => {
         dash(app.candidate?.date_of_birth ? formatDate(app.candidate.date_of_birth) : "-"),
         dash(app.candidate?.date_of_birth ? calculateAge(app.candidate.date_of_birth) : "-"),
         dash(app.candidate?.weight_kg && app.candidate?.height_cm ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}` : "-"),
-        dash(getShipExperienceFlag(app.candidate_id)),
+        dash(getShipExperienceFlag(app.candidate_id, app.job?.department)),
         dash(app.c1d_expiry_date ? formatDate(app.c1d_expiry_date) : "-"),
-        dash(getLatestExperienceText(app.candidate_id, app.previous_experience)),
+        dash(getLatestExperienceText(app.candidate_id, app.job?.department, app.previous_experience)),
         dash(getLatestEducationText(app.candidate_id, app.education_background)),
         dash(app.contact_no || app.candidate?.phone),
         dash(app.candidate?.email),
@@ -2906,8 +2918,8 @@ const AdminApplications = () => {
                   <TableHead className="min-w-[60px]">Age</TableHead>
                   <TableHead className="min-w-[110px]">Weight/Height</TableHead>
                   <TableHead className="min-w-[100px]">Reference</TableHead>
-                  <TableHead className="min-w-[110px]">Ship Experience</TableHead>
-                  <TableHead className="min-w-[130px]">Experience</TableHead>
+                  <TableHead className="min-w-[110px]">Has Exp</TableHead>
+                  <TableHead className="min-w-[200px]">Experience</TableHead>
                   <TableHead className="min-w-[130px]">C1D Expiry Date</TableHead>
                   <TableHead className="min-w-[160px]">Education Background</TableHead>
                   <TableHead className="min-w-[120px]">Contact No</TableHead>
@@ -3011,17 +3023,16 @@ const AdminApplications = () => {
                     <TableCell>
                       <Button variant="outline" size="sm" onClick={() => openReferenceDialog(app)}>View Reference</Button>
                     </TableCell>
-                    <TableCell>{getShipExperienceFlag(app.candidate_id)}</TableCell>
+                    <TableCell>
+                      <Badge variant={getShipExperienceFlag(app.candidate_id, app.job?.department) === "Y" ? "default" : "secondary"}>
+                        {getShipExperienceFlag(app.candidate_id, app.job?.department)}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
                         <span className="line-clamp-2 max-w-[220px]">
-                          {getLatestExperienceText(app.candidate_id, app.previous_experience)}
+                          {getLatestExperienceText(app.candidate_id, app.job?.department, app.previous_experience)}
                         </span>
-                        {latestExperienceByCandidate[app.candidate_id || ""] && (
-                          <div className="text-xs text-gray-500">
-                            {latestExperienceByCandidate[app.candidate_id || ""].position}
-                          </div>
-                        )}
                       </div>
                     </TableCell>
                     <TableCell>{formatDate(app.c1d_expiry_date)}</TableCell>
