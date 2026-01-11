@@ -74,6 +74,7 @@ const Profile = () => {
     end_date: "",
     reason: "",
     job_description: "",
+    experience_type: "" as "Hotel" | "Ship" | "",
     file: null as File | null,
   });
   const [deckCertificates, setDeckCertificates] = useState<any[]>([]);
@@ -877,8 +878,8 @@ const Profile = () => {
         if (uploadError) throw uploadError;
       }
 
-      // Determine experience_type based on department
-      const experienceType = department === "Hotel" || department === "Hotel Department" ? "Hotel" : "Ship";
+      // Determine experience_type - use manual selection if provided, otherwise based on department
+      const experienceType = newDeck.experience_type || (department === "Hotel" || department === "Hotel Department" ? "Hotel" : "Ship");
 
       const { error } = await supabase
         .from("candidate_experience" as any)
@@ -908,6 +909,7 @@ const Profile = () => {
         end_date: "",
         reason: "",
         job_description: "",
+        experience_type: "",
         file: null,
       });
       fetchDeckExperiences();
@@ -1285,6 +1287,7 @@ const Profile = () => {
       end_date: row.end_date || "",
       reason: row.reason || "",
       job_description: row.job_description || "",
+      experience_type: row.experience_type || "",
       file: null,
     });
   };
@@ -1300,6 +1303,7 @@ const Profile = () => {
       end_date: "",
       reason: "",
       job_description: "",
+      experience_type: "",
       file: null,
     });
   };
@@ -2262,6 +2266,20 @@ const Profile = () => {
                   <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                     <div className="xl:col-span-1 space-y-6 order-2 xl:order-1">
                       <div className="grid grid-cols-1 gap-4">
+                        {/* Experience Type Dropdown - always visible */}
+                        <div className="space-y-2">
+                          <Label>Experience Type</Label>
+                          <Select value={newDeck.experience_type} onValueChange={(v) => setNewDeck({ ...newDeck, experience_type: v as "Hotel" | "Ship" | "" })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder={department === "Hotel Department" ? "Hotel (default)" : "Ship (default)"} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Hotel">Hotel</SelectItem>
+                              <SelectItem value="Ship">Ship</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
                         {department === "Hotel Department" ? (
                           <>
                             <div className="space-y-2">

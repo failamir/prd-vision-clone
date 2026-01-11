@@ -218,6 +218,11 @@ const AdminApplications = () => {
   const [candidateReferences, setCandidateReferences] = useState<any[]>([]);
   const [loadingCandidateData, setLoadingCandidateData] = useState(false);
 
+  // Experience Modal
+  const [experienceModalOpen, setExperienceModalOpen] = useState(false);
+  const [experienceModalCandidate, setExperienceModalCandidate] = useState<Application | null>(null);
+  const [experienceModalData, setExperienceModalData] = useState<any[]>([]);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -1029,6 +1034,30 @@ const AdminApplications = () => {
     return hasMatchingExperience ? "Y" : "N";
   };
 
+  const openExperienceModal = (app: Application) => {
+    setExperienceModalCandidate(app);
+    const candidateId = app.candidate_id;
+    if (candidateId && allExperiencesByCandidate[candidateId]) {
+      setExperienceModalData(allExperiencesByCandidate[candidateId]);
+    } else {
+      setExperienceModalData([]);
+    }
+    setExperienceModalOpen(true);
+  };
+
+  const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
+    if (!candidateId) return { total: 0, relevant: 0 };
+    const allExps = allExperiencesByCandidate[candidateId] || [];
+    const department = (jobDepartment || "").toLowerCase();
+    const isHotelDepartment = department.includes("hotel");
+    const targetType = isHotelDepartment ? "hotel" : "ship";
+    const relevantExps = allExps.filter((exp: any) => {
+      const expType = (exp.experience_type || "Hotel").toLowerCase();
+      return expType === targetType;
+    });
+    return { total: allExps.length, relevant: relevantExps.length };
+  };
+
   const getLatestEducationText = (candidateId?: string, fallback?: string) => {
     if (!candidateId) return fallback || "-";
     const edu = latestEducationByCandidate[candidateId];
@@ -1368,7 +1397,7 @@ const AdminApplications = () => {
         dash(app.candidate?.weight_kg && app.candidate?.height_cm ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}` : "-"),
         dash(getShipExperienceFlag(app.candidate_id, app.job?.department)),
         dash(app.c1d_expiry_date ? formatDate(app.c1d_expiry_date) : "-"),
-        dash(getLatestExperienceText(app.candidate_id, app.job?.department, app.previous_experience)),
+        dash(`${getExperienceCount(app.candidate_id, app.job?.department).relevant}/${getExperienceCount(app.candidate_id, app.job?.department).total}`),
         dash(getLatestEducationText(app.candidate_id, app.education_background)),
         dash(app.contact_no || app.candidate?.phone),
         dash(app.candidate?.email),
@@ -3029,11 +3058,14 @@ const AdminApplications = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span className="line-clamp-2 max-w-[220px]">
-                          {getLatestExperienceText(app.candidate_id, app.job?.department, app.previous_experience)}
-                        </span>
-                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => openExperienceModal(app)}
+                        className="text-xs"
+                      >
+                        View ({getExperienceCount(app.candidate_id, app.job?.department).relevant}/{getExperienceCount(app.candidate_id, app.job?.department).total})
+                      </Button>
                     </TableCell>
                     <TableCell>{formatDate(app.c1d_expiry_date)}</TableCell>
                     <TableCell>{getLatestEducationText(app.candidate_id, app.education_background)}</TableCell>
@@ -3358,9 +3390,81 @@ const AdminApplications = () => {
             );
           })()}
         </Card>
+
+        {/* Experience Modal */}
+        <Dialog open={experienceModalOpen} onOpenChange={setExperienceModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                Experience - {experienceModalCandidate?.candidate?.full_name}
+              </DialogTitle>
+              <DialogDescription>
+                Applied for: {experienceModalCandidate?.job?.title} ({experienceModalCandidate?.job?.department})
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {experienceModalData.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No experience records</p>
+              ) : (
+                <>
+                  {/* Filter badges */}
+                  <div className="flex gap-2 flex-wrap">
+                    <Badge variant="outline">
+                      Hotel: {experienceModalData.filter(e => (e.experience_type || 'Hotel').toLowerCase() === 'hotel').length}
+                    </Badge>
+                    <Badge variant="outline">
+                      Ship: {experienceModalData.filter(e => (e.experience_type || 'Hotel').toLowerCase() === 'ship').length}
+                    </Badge>
+                  </div>
+                  
+                  {/* Experience list */}
+                  <div className="space-y-3">
+                    {experienceModalData.map((exp, idx) => (
+                      <div key={idx} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold">{exp.position}</span>
+                          <Badge variant={(exp.experience_type || 'Hotel').toLowerCase() === 'hotel' ? 'default' : 'secondary'}>
+                            {exp.experience_type || 'Hotel'}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div>
+                            <span className="font-medium">Company/Vessel:</span> {exp.company || exp.vessel_name_type || '-'}
+                          </div>
+                          <div>
+                            <span className="font-medium">Period:</span> {exp.start_date ? formatDate(exp.start_date) : '-'} - {exp.is_current ? 'Present' : (exp.end_date ? formatDate(exp.end_date) : '-')}
+                          </div>
+                          {exp.gt_loa && (
+                            <div>
+                              <span className="font-medium">GT/LOA:</span> {exp.gt_loa}
+                            </div>
+                          )}
+                          {exp.reason && (
+                            <div>
+                              <span className="font-medium">Reason:</span> {exp.reason}
+                            </div>
+                          )}
+                          {exp.job_description && (
+                            <div>
+                              <span className="font-medium">Job Description:</span> {exp.job_description}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setExperienceModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
 };
+
 
 export default AdminApplications;
