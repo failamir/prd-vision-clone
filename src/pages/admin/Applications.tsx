@@ -1034,15 +1034,36 @@ const AdminApplications = () => {
     return hasMatchingExperience ? "Y" : "N";
   };
 
-  const openExperienceModal = (app: Application) => {
+  const openExperienceModal = async (app: Application) => {
     setExperienceModalCandidate(app);
     const candidateId = app.candidate_id;
-    if (candidateId && allExperiencesByCandidate[candidateId]) {
-      setExperienceModalData(allExperiencesByCandidate[candidateId]);
+    setExperienceModalOpen(true);
+    
+    // Always fetch fresh data when opening modal
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_experience")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("created_at", { ascending: false });
+        
+        if (!error && data) {
+          setExperienceModalData(data);
+          // Also update the cache
+          setAllExperiencesByCandidate(prev => ({
+            ...prev,
+            [candidateId]: data
+          }));
+        } else {
+          setExperienceModalData([]);
+        }
+      } catch (e) {
+        setExperienceModalData([]);
+      }
     } else {
       setExperienceModalData([]);
     }
-    setExperienceModalOpen(true);
   };
 
   const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
