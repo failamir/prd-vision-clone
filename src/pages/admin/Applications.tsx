@@ -1556,7 +1556,7 @@ const getExportData = () => {
     "Age",
     "Weight/Height",
     "Ship Experience",
-    "C1D Expiry Date",
+    "Visa Expiry Date",
     "Previous Experience",
     "Education Background",
     "Contact No",
@@ -3162,7 +3162,7 @@ return (
                 <TableHead className="min-w-[100px]">Reference</TableHead>
                 <TableHead className="min-w-[110px]">Has Exp</TableHead>
                 <TableHead className="min-w-[200px]">Experience</TableHead>
-                <TableHead className="min-w-[130px]">C1D Expiry Date</TableHead>
+                <TableHead className="min-w-[130px]">Visa Expiry Date</TableHead>
                 <TableHead className="min-w-[160px]">Education Background</TableHead>
                 <TableHead className="min-w-[120px]">Contact No</TableHead>
                 <TableHead className="min-w-[180px]">Email</TableHead>
