@@ -232,6 +232,12 @@ const AdminApplications = () => {
   const [loadingEmergencyContact, setLoadingEmergencyContact] = useState(false);
   const [latestEmergencyContactByCandidate, setLatestEmergencyContactByCandidate] = useState<Record<string, any>>({});
 
+  // Education Modal
+  const [educationModalOpen, setEducationModalOpen] = useState(false);
+  const [educationModalCandidate, setEducationModalCandidate] = useState<Application | null>(null);
+  const [educationModalData, setEducationModalData] = useState<any[]>([]);
+  const [loadingEducation, setLoadingEducation] = useState(false);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -1145,6 +1151,43 @@ const AdminApplications = () => {
     if (!candidateId) return null;
     const contact = latestEmergencyContactByCandidate[candidateId];
     return contact ? contact.full_name : null;
+  };
+
+  const getLatestEducationInstitution = (candidateId?: string) => {
+    if (!candidateId) return null;
+    const edu = latestEducationByCandidate[candidateId];
+    return edu ? edu.institution : null;
+  };
+
+  const openEducationModal = async (app: Application) => {
+    setEducationModalCandidate(app);
+    const candidateId = app.candidate_id;
+    setEducationModalOpen(true);
+    setLoadingEducation(true);
+
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_education")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          setEducationModalData(data);
+        } else {
+          setEducationModalData([]);
+        }
+      } catch (e) {
+        console.error("Error fetching education", e);
+        setEducationModalData([]);
+      } finally {
+        setLoadingEducation(false);
+      }
+    } else {
+      setEducationModalData([]);
+      setLoadingEducation(false);
+    }
   };
 
 const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
@@ -3170,7 +3213,18 @@ return (
                     </Button>
                   </TableCell>
                   <TableCell>{formatDate(app.c1d_expiry_date)}</TableCell>
-                  <TableCell>{getLatestEducationText(app.candidate_id, app.education_background)}</TableCell>
+                  <TableCell>
+                    {getLatestEducationInstitution(app.candidate_id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEducationModal(app)}
+                        className="text-xs"
+                      >
+                        {getLatestEducationInstitution(app.candidate_id)}
+                      </Button>
+                    ) : (app.education_background || "-")}
+                  </TableCell>
                   <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
                   <TableCell>{app.candidate.email}</TableCell>
                   <TableCell>
@@ -3675,6 +3729,63 @@ return (
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEmergencyContactModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Education Modal */}
+      <Dialog open={educationModalOpen} onOpenChange={setEducationModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Education - {educationModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {educationModalCandidate?.job?.title} ({educationModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingEducation ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : educationModalData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No education records</p>
+            ) : (
+              <div className="space-y-3">
+                {educationModalData.map((edu, idx) => (
+                  <div key={idx} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">{edu.institution}</span>
+                      {edu.is_current && (
+                        <Badge variant="default">Current</Badge>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>
+                        <span className="font-medium">Degree:</span> {edu.degree || '-'}
+                      </div>
+                      {edu.field_of_study && (
+                        <div>
+                          <span className="font-medium">Field of Study:</span> {edu.field_of_study}
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-medium">Period:</span> {edu.start_date ? formatDate(edu.start_date) : '-'} - {edu.end_date ? formatDate(edu.end_date) : 'Present'}
+                      </div>
+                      {edu.description && (
+                        <div>
+                          <span className="font-medium">Description:</span> {edu.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEducationModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
