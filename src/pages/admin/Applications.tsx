@@ -225,6 +225,13 @@ const AdminApplications = () => {
   const [loadingExperience, setLoadingExperience] = useState(false);
   const [experienceFilter, setExperienceFilter] = useState<"ALL" | "HOTEL" | "SHIP">("ALL");
 
+  // Emergency Contact Modal
+  const [emergencyContactModalOpen, setEmergencyContactModalOpen] = useState(false);
+  const [emergencyContactModalCandidate, setEmergencyContactModalCandidate] = useState<Application | null>(null);
+  const [emergencyContactModalData, setEmergencyContactModalData] = useState<any[]>([]);
+  const [loadingEmergencyContact, setLoadingEmergencyContact] = useState(false);
+  const [latestEmergencyContactByCandidate, setLatestEmergencyContactByCandidate] = useState<Record<string, any>>({});
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -834,6 +841,7 @@ const AdminApplications = () => {
       }
       await fetchLatestExperiences(candidateIds as string[]);
       await fetchLatestEducations(candidateIds as string[]);
+      await fetchLatestEmergencyContacts(candidateIds as string[]);
 
       // Generate crew codes for applications without them
       await generateCrewCodes();
@@ -894,6 +902,27 @@ const AdminApplications = () => {
         }
       });
       setLatestEducationByCandidate(map);
+    } catch (e) { }
+  };
+
+  const fetchLatestEmergencyContacts = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_emergency_contacts")
+        .select("candidate_id, full_name, relationship, phone, email, created_at")
+        .in("candidate_id", candidateIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setLatestEmergencyContactByCandidate(map);
     } catch (e) { }
   };
 
@@ -1072,6 +1101,50 @@ const AdminApplications = () => {
       setExperienceModalData([]);
       setLoadingExperience(false);
     }
+  };
+
+  const openEmergencyContactModal = async (app: Application) => {
+    setEmergencyContactModalCandidate(app);
+    const candidateId = app.candidate_id;
+    setEmergencyContactModalOpen(true);
+    setLoadingEmergencyContact(true);
+
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_emergency_contacts")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          setEmergencyContactModalData(data);
+          // Also update the cache
+          if (data.length > 0) {
+            setLatestEmergencyContactByCandidate(prev => ({
+              ...prev,
+              [candidateId]: data[0]
+            }));
+          }
+        } else {
+          setEmergencyContactModalData([]);
+        }
+      } catch (e) {
+        console.error("Error fetching emergency contacts", e);
+        setEmergencyContactModalData([]);
+      } finally {
+        setLoadingEmergencyContact(false);
+      }
+    } else {
+      setEmergencyContactModalData([]);
+      setLoadingEmergencyContact(false);
+    }
+  };
+
+  const getLatestEmergencyContactName = (candidateId?: string) => {
+    if (!candidateId) return null;
+    const contact = latestEmergencyContactByCandidate[candidateId];
+    return contact ? contact.full_name : null;
   };
 
 const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
@@ -3100,7 +3173,18 @@ return (
                   <TableCell>{getLatestEducationText(app.candidate_id, app.education_background)}</TableCell>
                   <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
                   <TableCell>{app.candidate.email}</TableCell>
-                  <TableCell>{app.emergency_contact || "-"}</TableCell>
+                  <TableCell>
+                    {getLatestEmergencyContactName(app.candidate_id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEmergencyContactModal(app)}
+                        className="text-xs"
+                      >
+                        {getLatestEmergencyContactName(app.candidate_id)}
+                      </Button>
+                    ) : "-"}
+                  </TableCell>
                   <TableCell>
                     {app.cv_url ? (
                       <a
@@ -3524,6 +3608,73 @@ return (
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setExperienceModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Emergency Contact Modal */}
+      <Dialog open={emergencyContactModalOpen} onOpenChange={setEmergencyContactModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Emergency Contacts - {emergencyContactModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {emergencyContactModalCandidate?.job?.title} ({emergencyContactModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingEmergencyContact ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : emergencyContactModalData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No emergency contact records</p>
+            ) : (
+              <div className="space-y-3">
+                {emergencyContactModalData.map((contact, idx) => (
+                  <div key={idx} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">{contact.full_name}</span>
+                      {contact.is_primary && (
+                        <Badge variant="default">Primary</Badge>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>
+                        <span className="font-medium">Relationship:</span> {contact.relationship || '-'}
+                      </div>
+                      <div>
+                        <span className="font-medium">Phone:</span> {contact.phone || '-'}
+                      </div>
+                      {contact.alternative_phone && (
+                        <div>
+                          <span className="font-medium">Alternative Phone:</span> {contact.alternative_phone}
+                        </div>
+                      )}
+                      {contact.email && (
+                        <div>
+                          <span className="font-medium">Email:</span> {contact.email}
+                        </div>
+                      )}
+                      {contact.address && (
+                        <div>
+                          <span className="font-medium">Address:</span> {contact.address}
+                        </div>
+                      )}
+                      {(contact.city || contact.country) && (
+                        <div>
+                          <span className="font-medium">Location:</span> {[contact.city, contact.country].filter(Boolean).join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmergencyContactModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
