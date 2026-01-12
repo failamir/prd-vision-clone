@@ -1253,9 +1253,29 @@ const AdminApplications = () => {
     return visas[0].document_type;
   };
 
-  const isVisaExpired = (expiryDate: string | null) => {
-    if (!expiryDate) return false;
-    return new Date(expiryDate) < new Date();
+  const getVisaExpiryStatus = (expiryDate: string | null): 'none' | 'expired' | 'expiring' | 'valid' => {
+    if (!expiryDate) return 'none';
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+    
+    if (expiry < today) return 'expired';
+    if (expiry <= sixMonthsFromNow) return 'expiring';
+    return 'valid';
+  };
+
+  const getVisaButtonClass = (status: 'none' | 'expired' | 'expiring' | 'valid') => {
+    switch (status) {
+      case 'expired':
+        return 'border-destructive text-destructive bg-destructive/10';
+      case 'expiring':
+        return 'border-amber-500 text-amber-600 bg-amber-50 dark:bg-amber-900/20';
+      case 'valid':
+        return 'border-green-500 text-green-600 bg-green-50 dark:bg-green-900/20';
+      default:
+        return '';
+    }
   };
 
 const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
@@ -3286,7 +3306,7 @@ return (
                         variant="outline"
                         size="sm"
                         onClick={() => openVisaModal(app)}
-                        className={`text-xs ${isVisaExpired(app.c1d_expiry_date) ? 'border-destructive text-destructive' : ''}`}
+                        className={`text-xs ${getVisaButtonClass(getVisaExpiryStatus(app.c1d_expiry_date))}`}
                       >
                         {formatDate(app.c1d_expiry_date)} ({getVisaCount(app.candidate_id)})
                       </Button>
