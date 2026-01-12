@@ -87,6 +87,7 @@ interface Application {
     how_found_us?: string | null;
     profile_step_unlocked?: number;
     avatar_url?: string;
+    covid_vaccinated?: string | null;
   };
   job: {
     title: string;
@@ -244,6 +245,7 @@ const AdminApplications = () => {
   const [visaModalData, setVisaModalData] = useState<any[]>([]);
   const [loadingVisa, setLoadingVisa] = useState(false);
   const [visaDocsByCandidate, setVisaDocsByCandidate] = useState<Record<string, any[]>>({});
+  const [bstCcByCandidate, setBstCcByCandidate] = useState<Record<string, string>>({});
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -809,7 +811,8 @@ const AdminApplications = () => {
             registration_city,
             how_found_us,
             profile_step_unlocked,
-            avatar_url
+            avatar_url,
+            covid_vaccinated
           ),
           job:jobs(title, company_name, department)
         `)
@@ -857,6 +860,7 @@ const AdminApplications = () => {
 
         setApplications(merged);
         await fetchMedicalTests(uniqueCandidateIds);
+        await fetchBstCcCertificates(uniqueCandidateIds);
       } else {
         setApplications(apps);
       }
@@ -985,6 +989,46 @@ const AdminApplications = () => {
 
       setMedicalTestsByCandidate(map);
     } catch { }
+  };
+
+  const fetchBstCcCertificates = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_certificates")
+        .select("candidate_id, type_certificate")
+        .in("candidate_id", candidateIds);
+
+      if (error) throw error;
+
+      const map: Record<string, string> = {};
+      (data || []).forEach((row: any) => {
+        const cid = row.candidate_id;
+        const certType = (row.type_certificate || "").toUpperCase();
+        
+        // Check if certificate contains BST or CC (like CCM, COC)
+        const hasBst = certType.includes("BST") || certType.includes("BASIC SAFETY");
+        const hasCc = certType.includes("CCM") || certType.includes("COC") || certType.includes("CC");
+        
+        if (hasBst || hasCc) {
+          if (!map[cid]) {
+            map[cid] = "";
+          }
+          // Build a comma-separated list of BST/CC certificates
+          const certAbbrev = hasBst ? "BST" : (certType.includes("CCM") ? "CCM" : certType.includes("COC") ? "COC" : "CC");
+          if (!map[cid].includes(certAbbrev)) {
+            map[cid] = map[cid] ? `${map[cid]}, ${certAbbrev}` : certAbbrev;
+          }
+        }
+      });
+
+      setBstCcByCandidate(map);
+    } catch { }
+  };
+
+  const getBstCcDisplay = (candidateId?: string) => {
+    if (!candidateId) return null;
+    return bstCcByCandidate[candidateId] || null;
   };
 
   const openApprovedPositionDialog = async (app: Application) => {
@@ -1385,11 +1429,34 @@ const openSuitableDialog = (app: Application) => {
 const saveSuitable = async () => {
   if (!activeApp || !suitableChoice) return;
   try {
+    // When setting suitable to "Yes", also update remarks to "Step 2" and unlock step 2
+    const updateData: any = { suitable: suitableChoice };
+    
+    if (suitableChoice === "Yes") {
+      const currentStep = (activeApp.candidate as any)?.profile_step_unlocked || 1;
+      // Only update if current step is less than 2
+      if (currentStep < 2) {
+        updateData.remarks = "Step 2";
+      }
+    }
+
     const { error } = await supabase
       .from("job_applications")
-      .update({ suitable: suitableChoice })
+      .update(updateData)
       .eq("id", activeApp.id);
     if (error) throw error;
+
+    // If suitable is "Yes" and step was less than 2, also update candidate profile
+    if (suitableChoice === "Yes" && activeApp.candidate_id) {
+      const currentStep = (activeApp.candidate as any)?.profile_step_unlocked || 1;
+      if (currentStep < 2) {
+        await supabase
+          .from("candidate_profiles")
+          .update({ profile_step_unlocked: 2 } as any)
+          .eq("id", activeApp.candidate_id);
+      }
+    }
+
     toast({ title: "Suitable updated" });
     setSuitableDialogOpen(false);
     setActiveApp(null);
@@ -3364,11 +3431,24 @@ return (
                       </a>
                     ) : "-"}
                   </TableCell>
-                  <TableCell>{app.vaccin_covid_booster ? "Yes" : "-"}</TableCell>
-                  <TableCell>{app.bst_cc || "-"}</TableCell>
+                  <TableCell>
+                    {app.candidate?.covid_vaccinated 
+                      ? (app.candidate.covid_vaccinated.toLowerCase().includes("booster") 
+                          ? "Yes" 
+                          : app.candidate.covid_vaccinated)
+                      : "-"}
+                  </TableCell>
+                  <TableCell>{getBstCcDisplay(app.candidate_id) || app.bst_cc || "-"}</TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
-                      <span>{app.suitable || "-"}</span>
+                      <span>
+                        {(() => {
+                          // Show "Yes" if profile_step_unlocked >= 2, else show the suitable value
+                          const step = (app.candidate as any)?.profile_step_unlocked || 1;
+                          if (step >= 2) return "Yes";
+                          return app.suitable || "-";
+                        })()}
+                      </span>
                       <Button
                         variant="link"
                         size="sm"
