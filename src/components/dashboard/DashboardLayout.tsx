@@ -43,7 +43,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { supabase } = useDatabase();
-  const [profile, setProfile] = useState<{ full_name: string | null, avatar_url: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string | null, avatar_url: string | null, email: string | null } | null>(null);
 
   useEffect(() => {
     const getProfile = async () => {
@@ -52,7 +52,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
       const { data } = await supabase
         .from("candidate_profiles")
-        .select("full_name, avatar_url")
+        .select("full_name, avatar_url, email")
         .eq("user_id", user.id)
         .single();
 
@@ -167,7 +167,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <Link to="/candidate/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <div className="text-right hidden md:block">
                     <p className="text-sm font-medium leading-none">{profile.full_name || "User"}</p>
-                    <p className="text-xs text-muted-foreground">Candidate</p>
+                    <p className="text-xs text-muted-foreground">{profile.email || "Candidate"}</p>
                   </div>
                   <Avatar>
                     <AvatarImage src={profile.avatar_url || ""} />
