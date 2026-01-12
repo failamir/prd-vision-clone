@@ -238,6 +238,13 @@ const AdminApplications = () => {
   const [educationModalData, setEducationModalData] = useState<any[]>([]);
   const [loadingEducation, setLoadingEducation] = useState(false);
 
+  // Visa Documents Modal
+  const [visaModalOpen, setVisaModalOpen] = useState(false);
+  const [visaModalCandidate, setVisaModalCandidate] = useState<Application | null>(null);
+  const [visaModalData, setVisaModalData] = useState<any[]>([]);
+  const [loadingVisa, setLoadingVisa] = useState(false);
+  const [visaDocsByCandidate, setVisaDocsByCandidate] = useState<Record<string, any[]>>({});
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -825,6 +832,7 @@ const AdminApplications = () => {
         if (travelError) throw travelError;
 
         const latestVisaByCandidate: Record<string, string | null> = {};
+        const allVisasByCandidate: Record<string, any[]> = {};
         (travelDocs || []).forEach((row: any) => {
           const docType = (row.document_type || "").toUpperCase();
           // Match C1D or VISA document types
@@ -832,8 +840,15 @@ const AdminApplications = () => {
             if (latestVisaByCandidate[row.candidate_id] === undefined) {
               latestVisaByCandidate[row.candidate_id] = row.expiry_date;
             }
+            // Store all visa documents for modal
+            if (!allVisasByCandidate[row.candidate_id]) {
+              allVisasByCandidate[row.candidate_id] = [];
+            }
+            allVisasByCandidate[row.candidate_id].push(row);
           }
         });
+
+        setVisaDocsByCandidate(allVisasByCandidate);
 
         const merged = apps.map((a: any) => ({
           ...a,
@@ -1188,6 +1203,59 @@ const AdminApplications = () => {
       setEducationModalData([]);
       setLoadingEducation(false);
     }
+  };
+
+  const openVisaModal = async (app: Application) => {
+    setVisaModalCandidate(app);
+    const candidateId = app.candidate_id;
+    setVisaModalOpen(true);
+    setLoadingVisa(true);
+
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_travel_documents")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("expiry_date", { ascending: false });
+
+        if (!error && data) {
+          // Filter to only visa documents
+          const visaDocs = data.filter((doc: any) => {
+            const docType = (doc.document_type || "").toUpperCase();
+            return docType.includes("C1D") || docType.includes("VISA");
+          });
+          setVisaModalData(visaDocs);
+        } else {
+          setVisaModalData([]);
+        }
+      } catch (e) {
+        console.error("Error fetching visa documents", e);
+        setVisaModalData([]);
+      } finally {
+        setLoadingVisa(false);
+      }
+    } else {
+      setVisaModalData([]);
+      setLoadingVisa(false);
+    }
+  };
+
+  const getVisaCount = (candidateId?: string) => {
+    if (!candidateId) return 0;
+    return (visaDocsByCandidate[candidateId] || []).length;
+  };
+
+  const getLatestVisaType = (candidateId?: string) => {
+    if (!candidateId) return null;
+    const visas = visaDocsByCandidate[candidateId];
+    if (!visas || visas.length === 0) return null;
+    return visas[0].document_type;
+  };
+
+  const isVisaExpired = (expiryDate: string | null) => {
+    if (!expiryDate) return false;
+    return new Date(expiryDate) < new Date();
   };
 
 const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
@@ -3212,7 +3280,20 @@ return (
                       View ({getExperienceCount(app.candidate_id, app.job?.department).relevant}/{getExperienceCount(app.candidate_id, app.job?.department).total})
                     </Button>
                   </TableCell>
-                  <TableCell>{formatDate(app.c1d_expiry_date)}</TableCell>
+                  <TableCell>
+                    {getVisaCount(app.candidate_id) > 0 ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openVisaModal(app)}
+                        className={`text-xs ${isVisaExpired(app.c1d_expiry_date) ? 'border-destructive text-destructive' : ''}`}
+                      >
+                        {formatDate(app.c1d_expiry_date)} ({getVisaCount(app.candidate_id)})
+                      </Button>
+                    ) : (
+                      <span className="text-muted-foreground">{formatDate(app.c1d_expiry_date)}</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {getLatestEducationInstitution(app.candidate_id) ? (
                       <Button
@@ -3786,6 +3867,71 @@ return (
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEducationModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Visa Documents Modal */}
+      <Dialog open={visaModalOpen} onOpenChange={setVisaModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Visa Documents - {visaModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {visaModalCandidate?.job?.title} ({visaModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingVisa ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : visaModalData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No visa documents found</p>
+            ) : (
+              <div className="space-y-3">
+                {visaModalData.map((visa, idx) => {
+                  const expired = visa.expiry_date && new Date(visa.expiry_date) < new Date();
+                  return (
+                    <div key={idx} className={`border rounded-lg p-4 ${expired ? 'border-destructive bg-destructive/5' : ''}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold">{visa.document_type}</span>
+                        {expired ? (
+                          <Badge variant="destructive">Expired</Badge>
+                        ) : (
+                          <Badge variant="default">Valid</Badge>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>
+                          <span className="font-medium">Document Number:</span> {visa.document_number || '-'}
+                        </div>
+                        <div>
+                          <span className="font-medium">Issue Date:</span> {visa.issue_date ? formatDate(visa.issue_date) : '-'}
+                        </div>
+                        <div>
+                          <span className="font-medium">Expiry Date:</span> {visa.expiry_date ? formatDate(visa.expiry_date) : '-'}
+                        </div>
+                        {visa.issuing_authority && (
+                          <div>
+                            <span className="font-medium">Issuing Authority:</span> {visa.issuing_authority}
+                          </div>
+                        )}
+                        {visa.issuing_country && (
+                          <div>
+                            <span className="font-medium">Country:</span> {visa.issuing_country}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setVisaModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
