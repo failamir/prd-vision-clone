@@ -16,7 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import logo from "@/assets/logo-dark.png";
 
@@ -42,6 +43,26 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { supabase } = useDatabase();
+  const [profile, setProfile] = useState<{ full_name: string | null, avatar_url: string | null } | null>(null);
+
+  useEffect(() => {
+    const getProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("candidate_profiles")
+        .select("full_name, avatar_url")
+        .eq("user_id", user.id)
+        .single();
+
+      if (data) {
+        setProfile(data);
+      }
+    };
+
+    getProfile();
+  }, [supabase]);
 
   const handleLogout = async () => {
     try {
@@ -135,12 +156,27 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <div className="flex-1 lg:flex-none">
               <h1 className="text-xl font-bold text-foreground">Candidate Dashboard</h1>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <Link to="/jobs">
                 <Button variant="outline" size="sm">
                   Browse Jobs
                 </Button>
               </Link>
+
+              {profile && (
+                <Link to="/candidate/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                  <div className="text-right hidden md:block">
+                    <p className="text-sm font-medium leading-none">{profile.full_name || "User"}</p>
+                    <p className="text-xs text-muted-foreground">Candidate</p>
+                  </div>
+                  <Avatar>
+                    <AvatarImage src={profile.avatar_url || ""} />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {profile.full_name?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              )}
             </div>
           </div>
         </header>
