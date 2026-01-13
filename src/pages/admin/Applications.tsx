@@ -137,6 +137,8 @@ const AdminApplications = () => {
   const [principalInterviewByFilter, setPrincipalInterviewByFilter] = useState("");
   const [principalInterviewDateMin, setPrincipalInterviewDateMin] = useState("");
   const [principalInterviewDateMax, setPrincipalInterviewDateMax] = useState("");
+  const [visaStatusFilter, setVisaStatusFilter] = useState("");
+  const [bstCcStatusFilter, setBstCcStatusFilter] = useState("");
   const [principalInterviewResultFilter, setPrincipalInterviewResultFilter] = useState("");
   const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);
   const [activeApplication, setActiveApplication] = useState<Application | null>(null);
@@ -285,6 +287,8 @@ const AdminApplications = () => {
     setPrincipalInterviewDateMin("");
     setPrincipalInterviewDateMax("");
     setPrincipalInterviewResultFilter("");
+    setVisaStatusFilter("");
+    setBstCcStatusFilter("");
   };
 
   const withinDateRange = (value: string | null | undefined, min?: string, max?: string) => {
@@ -382,6 +386,47 @@ const AdminApplications = () => {
     if (!matchesText(app.principal_interview_by, principalInterviewByFilter)) return false;
     if (!withinDateRange(app.principal_interview_date, principalInterviewDateMin || undefined, principalInterviewDateMax || undefined)) return false;
     if (principalInterviewResultFilter && (app.principal_interview_result || "").toLowerCase() !== principalInterviewResultFilter.toLowerCase()) return false;
+
+    // Visa status filter
+    if (visaStatusFilter && app.candidate_id) {
+      const visaDocs = visaDocsByCandidate[app.candidate_id] || [];
+      if (visaStatusFilter === "No Visa") {
+        if (visaDocs.length > 0) return false;
+      } else {
+        if (visaDocs.length === 0) return false;
+        const now = new Date();
+        const sixMonthsFromNow = new Date();
+        sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+        
+        const hasStatus = visaDocs.some((doc: any) => {
+          if (!doc.expiry_date) return false;
+          const expiry = new Date(doc.expiry_date);
+          if (visaStatusFilter === "Expired") return expiry < now;
+          if (visaStatusFilter === "Expiring Soon") return expiry >= now && expiry <= sixMonthsFromNow;
+          if (visaStatusFilter === "Valid") return expiry > sixMonthsFromNow;
+          return false;
+        });
+        if (!hasStatus) return false;
+      }
+    }
+
+    // BST/CC status filter
+    if (bstCcStatusFilter && app.candidate_id) {
+      const bstCcData = bstCcByCandidate[app.candidate_id];
+      const certs = bstCcData?.certs || [];
+      if (bstCcStatusFilter === "No Certificates") {
+        if (certs.length > 0) return false;
+      } else if (bstCcStatusFilter === "Has BST") {
+        const hasBst = certs.some((c: any) => c.type.toUpperCase().includes("BST"));
+        if (!hasBst) return false;
+      } else if (bstCcStatusFilter === "Has CC") {
+        const hasCc = certs.some((c: any) => {
+          const t = c.type.toUpperCase();
+          return t.includes("CC") || t.includes("CCM") || t.includes("COC");
+        });
+        if (!hasCc) return false;
+      }
+    }
 
     return true;
   };
@@ -3174,6 +3219,33 @@ return (
                     <SelectItem value="Not Approved">Not Approved</SelectItem>
                     <SelectItem value="Reclassed">Reclassed</SelectItem>
                     <SelectItem value="Review">Review</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Visa Status</label>
+                <Select value={visaStatusFilter} onValueChange={setVisaStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="- Select -" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Valid">Valid</SelectItem>
+                    <SelectItem value="Expiring Soon">Expiring Soon</SelectItem>
+                    <SelectItem value="Expired">Expired</SelectItem>
+                    <SelectItem value="No Visa">No Visa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">BST/CC Status</label>
+                <Select value={bstCcStatusFilter} onValueChange={setBstCcStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="- Select -" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Has BST">Has BST</SelectItem>
+                    <SelectItem value="Has CC">Has CC</SelectItem>
+                    <SelectItem value="No Certificates">No Certificates</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
