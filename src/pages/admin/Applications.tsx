@@ -245,7 +245,11 @@ const AdminApplications = () => {
   const [visaModalData, setVisaModalData] = useState<any[]>([]);
   const [loadingVisa, setLoadingVisa] = useState(false);
   const [visaDocsByCandidate, setVisaDocsByCandidate] = useState<Record<string, any[]>>({});
-  const [bstCcByCandidate, setBstCcByCandidate] = useState<Record<string, string>>({});
+  const [bstCcByCandidate, setBstCcByCandidate] = useState<Record<string, { label: string; certs: { type: string; file_path: string | null }[] }>>({});
+  
+  // BST/CC Modal state
+  const [bstCcModalOpen, setBstCcModalOpen] = useState(false);
+  const [bstCcModalCandidate, setBstCcModalCandidate] = useState<Application | null>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -996,12 +1000,12 @@ const AdminApplications = () => {
     try {
       const { data, error } = await supabase
         .from("candidate_certificates")
-        .select("candidate_id, type_certificate")
+        .select("candidate_id, type_certificate, file_path")
         .in("candidate_id", candidateIds);
 
       if (error) throw error;
 
-      const map: Record<string, string> = {};
+      const map: Record<string, { label: string; certs: { type: string; file_path: string | null }[] }> = {};
       (data || []).forEach((row: any) => {
         const cid = row.candidate_id;
         const certType = (row.type_certificate || "").toUpperCase();
@@ -1012,13 +1016,14 @@ const AdminApplications = () => {
         
         if (hasBst || hasCc) {
           if (!map[cid]) {
-            map[cid] = "";
+            map[cid] = { label: "", certs: [] };
           }
           // Build a comma-separated list of BST/CC certificates
           const certAbbrev = hasBst ? "BST" : (certType.includes("CCM") ? "CCM" : certType.includes("COC") ? "COC" : "CC");
-          if (!map[cid].includes(certAbbrev)) {
-            map[cid] = map[cid] ? `${map[cid]}, ${certAbbrev}` : certAbbrev;
+          if (!map[cid].label.includes(certAbbrev)) {
+            map[cid].label = map[cid].label ? `${map[cid].label}, ${certAbbrev}` : certAbbrev;
           }
+          map[cid].certs.push({ type: row.type_certificate || certAbbrev, file_path: row.file_path });
         }
       });
 
@@ -1028,7 +1033,13 @@ const AdminApplications = () => {
 
   const getBstCcDisplay = (candidateId?: string) => {
     if (!candidateId) return null;
-    return bstCcByCandidate[candidateId] || null;
+    const entry = bstCcByCandidate[candidateId];
+    return entry ? entry.label : null;
+  };
+
+  const openBstCcModal = (app: Application) => {
+    setBstCcModalCandidate(app);
+    setBstCcModalOpen(true);
   };
 
   const openApprovedPositionDialog = async (app: Application) => {
@@ -3438,7 +3449,18 @@ return (
                           : app.candidate.covid_vaccinated)
                       : "-"}
                   </TableCell>
-                  <TableCell>{getBstCcDisplay(app.candidate_id) || app.bst_cc || "-"}</TableCell>
+                  <TableCell>
+                    {getBstCcDisplay(app.candidate_id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openBstCcModal(app)}
+                        className="text-xs"
+                      >
+                        {getBstCcDisplay(app.candidate_id)}
+                      </Button>
+                    ) : (app.bst_cc || "-")}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
                       <span>
@@ -3992,15 +4014,34 @@ return (
             ) : (
               <div className="space-y-3">
                 {visaModalData.map((visa, idx) => {
-                  const expired = visa.expiry_date && new Date(visa.expiry_date) < new Date();
+                  // Determine visa status: expired, expiring (within 6 months), or valid
+                  const now = new Date();
+                  const expiryDate = visa.expiry_date ? new Date(visa.expiry_date) : null;
+                  const sixMonthsFromNow = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
+                  
+                  let status: 'expired' | 'expiring' | 'valid' = 'valid';
+                  if (expiryDate && expiryDate < now) {
+                    status = 'expired';
+                  } else if (expiryDate && expiryDate < sixMonthsFromNow) {
+                    status = 'expiring';
+                  }
+                  
+                  const borderClass = status === 'expired' 
+                    ? 'border-destructive bg-destructive/5' 
+                    : status === 'expiring' 
+                      ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' 
+                      : '';
+                  
                   return (
-                    <div key={idx} className={`border rounded-lg p-4 ${expired ? 'border-destructive bg-destructive/5' : ''}`}>
+                    <div key={idx} className={`border rounded-lg p-4 ${borderClass}`}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-semibold">{visa.document_type}</span>
-                        {expired ? (
+                        {status === 'expired' ? (
                           <Badge variant="destructive">Expired</Badge>
+                        ) : status === 'expiring' ? (
+                          <Badge className="bg-amber-500 hover:bg-amber-600 text-white">Expiring Soon</Badge>
                         ) : (
-                          <Badge variant="default">Valid</Badge>
+                          <Badge className="bg-green-600 hover:bg-green-700 text-white">Valid</Badge>
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground space-y-1">
@@ -4023,6 +4064,18 @@ return (
                             <span className="font-medium">Country:</span> {visa.issuing_country}
                           </div>
                         )}
+                        {visa.file_path && (
+                          <div className="pt-2">
+                            <a
+                              href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${visa.file_path}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline text-sm font-medium"
+                            >
+                              View Document
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -4032,6 +4085,57 @@ return (
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setVisaModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* BST/CC Certificates Modal */}
+      <Dialog open={bstCcModalOpen} onOpenChange={setBstCcModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              BST/CC Certificates - {bstCcModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {bstCcModalCandidate?.job?.title} ({bstCcModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {(() => {
+              const candidateId = bstCcModalCandidate?.candidate_id;
+              const entry = candidateId ? bstCcByCandidate[candidateId] : null;
+              
+              if (!entry || entry.certs.length === 0) {
+                return <p className="text-muted-foreground text-center py-4">No BST/CC certificates found</p>;
+              }
+              
+              return (
+                <div className="space-y-3">
+                  {entry.certs.map((cert, idx) => (
+                    <div key={idx} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">{cert.type}</span>
+                        {cert.file_path ? (
+                          <a
+                            href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${cert.file_path}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline text-sm font-medium"
+                          >
+                            View Document
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">No file</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBstCcModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
