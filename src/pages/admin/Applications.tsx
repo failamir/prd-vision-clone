@@ -87,6 +87,7 @@ interface Application {
     how_found_us?: string | null;
     profile_step_unlocked?: number;
     avatar_url?: string;
+    covid_vaccinated?: string | null;
   };
   job: {
     title: string;
@@ -224,6 +225,27 @@ const AdminApplications = () => {
   const [experienceModalData, setExperienceModalData] = useState<any[]>([]);
   const [loadingExperience, setLoadingExperience] = useState(false);
   const [experienceFilter, setExperienceFilter] = useState<"ALL" | "HOTEL" | "SHIP">("ALL");
+
+  // Emergency Contact Modal
+  const [emergencyContactModalOpen, setEmergencyContactModalOpen] = useState(false);
+  const [emergencyContactModalCandidate, setEmergencyContactModalCandidate] = useState<Application | null>(null);
+  const [emergencyContactModalData, setEmergencyContactModalData] = useState<any[]>([]);
+  const [loadingEmergencyContact, setLoadingEmergencyContact] = useState(false);
+  const [latestEmergencyContactByCandidate, setLatestEmergencyContactByCandidate] = useState<Record<string, any>>({});
+
+  // Education Modal
+  const [educationModalOpen, setEducationModalOpen] = useState(false);
+  const [educationModalCandidate, setEducationModalCandidate] = useState<Application | null>(null);
+  const [educationModalData, setEducationModalData] = useState<any[]>([]);
+  const [loadingEducation, setLoadingEducation] = useState(false);
+
+  // Visa Documents Modal
+  const [visaModalOpen, setVisaModalOpen] = useState(false);
+  const [visaModalCandidate, setVisaModalCandidate] = useState<Application | null>(null);
+  const [visaModalData, setVisaModalData] = useState<any[]>([]);
+  const [loadingVisa, setLoadingVisa] = useState(false);
+  const [visaDocsByCandidate, setVisaDocsByCandidate] = useState<Record<string, any[]>>({});
+  const [bstCcByCandidate, setBstCcByCandidate] = useState<Record<string, string>>({});
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -789,7 +811,8 @@ const AdminApplications = () => {
             registration_city,
             how_found_us,
             profile_step_unlocked,
-            avatar_url
+            avatar_url,
+            covid_vaccinated
           ),
           job:jobs(title, company_name, department)
         `)
@@ -812,6 +835,7 @@ const AdminApplications = () => {
         if (travelError) throw travelError;
 
         const latestVisaByCandidate: Record<string, string | null> = {};
+        const allVisasByCandidate: Record<string, any[]> = {};
         (travelDocs || []).forEach((row: any) => {
           const docType = (row.document_type || "").toUpperCase();
           // Match C1D or VISA document types
@@ -819,8 +843,15 @@ const AdminApplications = () => {
             if (latestVisaByCandidate[row.candidate_id] === undefined) {
               latestVisaByCandidate[row.candidate_id] = row.expiry_date;
             }
+            // Store all visa documents for modal
+            if (!allVisasByCandidate[row.candidate_id]) {
+              allVisasByCandidate[row.candidate_id] = [];
+            }
+            allVisasByCandidate[row.candidate_id].push(row);
           }
         });
+
+        setVisaDocsByCandidate(allVisasByCandidate);
 
         const merged = apps.map((a: any) => ({
           ...a,
@@ -829,11 +860,13 @@ const AdminApplications = () => {
 
         setApplications(merged);
         await fetchMedicalTests(uniqueCandidateIds);
+        await fetchBstCcCertificates(uniqueCandidateIds);
       } else {
         setApplications(apps);
       }
       await fetchLatestExperiences(candidateIds as string[]);
       await fetchLatestEducations(candidateIds as string[]);
+      await fetchLatestEmergencyContacts(candidateIds as string[]);
 
       // Generate crew codes for applications without them
       await generateCrewCodes();
@@ -897,6 +930,27 @@ const AdminApplications = () => {
     } catch (e) { }
   };
 
+  const fetchLatestEmergencyContacts = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_emergency_contacts")
+        .select("candidate_id, full_name, relationship, phone, email, created_at")
+        .in("candidate_id", candidateIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setLatestEmergencyContactByCandidate(map);
+    } catch (e) { }
+  };
+
   const fetchMedicalTests = async (candidateIds: string[]) => {
     if (!candidateIds || candidateIds.length === 0) return;
     try {
@@ -935,6 +989,46 @@ const AdminApplications = () => {
 
       setMedicalTestsByCandidate(map);
     } catch { }
+  };
+
+  const fetchBstCcCertificates = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_certificates")
+        .select("candidate_id, type_certificate")
+        .in("candidate_id", candidateIds);
+
+      if (error) throw error;
+
+      const map: Record<string, string> = {};
+      (data || []).forEach((row: any) => {
+        const cid = row.candidate_id;
+        const certType = (row.type_certificate || "").toUpperCase();
+        
+        // Check if certificate contains BST or CC (like CCM, COC)
+        const hasBst = certType.includes("BST") || certType.includes("BASIC SAFETY");
+        const hasCc = certType.includes("CCM") || certType.includes("COC") || certType.includes("CC");
+        
+        if (hasBst || hasCc) {
+          if (!map[cid]) {
+            map[cid] = "";
+          }
+          // Build a comma-separated list of BST/CC certificates
+          const certAbbrev = hasBst ? "BST" : (certType.includes("CCM") ? "CCM" : certType.includes("COC") ? "COC" : "CC");
+          if (!map[cid].includes(certAbbrev)) {
+            map[cid] = map[cid] ? `${map[cid]}, ${certAbbrev}` : certAbbrev;
+          }
+        }
+      });
+
+      setBstCcByCandidate(map);
+    } catch { }
+  };
+
+  const getBstCcDisplay = (candidateId?: string) => {
+    if (!candidateId) return null;
+    return bstCcByCandidate[candidateId] || null;
   };
 
   const openApprovedPositionDialog = async (app: Application) => {
@@ -1074,6 +1168,160 @@ const AdminApplications = () => {
     }
   };
 
+  const openEmergencyContactModal = async (app: Application) => {
+    setEmergencyContactModalCandidate(app);
+    const candidateId = app.candidate_id;
+    setEmergencyContactModalOpen(true);
+    setLoadingEmergencyContact(true);
+
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_emergency_contacts")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          setEmergencyContactModalData(data);
+          // Also update the cache
+          if (data.length > 0) {
+            setLatestEmergencyContactByCandidate(prev => ({
+              ...prev,
+              [candidateId]: data[0]
+            }));
+          }
+        } else {
+          setEmergencyContactModalData([]);
+        }
+      } catch (e) {
+        console.error("Error fetching emergency contacts", e);
+        setEmergencyContactModalData([]);
+      } finally {
+        setLoadingEmergencyContact(false);
+      }
+    } else {
+      setEmergencyContactModalData([]);
+      setLoadingEmergencyContact(false);
+    }
+  };
+
+  const getLatestEmergencyContactName = (candidateId?: string) => {
+    if (!candidateId) return null;
+    const contact = latestEmergencyContactByCandidate[candidateId];
+    return contact ? contact.full_name : null;
+  };
+
+  const getLatestEducationInstitution = (candidateId?: string) => {
+    if (!candidateId) return null;
+    const edu = latestEducationByCandidate[candidateId];
+    return edu ? edu.institution : null;
+  };
+
+  const openEducationModal = async (app: Application) => {
+    setEducationModalCandidate(app);
+    const candidateId = app.candidate_id;
+    setEducationModalOpen(true);
+    setLoadingEducation(true);
+
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_education")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          setEducationModalData(data);
+        } else {
+          setEducationModalData([]);
+        }
+      } catch (e) {
+        console.error("Error fetching education", e);
+        setEducationModalData([]);
+      } finally {
+        setLoadingEducation(false);
+      }
+    } else {
+      setEducationModalData([]);
+      setLoadingEducation(false);
+    }
+  };
+
+  const openVisaModal = async (app: Application) => {
+    setVisaModalCandidate(app);
+    const candidateId = app.candidate_id;
+    setVisaModalOpen(true);
+    setLoadingVisa(true);
+
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_travel_documents")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("expiry_date", { ascending: false });
+
+        if (!error && data) {
+          // Filter to only visa documents
+          const visaDocs = data.filter((doc: any) => {
+            const docType = (doc.document_type || "").toUpperCase();
+            return docType.includes("C1D") || docType.includes("VISA");
+          });
+          setVisaModalData(visaDocs);
+        } else {
+          setVisaModalData([]);
+        }
+      } catch (e) {
+        console.error("Error fetching visa documents", e);
+        setVisaModalData([]);
+      } finally {
+        setLoadingVisa(false);
+      }
+    } else {
+      setVisaModalData([]);
+      setLoadingVisa(false);
+    }
+  };
+
+  const getVisaCount = (candidateId?: string) => {
+    if (!candidateId) return 0;
+    return (visaDocsByCandidate[candidateId] || []).length;
+  };
+
+  const getLatestVisaType = (candidateId?: string) => {
+    if (!candidateId) return null;
+    const visas = visaDocsByCandidate[candidateId];
+    if (!visas || visas.length === 0) return null;
+    return visas[0].document_type;
+  };
+
+  const getVisaExpiryStatus = (expiryDate: string | null): 'none' | 'expired' | 'expiring' | 'valid' => {
+    if (!expiryDate) return 'none';
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+    
+    if (expiry < today) return 'expired';
+    if (expiry <= sixMonthsFromNow) return 'expiring';
+    return 'valid';
+  };
+
+  const getVisaButtonClass = (status: 'none' | 'expired' | 'expiring' | 'valid') => {
+    switch (status) {
+      case 'expired':
+        return 'border-destructive text-destructive bg-destructive/10';
+      case 'expiring':
+        return 'border-amber-500 text-amber-600 bg-amber-50 dark:bg-amber-900/20';
+      case 'valid':
+        return 'border-green-500 text-green-600 bg-green-50 dark:bg-green-900/20';
+      default:
+        return '';
+    }
+  };
+
 const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
   if (!candidateId) return { total: 0, relevant: 0 };
   const allExps = allExperiencesByCandidate[candidateId] || [];
@@ -1181,11 +1429,34 @@ const openSuitableDialog = (app: Application) => {
 const saveSuitable = async () => {
   if (!activeApp || !suitableChoice) return;
   try {
+    // When setting suitable to "Yes", also update remarks to "Step 2" and unlock step 2
+    const updateData: any = { suitable: suitableChoice };
+    
+    if (suitableChoice === "Yes") {
+      const currentStep = (activeApp.candidate as any)?.profile_step_unlocked || 1;
+      // Only update if current step is less than 2
+      if (currentStep < 2) {
+        updateData.remarks = "Step 2";
+      }
+    }
+
     const { error } = await supabase
       .from("job_applications")
-      .update({ suitable: suitableChoice })
+      .update(updateData)
       .eq("id", activeApp.id);
     if (error) throw error;
+
+    // If suitable is "Yes" and step was less than 2, also update candidate profile
+    if (suitableChoice === "Yes" && activeApp.candidate_id) {
+      const currentStep = (activeApp.candidate as any)?.profile_step_unlocked || 1;
+      if (currentStep < 2) {
+        await supabase
+          .from("candidate_profiles")
+          .update({ profile_step_unlocked: 2 } as any)
+          .eq("id", activeApp.candidate_id);
+      }
+    }
+
     toast({ title: "Suitable updated" });
     setSuitableDialogOpen(false);
     setActiveApp(null);
@@ -1372,7 +1643,7 @@ const getExportData = () => {
     "Age",
     "Weight/Height",
     "Ship Experience",
-    "C1D Expiry Date",
+    "Visa Expiry Date",
     "Previous Experience",
     "Education Background",
     "Contact No",
@@ -2978,7 +3249,7 @@ return (
                 <TableHead className="min-w-[100px]">Reference</TableHead>
                 <TableHead className="min-w-[110px]">Has Exp</TableHead>
                 <TableHead className="min-w-[200px]">Experience</TableHead>
-                <TableHead className="min-w-[130px]">C1D Expiry Date</TableHead>
+                <TableHead className="min-w-[130px]">Visa Expiry Date</TableHead>
                 <TableHead className="min-w-[160px]">Education Background</TableHead>
                 <TableHead className="min-w-[120px]">Contact No</TableHead>
                 <TableHead className="min-w-[180px]">Email</TableHead>
@@ -3096,11 +3367,46 @@ return (
                       View ({getExperienceCount(app.candidate_id, app.job?.department).relevant}/{getExperienceCount(app.candidate_id, app.job?.department).total})
                     </Button>
                   </TableCell>
-                  <TableCell>{formatDate(app.c1d_expiry_date)}</TableCell>
-                  <TableCell>{getLatestEducationText(app.candidate_id, app.education_background)}</TableCell>
+                  <TableCell>
+                    {getVisaCount(app.candidate_id) > 0 ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openVisaModal(app)}
+                        className={`text-xs ${getVisaButtonClass(getVisaExpiryStatus(app.c1d_expiry_date))}`}
+                      >
+                        {formatDate(app.c1d_expiry_date)} ({getVisaCount(app.candidate_id)})
+                      </Button>
+                    ) : (
+                      <span className="text-muted-foreground">{formatDate(app.c1d_expiry_date)}</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {getLatestEducationInstitution(app.candidate_id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEducationModal(app)}
+                        className="text-xs"
+                      >
+                        {getLatestEducationInstitution(app.candidate_id)}
+                      </Button>
+                    ) : (app.education_background || "-")}
+                  </TableCell>
                   <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
                   <TableCell>{app.candidate.email}</TableCell>
-                  <TableCell>{app.emergency_contact || "-"}</TableCell>
+                  <TableCell>
+                    {getLatestEmergencyContactName(app.candidate_id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEmergencyContactModal(app)}
+                        className="text-xs"
+                      >
+                        {getLatestEmergencyContactName(app.candidate_id)}
+                      </Button>
+                    ) : "-"}
+                  </TableCell>
                   <TableCell>
                     {app.cv_url ? (
                       <a
@@ -3125,11 +3431,24 @@ return (
                       </a>
                     ) : "-"}
                   </TableCell>
-                  <TableCell>{app.vaccin_covid_booster ? "Yes" : "-"}</TableCell>
-                  <TableCell>{app.bst_cc || "-"}</TableCell>
+                  <TableCell>
+                    {app.candidate?.covid_vaccinated 
+                      ? (app.candidate.covid_vaccinated.toLowerCase().includes("booster") 
+                          ? "Yes" 
+                          : app.candidate.covid_vaccinated)
+                      : "-"}
+                  </TableCell>
+                  <TableCell>{getBstCcDisplay(app.candidate_id) || app.bst_cc || "-"}</TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
-                      <span>{app.suitable || "-"}</span>
+                      <span>
+                        {(() => {
+                          // Show "Yes" if profile_step_unlocked >= 2, else show the suitable value
+                          const step = (app.candidate as any)?.profile_step_unlocked || 1;
+                          if (step >= 2) return "Yes";
+                          return app.suitable || "-";
+                        })()}
+                      </span>
                       <Button
                         variant="link"
                         size="sm"
@@ -3524,6 +3843,195 @@ return (
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setExperienceModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Emergency Contact Modal */}
+      <Dialog open={emergencyContactModalOpen} onOpenChange={setEmergencyContactModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Emergency Contacts - {emergencyContactModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {emergencyContactModalCandidate?.job?.title} ({emergencyContactModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingEmergencyContact ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : emergencyContactModalData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No emergency contact records</p>
+            ) : (
+              <div className="space-y-3">
+                {emergencyContactModalData.map((contact, idx) => (
+                  <div key={idx} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">{contact.full_name}</span>
+                      {contact.is_primary && (
+                        <Badge variant="default">Primary</Badge>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>
+                        <span className="font-medium">Relationship:</span> {contact.relationship || '-'}
+                      </div>
+                      <div>
+                        <span className="font-medium">Phone:</span> {contact.phone || '-'}
+                      </div>
+                      {contact.alternative_phone && (
+                        <div>
+                          <span className="font-medium">Alternative Phone:</span> {contact.alternative_phone}
+                        </div>
+                      )}
+                      {contact.email && (
+                        <div>
+                          <span className="font-medium">Email:</span> {contact.email}
+                        </div>
+                      )}
+                      {contact.address && (
+                        <div>
+                          <span className="font-medium">Address:</span> {contact.address}
+                        </div>
+                      )}
+                      {(contact.city || contact.country) && (
+                        <div>
+                          <span className="font-medium">Location:</span> {[contact.city, contact.country].filter(Boolean).join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmergencyContactModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Education Modal */}
+      <Dialog open={educationModalOpen} onOpenChange={setEducationModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Education - {educationModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {educationModalCandidate?.job?.title} ({educationModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingEducation ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : educationModalData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No education records</p>
+            ) : (
+              <div className="space-y-3">
+                {educationModalData.map((edu, idx) => (
+                  <div key={idx} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">{edu.institution}</span>
+                      {edu.is_current && (
+                        <Badge variant="default">Current</Badge>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>
+                        <span className="font-medium">Degree:</span> {edu.degree || '-'}
+                      </div>
+                      {edu.field_of_study && (
+                        <div>
+                          <span className="font-medium">Field of Study:</span> {edu.field_of_study}
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-medium">Period:</span> {edu.start_date ? formatDate(edu.start_date) : '-'} - {edu.end_date ? formatDate(edu.end_date) : 'Present'}
+                      </div>
+                      {edu.description && (
+                        <div>
+                          <span className="font-medium">Description:</span> {edu.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEducationModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Visa Documents Modal */}
+      <Dialog open={visaModalOpen} onOpenChange={setVisaModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Visa Documents - {visaModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {visaModalCandidate?.job?.title} ({visaModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingVisa ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : visaModalData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No visa documents found</p>
+            ) : (
+              <div className="space-y-3">
+                {visaModalData.map((visa, idx) => {
+                  const expired = visa.expiry_date && new Date(visa.expiry_date) < new Date();
+                  return (
+                    <div key={idx} className={`border rounded-lg p-4 ${expired ? 'border-destructive bg-destructive/5' : ''}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold">{visa.document_type}</span>
+                        {expired ? (
+                          <Badge variant="destructive">Expired</Badge>
+                        ) : (
+                          <Badge variant="default">Valid</Badge>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>
+                          <span className="font-medium">Document Number:</span> {visa.document_number || '-'}
+                        </div>
+                        <div>
+                          <span className="font-medium">Issue Date:</span> {visa.issue_date ? formatDate(visa.issue_date) : '-'}
+                        </div>
+                        <div>
+                          <span className="font-medium">Expiry Date:</span> {visa.expiry_date ? formatDate(visa.expiry_date) : '-'}
+                        </div>
+                        {visa.issuing_authority && (
+                          <div>
+                            <span className="font-medium">Issuing Authority:</span> {visa.issuing_authority}
+                          </div>
+                        )}
+                        {visa.issuing_country && (
+                          <div>
+                            <span className="font-medium">Country:</span> {visa.issuing_country}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setVisaModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
