@@ -3360,8 +3360,8 @@ return (
                 <TableHead className="min-w-[170px]">Interview Result Notes</TableHead>
                 <TableHead className="min-w-[140px]">Approved Position</TableHead>
                 <TableHead className="min-w-[160px]">Marlin / English Score</TableHead>
-                <TableHead className="min-w-[120px]">Neha/CES Test</TableHead>
-                <TableHead className="min-w-[110px]">File Result</TableHead>
+                <TableHead className="min-w-[120px]">Neha Test</TableHead>
+                <TableHead className="min-w-[110px]">CES Test</TableHead>
                 <TableHead className="min-w-[170px]">Principal Interview By</TableHead>
                 <TableHead className="min-w-[180px]">Principal Interview Date</TableHead>
                 <TableHead className="min-w-[190px]">Principal Interview Result</TableHead>
