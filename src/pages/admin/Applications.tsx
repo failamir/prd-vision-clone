@@ -3218,6 +3218,10 @@ return (
                 {filterOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </CollapsibleTrigger>
+            <div className="flex items-center gap-2">
+              <Button onClick={exportToExcel} size="sm" className="bg-green-600 hover:bg-green-700">Export to Excel</Button>
+              <Button onClick={exportToCSV} size="sm" className="bg-blue-600 hover:bg-blue-700">Export to CSV</Button>
+            </div>
           </div>
 
           <CollapsibleContent className="mt-4">
@@ -3401,9 +3405,8 @@ return (
                 <label className="text-sm font-medium mb-2 block">End Date</label>
                 <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
               </div>
-              <div className="flex items-end gap-2">
-                <Button onClick={exportToExcel} className="w-full bg-green-600 hover:bg-green-700">Export SGP to Excel</Button>
-                <Button onClick={exportToCSV} className="w-full bg-blue-600 hover:bg-blue-700">Export SGP to CSV</Button>
+              <div className="flex items-end justify-end gap-2">
+                <Button variant="secondary" onClick={clearFilters} className="w-full">Clear</Button>
               </div>
               <div className="flex items-end justify-end gap-2">
                 <Button variant="secondary" onClick={clearFilters} className="w-full">Clear</Button>
