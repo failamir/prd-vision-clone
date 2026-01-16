@@ -4,13 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle, Briefcase } from "lucide-react";
 import logo from "@/assets/logo-dark.png";
-import { AlertCircle } from "lucide-react";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -28,6 +35,14 @@ const Register = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showDirectAccessDialog, setShowDirectAccessDialog] = useState(false);
+
+  // Check if user accessed register page directly (without job parameter)
+  useEffect(() => {
+    if (!jobId) {
+      setShowDirectAccessDialog(true);
+    }
+  }, [jobId]);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -42,6 +57,10 @@ const Register = () => {
       }
     });
   }, [navigate, jobId]);
+
+  const handleRedirectToJobs = () => {
+    navigate("/jobs");
+  };
 
   const validateField = (field: string, value: string): string => {
     switch (field) {
@@ -355,6 +374,27 @@ const Register = () => {
           </p>
         </div>
       </Card>
+
+      {/* Direct Access Warning Dialog */}
+      <AlertDialog open={showDirectAccessDialog} onOpenChange={setShowDirectAccessDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-full">
+              <Briefcase className="w-6 h-6 text-primary" />
+            </div>
+            <AlertDialogTitle className="text-center">Apply for a Job First</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              To register, please browse our available job positions and apply for a position that matches your qualifications. 
+              You will be prompted to create an account during the application process.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-center">
+            <AlertDialogAction onClick={handleRedirectToJobs} className="w-full sm:w-auto">
+              Browse Jobs
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
