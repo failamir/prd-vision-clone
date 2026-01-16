@@ -253,6 +253,20 @@ const AdminApplications = () => {
   const [bstCcModalOpen, setBstCcModalOpen] = useState(false);
   const [bstCcModalCandidate, setBstCcModalCandidate] = useState<Application | null>(null);
 
+  // Next of Kin Modal state
+  const [nextOfKinModalOpen, setNextOfKinModalOpen] = useState(false);
+  const [nextOfKinModalCandidate, setNextOfKinModalCandidate] = useState<Application | null>(null);
+  const [nextOfKinModalData, setNextOfKinModalData] = useState<any[]>([]);
+  const [loadingNextOfKin, setLoadingNextOfKin] = useState(false);
+  const [latestNextOfKinByCandidate, setLatestNextOfKinByCandidate] = useState<Record<string, any>>({});
+
+  // References Modal state
+  const [referencesModalOpen, setReferencesModalOpen] = useState(false);
+  const [referencesModalCandidate, setReferencesModalCandidate] = useState<Application | null>(null);
+  const [referencesModalData, setReferencesModalData] = useState<any[]>([]);
+  const [loadingReferences, setLoadingReferences] = useState(false);
+  const [latestReferenceByCandidate, setLatestReferenceByCandidate] = useState<Record<string, any>>({});
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -916,6 +930,8 @@ const AdminApplications = () => {
       await fetchLatestExperiences(candidateIds as string[]);
       await fetchLatestEducations(candidateIds as string[]);
       await fetchLatestEmergencyContacts(candidateIds as string[]);
+      await fetchLatestNextOfKin(candidateIds as string[]);
+      await fetchLatestReferences(candidateIds as string[]);
 
       // Generate crew codes for applications without them
       await generateCrewCodes();
@@ -997,6 +1013,48 @@ const AdminApplications = () => {
         }
       });
       setLatestEmergencyContactByCandidate(map);
+    } catch (e) { }
+  };
+
+  const fetchLatestNextOfKin = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_next_of_kin")
+        .select("candidate_id, full_name, relationship, date_of_birth, place_of_birth, created_at")
+        .in("candidate_id", candidateIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setLatestNextOfKinByCandidate(map);
+    } catch (e) { }
+  };
+
+  const fetchLatestReferences = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_references")
+        .select("candidate_id, full_name, relationship, company, position, phone, email, created_at")
+        .in("candidate_id", candidateIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setLatestReferenceByCandidate(map);
     } catch (e) { }
   };
 
@@ -1266,6 +1324,82 @@ const AdminApplications = () => {
     if (!candidateId) return null;
     const contact = latestEmergencyContactByCandidate[candidateId];
     return contact ? contact.full_name : null;
+  };
+
+  // Next of Kin modal functions
+  const openNextOfKinModal = async (app: Application) => {
+    setNextOfKinModalCandidate(app);
+    const candidateId = app.candidate_id;
+    setNextOfKinModalOpen(true);
+    setLoadingNextOfKin(true);
+
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_next_of_kin")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          setNextOfKinModalData(data);
+        } else {
+          setNextOfKinModalData([]);
+        }
+      } catch (e) {
+        console.error("Error fetching next of kin", e);
+        setNextOfKinModalData([]);
+      } finally {
+        setLoadingNextOfKin(false);
+      }
+    } else {
+      setNextOfKinModalData([]);
+      setLoadingNextOfKin(false);
+    }
+  };
+
+  const getLatestNextOfKinName = (candidateId?: string) => {
+    if (!candidateId) return null;
+    const nok = latestNextOfKinByCandidate[candidateId];
+    return nok ? nok.full_name : null;
+  };
+
+  // References modal functions
+  const openReferencesModal = async (app: Application) => {
+    setReferencesModalCandidate(app);
+    const candidateId = app.candidate_id;
+    setReferencesModalOpen(true);
+    setLoadingReferences(true);
+
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_references")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          setReferencesModalData(data);
+        } else {
+          setReferencesModalData([]);
+        }
+      } catch (e) {
+        console.error("Error fetching references", e);
+        setReferencesModalData([]);
+      } finally {
+        setLoadingReferences(false);
+      }
+    } else {
+      setReferencesModalData([]);
+      setLoadingReferences(false);
+    }
+  };
+
+  const getLatestReferenceName = (candidateId?: string) => {
+    if (!candidateId) return null;
+    const ref = latestReferenceByCandidate[candidateId];
+    return ref ? ref.full_name : null;
   };
 
   const getLatestEducationInstitution = (candidateId?: string) => {
@@ -3348,6 +3482,8 @@ return (
                 <TableHead className="min-w-[120px]">Contact No</TableHead>
                 <TableHead className="min-w-[180px]">Email</TableHead>
                 <TableHead className="min-w-[150px]">Emergency Contact</TableHead>
+                <TableHead className="min-w-[130px]">Next of Kin</TableHead>
+                <TableHead className="min-w-[130px]">References</TableHead>
                 <TableHead className="min-w-[80px]">CV</TableHead>
                 <TableHead className="min-w-[140px]">
                   <div className="flex items-center gap-1">
@@ -3514,6 +3650,30 @@ return (
                         className="text-xs"
                       >
                         {getLatestEmergencyContactName(app.candidate_id)}
+                      </Button>
+                    ) : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {getLatestNextOfKinName(app.candidate_id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openNextOfKinModal(app)}
+                        className="text-xs"
+                      >
+                        {getLatestNextOfKinName(app.candidate_id)}
+                      </Button>
+                    ) : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {getLatestReferenceName(app.candidate_id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openReferencesModal(app)}
+                        className="text-xs"
+                      >
+                        {getLatestReferenceName(app.candidate_id)}
                       </Button>
                     ) : "-"}
                   </TableCell>
@@ -4235,6 +4395,120 @@ return (
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBstCcModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Next of Kin Modal */}
+      <Dialog open={nextOfKinModalOpen} onOpenChange={setNextOfKinModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Next of Kin - {nextOfKinModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {nextOfKinModalCandidate?.job?.title} ({nextOfKinModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingNextOfKin ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : nextOfKinModalData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No next of kin records</p>
+            ) : (
+              <div className="space-y-3">
+                {nextOfKinModalData.map((nok, idx) => (
+                  <div key={idx} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">{nok.full_name}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>
+                        <span className="font-medium">Relationship:</span> {nok.relationship || '-'}
+                      </div>
+                      {nok.date_of_birth && (
+                        <div>
+                          <span className="font-medium">Date of Birth:</span> {formatDate(nok.date_of_birth)}
+                        </div>
+                      )}
+                      {nok.place_of_birth && (
+                        <div>
+                          <span className="font-medium">Place of Birth:</span> {nok.place_of_birth}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNextOfKinModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* References Modal */}
+      <Dialog open={referencesModalOpen} onOpenChange={setReferencesModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              References - {referencesModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {referencesModalCandidate?.job?.title} ({referencesModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingReferences ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : referencesModalData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No reference records</p>
+            ) : (
+              <div className="space-y-3">
+                {referencesModalData.map((ref, idx) => (
+                  <div key={idx} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">{ref.full_name}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      {ref.relationship && (
+                        <div>
+                          <span className="font-medium">Relationship:</span> {ref.relationship}
+                        </div>
+                      )}
+                      {ref.company && (
+                        <div>
+                          <span className="font-medium">Company:</span> {ref.company}
+                        </div>
+                      )}
+                      {ref.position && (
+                        <div>
+                          <span className="font-medium">Position:</span> {ref.position}
+                        </div>
+                      )}
+                      {ref.phone && (
+                        <div>
+                          <span className="font-medium">Phone:</span> {ref.phone}
+                        </div>
+                      )}
+                      {ref.email && (
+                        <div>
+                          <span className="font-medium">Email:</span> {ref.email}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReferencesModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,11 +17,11 @@ const Register = () => {
   const [searchParams] = useSearchParams();
   const jobId = searchParams.get("job");
   const { toast } = useToast();
-  const [userType, setUserType] = useState("candidate");
+  const userType = "candidate"; // Fixed as candidate only
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [company, setCompany] = useState("");
+  
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -55,9 +55,6 @@ const Register = () => {
         if (!value.trim()) return 'Email is required';
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Please enter a valid email address';
         return '';
-      case 'company':
-        if (userType === 'employer' && !value.trim()) return 'Company name is required';
-        return '';
       case 'password':
         if (!value) return 'Password is required';
         if (value.length < 6) return 'Password must be at least 6 characters';
@@ -87,9 +84,6 @@ const Register = () => {
       case 'email':
         setEmail(value);
         break;
-      case 'company':
-        setCompany(value);
-        break;
       case 'phone':
         setPhone(value);
         break;
@@ -112,10 +106,6 @@ const Register = () => {
     newErrors.email = validateField('email', email);
     newErrors.password = validateField('password', password);
     newErrors.confirmPassword = validateField('confirmPassword', confirmPassword);
-    
-    if (userType === 'employer') {
-      newErrors.company = validateField('company', company);
-    }
 
     if (!agreedToTerms) {
       newErrors.terms = 'You must agree to the terms and conditions';
@@ -148,7 +138,6 @@ const Register = () => {
             full_name: `${firstName} ${lastName}`,
             user_type: userType,
             phone,
-            company: userType === "employer" ? company : null,
           },
         },
       });
@@ -193,37 +182,6 @@ const Register = () => {
         </div>
 
         <form className="space-y-6" onSubmit={handleRegister}>
-          <div>
-            <Label className="mb-3 block">I want to register as:</Label>
-            <RadioGroup value={userType} onValueChange={setUserType} className="grid grid-cols-2 gap-4">
-              <div>
-                <RadioGroupItem value="candidate" id="candidate" className="peer sr-only" />
-                <Label
-                  htmlFor="candidate"
-                  className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-card p-4 hover:bg-accent cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
-                >
-                  <span className="text-4xl mb-2">👤</span>
-                  <span className="font-semibold">Job Seeker</span>
-                  <span className="text-xs text-muted-foreground text-center mt-1">
-                    Find and apply for jobs
-                  </span>
-                </Label>
-              </div>
-              <div>
-                <RadioGroupItem value="employer" id="employer" className="peer sr-only" />
-                <Label
-                  htmlFor="employer"
-                  className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-card p-4 hover:bg-accent cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
-                >
-                  <span className="text-4xl mb-2">🏢</span>
-                  <span className="font-semibold">Employer</span>
-                  <span className="text-xs text-muted-foreground text-center mt-1">
-                    Post jobs and hire talent
-                  </span>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -284,26 +242,6 @@ const Register = () => {
             )}
           </div>
 
-          {userType === "employer" && (
-            <div className="space-y-2">
-              <Label htmlFor="company">Company Name <span className="text-red-500">*</span></Label>
-              <Input
-                id="company"
-                placeholder="Your Company Name"
-                value={company}
-                onChange={(e) => handleInputChange('company', e.target.value)}
-                className={errors.company ? 'border-red-500 focus-visible:ring-red-500' : ''}
-                aria-invalid={!!errors.company}
-                aria-describedby={errors.company ? 'company-error' : undefined}
-              />
-              {errors.company && (
-                <p id="company-error" className="text-sm text-red-500 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.company}
-                </p>
-              )}
-            </div>
-          )}
 
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number</Label>
