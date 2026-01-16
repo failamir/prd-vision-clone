@@ -1391,6 +1391,16 @@ const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
   return { total: allExps.length, relevant: relevantExps.length };
 };
 
+const getExperienceCountByType = (candidateId?: string, type?: 'ship' | 'hotel') => {
+  if (!candidateId) return 0;
+  const allExps = allExperiencesByCandidate[candidateId] || [];
+  if (!type) return allExps.length;
+  return allExps.filter((exp: any) => {
+    const expType = (exp.experience_type || "Hotel").toLowerCase();
+    return expType === type;
+  }).length;
+};
+
 const getLatestEducationText = (candidateId?: string, fallback?: string) => {
   if (!candidateId) return fallback || "-";
   const edu = latestEducationByCandidate[candidateId];
@@ -3331,7 +3341,8 @@ return (
                 <TableHead className="min-w-[110px]">Weight/Height</TableHead>
                 <TableHead className="min-w-[100px]">Reference</TableHead>
                 <TableHead className="min-w-[110px]">Has Exp</TableHead>
-                <TableHead className="min-w-[200px]">Experience</TableHead>
+                <TableHead className="min-w-[150px]">Ship Experience</TableHead>
+                <TableHead className="min-w-[150px]">Hotel Experience</TableHead>
                 <TableHead className="min-w-[130px]">Visa Expiry Date</TableHead>
                 <TableHead className="min-w-[160px]">Education Background</TableHead>
                 <TableHead className="min-w-[120px]">Contact No</TableHead>
@@ -3444,10 +3455,26 @@ return (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openExperienceModal(app)}
+                      onClick={() => {
+                        setExperienceFilter('SHIP');
+                        openExperienceModal(app);
+                      }}
                       className="text-xs"
                     >
-                      View ({getExperienceCount(app.candidate_id, app.job?.department).relevant}/{getExperienceCount(app.candidate_id, app.job?.department).total})
+                      View ({getExperienceCountByType(app.candidate_id, 'ship')}/{getExperienceCount(app.candidate_id).total})
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setExperienceFilter('HOTEL');
+                        openExperienceModal(app);
+                      }}
+                      className="text-xs"
+                    >
+                      View ({getExperienceCountByType(app.candidate_id, 'hotel')}/{getExperienceCount(app.candidate_id).total})
                     </Button>
                   </TableCell>
                   <TableCell>
