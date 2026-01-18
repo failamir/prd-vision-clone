@@ -363,16 +363,33 @@ const AdminUsers = () => {
 
     setDeleting(true);
     try {
-      await supabase.from("user_roles").delete().eq("user_id", selectedUser.id);
+      // If user is already archived, delete permanently
+      if (selectedUser.is_archived) {
+        await supabase.from("user_roles").delete().eq("user_id", selectedUser.id);
 
-      const { error } = await supabase
-        .from("candidate_profiles")
-        .delete()
-        .eq("user_id", selectedUser.id);
+        const { error } = await supabase
+          .from("candidate_profiles")
+          .delete()
+          .eq("user_id", selectedUser.id);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({ title: "User berhasil dihapus" });
+        toast({ title: "User berhasil dihapus permanen" });
+      } else {
+        // If user is active, move to archive instead of deleting
+        const { error } = await supabase
+          .from("candidate_profiles")
+          .update({ 
+            is_archived: true,
+            archived_at: new Date().toISOString()
+          })
+          .eq("user_id", selectedUser.id);
+
+        if (error) throw error;
+
+        toast({ title: "User berhasil dipindahkan ke arsip" });
+      }
+      
       setDeleteDialogOpen(false);
       setSelectedUser(null);
       await fetchUsers();
@@ -681,27 +698,17 @@ const AdminUsers = () => {
                         <Edit3 className="w-4 h-4 mr-2" />
                         Edit
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={user.is_archived 
-                          ? "text-green-600 border-green-200 hover:bg-green-50" 
-                          : "text-orange-600 border-orange-200 hover:bg-orange-50"
-                        }
-                        onClick={() => openArchiveUser(user)}
-                      >
-                        {user.is_archived ? (
-                          <>
-                            <ArchiveRestore className="w-4 h-4 mr-2" />
-                            Restore
-                          </>
-                        ) : (
-                          <>
-                            <Archive className="w-4 h-4 mr-2" />
-                            Archive
-                          </>
-                        )}
-                      </Button>
+                      {user.is_archived && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-green-600 border-green-200 hover:bg-green-50"
+                          onClick={() => openArchiveUser(user)}
+                        >
+                          <ArchiveRestore className="w-4 h-4 mr-2" />
+                          Restore
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
@@ -825,16 +832,25 @@ const AdminUsers = () => {
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <AlertDialogContent className="bg-background">
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete user?</AlertDialogTitle>
+              <AlertDialogTitle>
+                {selectedUser?.is_archived ? "Hapus Permanen?" : "Arsipkan User?"}
+              </AlertDialogTitle>
               <AlertDialogDescription>
-                Tindakan ini akan menghapus profil dan semua role user tersebut. Aksi ini tidak dapat dibatalkan.
+                {selectedUser?.is_archived 
+                  ? "Tindakan ini akan menghapus profil dan semua role user tersebut SECARA PERMANEN. Aksi ini tidak dapat dibatalkan."
+                  : "User akan dipindahkan ke arsip. Untuk menghapus permanen, hapus dari halaman Archived."
+                }
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteUser} disabled={deleting}>
+              <AlertDialogAction 
+                onClick={handleDeleteUser} 
+                disabled={deleting}
+                className={selectedUser?.is_archived ? "bg-red-600 hover:bg-red-700" : ""}
+              >
                 {deleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Delete
+                {selectedUser?.is_archived ? "Hapus Permanen" : "Arsipkan"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

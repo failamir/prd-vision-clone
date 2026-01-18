@@ -137,6 +137,8 @@ const AdminApplications = () => {
   const [principalInterviewByFilter, setPrincipalInterviewByFilter] = useState("");
   const [principalInterviewDateMin, setPrincipalInterviewDateMin] = useState("");
   const [principalInterviewDateMax, setPrincipalInterviewDateMax] = useState("");
+  const [visaStatusFilter, setVisaStatusFilter] = useState("");
+  const [bstCcStatusFilter, setBstCcStatusFilter] = useState("");
   const [principalInterviewResultFilter, setPrincipalInterviewResultFilter] = useState("");
   const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);
   const [activeApplication, setActiveApplication] = useState<Application | null>(null);
@@ -245,7 +247,25 @@ const AdminApplications = () => {
   const [visaModalData, setVisaModalData] = useState<any[]>([]);
   const [loadingVisa, setLoadingVisa] = useState(false);
   const [visaDocsByCandidate, setVisaDocsByCandidate] = useState<Record<string, any[]>>({});
-  const [bstCcByCandidate, setBstCcByCandidate] = useState<Record<string, string>>({});
+  const [bstCcByCandidate, setBstCcByCandidate] = useState<Record<string, { label: string; certs: { type: string; file_path: string | null }[] }>>({});
+  
+  // BST/CC Modal state
+  const [bstCcModalOpen, setBstCcModalOpen] = useState(false);
+  const [bstCcModalCandidate, setBstCcModalCandidate] = useState<Application | null>(null);
+
+  // Next of Kin Modal state
+  const [nextOfKinModalOpen, setNextOfKinModalOpen] = useState(false);
+  const [nextOfKinModalCandidate, setNextOfKinModalCandidate] = useState<Application | null>(null);
+  const [nextOfKinModalData, setNextOfKinModalData] = useState<any[]>([]);
+  const [loadingNextOfKin, setLoadingNextOfKin] = useState(false);
+  const [latestNextOfKinByCandidate, setLatestNextOfKinByCandidate] = useState<Record<string, any>>({});
+
+  // References Modal state
+  const [referencesModalOpen, setReferencesModalOpen] = useState(false);
+  const [referencesModalCandidate, setReferencesModalCandidate] = useState<Application | null>(null);
+  const [referencesModalData, setReferencesModalData] = useState<any[]>([]);
+  const [loadingReferences, setLoadingReferences] = useState(false);
+  const [latestReferenceByCandidate, setLatestReferenceByCandidate] = useState<Record<string, any>>({});
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -281,6 +301,8 @@ const AdminApplications = () => {
     setPrincipalInterviewDateMin("");
     setPrincipalInterviewDateMax("");
     setPrincipalInterviewResultFilter("");
+    setVisaStatusFilter("");
+    setBstCcStatusFilter("");
   };
 
   const withinDateRange = (value: string | null | undefined, min?: string, max?: string) => {
@@ -378,6 +400,47 @@ const AdminApplications = () => {
     if (!matchesText(app.principal_interview_by, principalInterviewByFilter)) return false;
     if (!withinDateRange(app.principal_interview_date, principalInterviewDateMin || undefined, principalInterviewDateMax || undefined)) return false;
     if (principalInterviewResultFilter && (app.principal_interview_result || "").toLowerCase() !== principalInterviewResultFilter.toLowerCase()) return false;
+
+    // Visa status filter
+    if (visaStatusFilter && app.candidate_id) {
+      const visaDocs = visaDocsByCandidate[app.candidate_id] || [];
+      if (visaStatusFilter === "No Visa") {
+        if (visaDocs.length > 0) return false;
+      } else {
+        if (visaDocs.length === 0) return false;
+        const now = new Date();
+        const sixMonthsFromNow = new Date();
+        sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+        
+        const hasStatus = visaDocs.some((doc: any) => {
+          if (!doc.expiry_date) return false;
+          const expiry = new Date(doc.expiry_date);
+          if (visaStatusFilter === "Expired") return expiry < now;
+          if (visaStatusFilter === "Expiring Soon") return expiry >= now && expiry <= sixMonthsFromNow;
+          if (visaStatusFilter === "Valid") return expiry > sixMonthsFromNow;
+          return false;
+        });
+        if (!hasStatus) return false;
+      }
+    }
+
+    // BST/CC status filter
+    if (bstCcStatusFilter && app.candidate_id) {
+      const bstCcData = bstCcByCandidate[app.candidate_id];
+      const certs = bstCcData?.certs || [];
+      if (bstCcStatusFilter === "No Certificates") {
+        if (certs.length > 0) return false;
+      } else if (bstCcStatusFilter === "Has BST") {
+        const hasBst = certs.some((c: any) => c.type.toUpperCase().includes("BST"));
+        if (!hasBst) return false;
+      } else if (bstCcStatusFilter === "Has CC") {
+        const hasCc = certs.some((c: any) => {
+          const t = c.type.toUpperCase();
+          return t.includes("CC") || t.includes("CCM") || t.includes("COC");
+        });
+        if (!hasCc) return false;
+      }
+    }
 
     return true;
   };
@@ -867,6 +930,8 @@ const AdminApplications = () => {
       await fetchLatestExperiences(candidateIds as string[]);
       await fetchLatestEducations(candidateIds as string[]);
       await fetchLatestEmergencyContacts(candidateIds as string[]);
+      await fetchLatestNextOfKin(candidateIds as string[]);
+      await fetchLatestReferences(candidateIds as string[]);
 
       // Generate crew codes for applications without them
       await generateCrewCodes();
@@ -951,6 +1016,48 @@ const AdminApplications = () => {
     } catch (e) { }
   };
 
+  const fetchLatestNextOfKin = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_next_of_kin")
+        .select("candidate_id, full_name, relationship, date_of_birth, place_of_birth, created_at")
+        .in("candidate_id", candidateIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setLatestNextOfKinByCandidate(map);
+    } catch (e) { }
+  };
+
+  const fetchLatestReferences = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      const { data, error } = await supabase
+        .from("candidate_references")
+        .select("candidate_id, full_name, relationship, company, position, phone, email, created_at")
+        .in("candidate_id", candidateIds)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const map: Record<string, any> = {};
+      (data || []).forEach((row: any) => {
+        if (!map[row.candidate_id]) {
+          map[row.candidate_id] = row;
+        }
+      });
+      setLatestReferenceByCandidate(map);
+    } catch (e) { }
+  };
+
   const fetchMedicalTests = async (candidateIds: string[]) => {
     if (!candidateIds || candidateIds.length === 0) return;
     try {
@@ -996,12 +1103,12 @@ const AdminApplications = () => {
     try {
       const { data, error } = await supabase
         .from("candidate_certificates")
-        .select("candidate_id, type_certificate")
+        .select("candidate_id, type_certificate, file_path")
         .in("candidate_id", candidateIds);
 
       if (error) throw error;
 
-      const map: Record<string, string> = {};
+      const map: Record<string, { label: string; certs: { type: string; file_path: string | null }[] }> = {};
       (data || []).forEach((row: any) => {
         const cid = row.candidate_id;
         const certType = (row.type_certificate || "").toUpperCase();
@@ -1012,13 +1119,14 @@ const AdminApplications = () => {
         
         if (hasBst || hasCc) {
           if (!map[cid]) {
-            map[cid] = "";
+            map[cid] = { label: "", certs: [] };
           }
           // Build a comma-separated list of BST/CC certificates
           const certAbbrev = hasBst ? "BST" : (certType.includes("CCM") ? "CCM" : certType.includes("COC") ? "COC" : "CC");
-          if (!map[cid].includes(certAbbrev)) {
-            map[cid] = map[cid] ? `${map[cid]}, ${certAbbrev}` : certAbbrev;
+          if (!map[cid].label.includes(certAbbrev)) {
+            map[cid].label = map[cid].label ? `${map[cid].label}, ${certAbbrev}` : certAbbrev;
           }
+          map[cid].certs.push({ type: row.type_certificate || certAbbrev, file_path: row.file_path });
         }
       });
 
@@ -1028,7 +1136,13 @@ const AdminApplications = () => {
 
   const getBstCcDisplay = (candidateId?: string) => {
     if (!candidateId) return null;
-    return bstCcByCandidate[candidateId] || null;
+    const entry = bstCcByCandidate[candidateId];
+    return entry ? entry.label : null;
+  };
+
+  const openBstCcModal = (app: Application) => {
+    setBstCcModalCandidate(app);
+    setBstCcModalOpen(true);
   };
 
   const openApprovedPositionDialog = async (app: Application) => {
@@ -1212,6 +1326,82 @@ const AdminApplications = () => {
     return contact ? contact.full_name : null;
   };
 
+  // Next of Kin modal functions
+  const openNextOfKinModal = async (app: Application) => {
+    setNextOfKinModalCandidate(app);
+    const candidateId = app.candidate_id;
+    setNextOfKinModalOpen(true);
+    setLoadingNextOfKin(true);
+
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_next_of_kin")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          setNextOfKinModalData(data);
+        } else {
+          setNextOfKinModalData([]);
+        }
+      } catch (e) {
+        console.error("Error fetching next of kin", e);
+        setNextOfKinModalData([]);
+      } finally {
+        setLoadingNextOfKin(false);
+      }
+    } else {
+      setNextOfKinModalData([]);
+      setLoadingNextOfKin(false);
+    }
+  };
+
+  const getLatestNextOfKinName = (candidateId?: string) => {
+    if (!candidateId) return null;
+    const nok = latestNextOfKinByCandidate[candidateId];
+    return nok ? nok.full_name : null;
+  };
+
+  // References modal functions
+  const openReferencesModal = async (app: Application) => {
+    setReferencesModalCandidate(app);
+    const candidateId = app.candidate_id;
+    setReferencesModalOpen(true);
+    setLoadingReferences(true);
+
+    if (candidateId) {
+      try {
+        const { data, error } = await supabase
+          .from("candidate_references")
+          .select("*")
+          .eq("candidate_id", candidateId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          setReferencesModalData(data);
+        } else {
+          setReferencesModalData([]);
+        }
+      } catch (e) {
+        console.error("Error fetching references", e);
+        setReferencesModalData([]);
+      } finally {
+        setLoadingReferences(false);
+      }
+    } else {
+      setReferencesModalData([]);
+      setLoadingReferences(false);
+    }
+  };
+
+  const getLatestReferenceName = (candidateId?: string) => {
+    if (!candidateId) return null;
+    const ref = latestReferenceByCandidate[candidateId];
+    return ref ? ref.full_name : null;
+  };
+
   const getLatestEducationInstitution = (candidateId?: string) => {
     if (!candidateId) return null;
     const edu = latestEducationByCandidate[candidateId];
@@ -1333,6 +1523,16 @@ const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
     return expType === targetType;
   });
   return { total: allExps.length, relevant: relevantExps.length };
+};
+
+const getExperienceCountByType = (candidateId?: string, type?: 'ship' | 'hotel') => {
+  if (!candidateId) return 0;
+  const allExps = allExperiencesByCandidate[candidateId] || [];
+  if (!type) return allExps.length;
+  return allExps.filter((exp: any) => {
+    const expType = (exp.experience_type || "Hotel").toLowerCase();
+    return expType === type;
+  }).length;
 };
 
 const getLatestEducationText = (candidateId?: string, fallback?: string) => {
@@ -3018,6 +3218,10 @@ return (
                 {filterOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </CollapsibleTrigger>
+            <div className="flex items-center gap-2">
+              <Button onClick={exportToExcel} size="sm" className="bg-green-600 hover:bg-green-700">Export to Excel</Button>
+              <Button onClick={exportToCSV} size="sm" className="bg-blue-600 hover:bg-blue-700">Export to CSV</Button>
+            </div>
           </div>
 
           <CollapsibleContent className="mt-4">
@@ -3167,6 +3371,33 @@ return (
                 </Select>
               </div>
               <div>
+                <label className="text-sm font-medium mb-2 block">Visa Status</label>
+                <Select value={visaStatusFilter} onValueChange={setVisaStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="- Select -" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Valid">Valid</SelectItem>
+                    <SelectItem value="Expiring Soon">Expiring Soon</SelectItem>
+                    <SelectItem value="Expired">Expired</SelectItem>
+                    <SelectItem value="No Visa">No Visa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">BST/CC Status</label>
+                <Select value={bstCcStatusFilter} onValueChange={setBstCcStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="- Select -" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Has BST">Has BST</SelectItem>
+                    <SelectItem value="Has CC">Has CC</SelectItem>
+                    <SelectItem value="No Certificates">No Certificates</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <label className="text-sm font-medium mb-2 block">Start Date</label>
                 <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
               </div>
@@ -3174,9 +3405,8 @@ return (
                 <label className="text-sm font-medium mb-2 block">End Date</label>
                 <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
               </div>
-              <div className="flex items-end gap-2">
-                <Button onClick={exportToExcel} className="w-full bg-green-600 hover:bg-green-700">Export SGP to Excel</Button>
-                <Button onClick={exportToCSV} className="w-full bg-blue-600 hover:bg-blue-700">Export SGP to CSV</Button>
+              <div className="flex items-end justify-end gap-2">
+                <Button variant="secondary" onClick={clearFilters} className="w-full">Clear</Button>
               </div>
               <div className="flex items-end justify-end gap-2">
                 <Button variant="secondary" onClick={clearFilters} className="w-full">Clear</Button>
@@ -3248,12 +3478,15 @@ return (
                 <TableHead className="min-w-[110px]">Weight/Height</TableHead>
                 <TableHead className="min-w-[100px]">Reference</TableHead>
                 <TableHead className="min-w-[110px]">Has Exp</TableHead>
-                <TableHead className="min-w-[200px]">Experience</TableHead>
+                <TableHead className="min-w-[150px]">Ship Experience</TableHead>
+                <TableHead className="min-w-[150px]">Hotel Experience</TableHead>
                 <TableHead className="min-w-[130px]">Visa Expiry Date</TableHead>
                 <TableHead className="min-w-[160px]">Education Background</TableHead>
                 <TableHead className="min-w-[120px]">Contact No</TableHead>
                 <TableHead className="min-w-[180px]">Email</TableHead>
                 <TableHead className="min-w-[150px]">Emergency Contact</TableHead>
+                <TableHead className="min-w-[130px]">Next of Kin</TableHead>
+                <TableHead className="min-w-[130px]">References</TableHead>
                 <TableHead className="min-w-[80px]">CV</TableHead>
                 <TableHead className="min-w-[140px]">
                   <div className="flex items-center gap-1">
@@ -3277,8 +3510,8 @@ return (
                 <TableHead className="min-w-[170px]">Interview Result Notes</TableHead>
                 <TableHead className="min-w-[140px]">Approved Position</TableHead>
                 <TableHead className="min-w-[160px]">Marlin / English Score</TableHead>
-                <TableHead className="min-w-[120px]">Neha/CES Test</TableHead>
-                <TableHead className="min-w-[110px]">File Result</TableHead>
+                <TableHead className="min-w-[120px]">Neha Test</TableHead>
+                <TableHead className="min-w-[110px]">CES Test</TableHead>
                 <TableHead className="min-w-[170px]">Principal Interview By</TableHead>
                 <TableHead className="min-w-[180px]">Principal Interview Date</TableHead>
                 <TableHead className="min-w-[190px]">Principal Interview Result</TableHead>
@@ -3361,10 +3594,26 @@ return (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openExperienceModal(app)}
+                      onClick={() => {
+                        setExperienceFilter('SHIP');
+                        openExperienceModal(app);
+                      }}
                       className="text-xs"
                     >
-                      View ({getExperienceCount(app.candidate_id, app.job?.department).relevant}/{getExperienceCount(app.candidate_id, app.job?.department).total})
+                      View ({getExperienceCountByType(app.candidate_id, 'ship')}/{getExperienceCount(app.candidate_id).total})
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setExperienceFilter('HOTEL');
+                        openExperienceModal(app);
+                      }}
+                      className="text-xs"
+                    >
+                      View ({getExperienceCountByType(app.candidate_id, 'hotel')}/{getExperienceCount(app.candidate_id).total})
                     </Button>
                   </TableCell>
                   <TableCell>
@@ -3408,6 +3657,30 @@ return (
                     ) : "-"}
                   </TableCell>
                   <TableCell>
+                    {getLatestNextOfKinName(app.candidate_id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openNextOfKinModal(app)}
+                        className="text-xs"
+                      >
+                        {getLatestNextOfKinName(app.candidate_id)}
+                      </Button>
+                    ) : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {getLatestReferenceName(app.candidate_id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openReferencesModal(app)}
+                        className="text-xs"
+                      >
+                        {getLatestReferenceName(app.candidate_id)}
+                      </Button>
+                    ) : "-"}
+                  </TableCell>
+                  <TableCell>
                     {app.cv_url ? (
                       <a
                         href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/cvs/${app.cv_url}`}
@@ -3438,7 +3711,18 @@ return (
                           : app.candidate.covid_vaccinated)
                       : "-"}
                   </TableCell>
-                  <TableCell>{getBstCcDisplay(app.candidate_id) || app.bst_cc || "-"}</TableCell>
+                  <TableCell>
+                    {getBstCcDisplay(app.candidate_id) ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openBstCcModal(app)}
+                        className="text-xs"
+                      >
+                        {getBstCcDisplay(app.candidate_id)}
+                      </Button>
+                    ) : (app.bst_cc || "-")}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
                       <span>
@@ -3992,15 +4276,34 @@ return (
             ) : (
               <div className="space-y-3">
                 {visaModalData.map((visa, idx) => {
-                  const expired = visa.expiry_date && new Date(visa.expiry_date) < new Date();
+                  // Determine visa status: expired, expiring (within 6 months), or valid
+                  const now = new Date();
+                  const expiryDate = visa.expiry_date ? new Date(visa.expiry_date) : null;
+                  const sixMonthsFromNow = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
+                  
+                  let status: 'expired' | 'expiring' | 'valid' = 'valid';
+                  if (expiryDate && expiryDate < now) {
+                    status = 'expired';
+                  } else if (expiryDate && expiryDate < sixMonthsFromNow) {
+                    status = 'expiring';
+                  }
+                  
+                  const borderClass = status === 'expired' 
+                    ? 'border-destructive bg-destructive/5' 
+                    : status === 'expiring' 
+                      ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' 
+                      : '';
+                  
                   return (
-                    <div key={idx} className={`border rounded-lg p-4 ${expired ? 'border-destructive bg-destructive/5' : ''}`}>
+                    <div key={idx} className={`border rounded-lg p-4 ${borderClass}`}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-semibold">{visa.document_type}</span>
-                        {expired ? (
+                        {status === 'expired' ? (
                           <Badge variant="destructive">Expired</Badge>
+                        ) : status === 'expiring' ? (
+                          <Badge className="bg-amber-500 hover:bg-amber-600 text-white">Expiring Soon</Badge>
                         ) : (
-                          <Badge variant="default">Valid</Badge>
+                          <Badge className="bg-green-600 hover:bg-green-700 text-white">Valid</Badge>
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground space-y-1">
@@ -4023,6 +4326,18 @@ return (
                             <span className="font-medium">Country:</span> {visa.issuing_country}
                           </div>
                         )}
+                        {visa.file_path && (
+                          <div className="pt-2">
+                            <a
+                              href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${visa.file_path}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline text-sm font-medium"
+                            >
+                              View Document
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -4032,6 +4347,171 @@ return (
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setVisaModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* BST/CC Certificates Modal */}
+      <Dialog open={bstCcModalOpen} onOpenChange={setBstCcModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              BST/CC Certificates - {bstCcModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {bstCcModalCandidate?.job?.title} ({bstCcModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {(() => {
+              const candidateId = bstCcModalCandidate?.candidate_id;
+              const entry = candidateId ? bstCcByCandidate[candidateId] : null;
+              
+              if (!entry || entry.certs.length === 0) {
+                return <p className="text-muted-foreground text-center py-4">No BST/CC certificates found</p>;
+              }
+              
+              return (
+                <div className="space-y-3">
+                  {entry.certs.map((cert, idx) => (
+                    <div key={idx} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">{cert.type}</span>
+                        {cert.file_path ? (
+                          <a
+                            href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${cert.file_path}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline text-sm font-medium"
+                          >
+                            View Document
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">No file</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBstCcModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Next of Kin Modal */}
+      <Dialog open={nextOfKinModalOpen} onOpenChange={setNextOfKinModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Next of Kin - {nextOfKinModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {nextOfKinModalCandidate?.job?.title} ({nextOfKinModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingNextOfKin ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : nextOfKinModalData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No next of kin records</p>
+            ) : (
+              <div className="space-y-3">
+                {nextOfKinModalData.map((nok, idx) => (
+                  <div key={idx} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">{nok.full_name}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>
+                        <span className="font-medium">Relationship:</span> {nok.relationship || '-'}
+                      </div>
+                      {nok.date_of_birth && (
+                        <div>
+                          <span className="font-medium">Date of Birth:</span> {formatDate(nok.date_of_birth)}
+                        </div>
+                      )}
+                      {nok.place_of_birth && (
+                        <div>
+                          <span className="font-medium">Place of Birth:</span> {nok.place_of_birth}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNextOfKinModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* References Modal */}
+      <Dialog open={referencesModalOpen} onOpenChange={setReferencesModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              References - {referencesModalCandidate?.candidate?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Applied for: {referencesModalCandidate?.job?.title} ({referencesModalCandidate?.job?.department})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {loadingReferences ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : referencesModalData.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No reference records</p>
+            ) : (
+              <div className="space-y-3">
+                {referencesModalData.map((ref, idx) => (
+                  <div key={idx} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold">{ref.full_name}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      {ref.relationship && (
+                        <div>
+                          <span className="font-medium">Relationship:</span> {ref.relationship}
+                        </div>
+                      )}
+                      {ref.company && (
+                        <div>
+                          <span className="font-medium">Company:</span> {ref.company}
+                        </div>
+                      )}
+                      {ref.position && (
+                        <div>
+                          <span className="font-medium">Position:</span> {ref.position}
+                        </div>
+                      )}
+                      {ref.phone && (
+                        <div>
+                          <span className="font-medium">Phone:</span> {ref.phone}
+                        </div>
+                      )}
+                      {ref.email && (
+                        <div>
+                          <span className="font-medium">Email:</span> {ref.email}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReferencesModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
