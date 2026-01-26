@@ -162,6 +162,42 @@ const Register = () => {
     setSendingOTP(true);
 
     try {
+      // Check if email already exists
+      const { data: existingEmail } = await supabase
+        .from('candidate_profiles')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (existingEmail) {
+        setErrors({ email: 'This email is already registered. Please login instead.' });
+        toast({
+          title: "Email Already Registered",
+          description: "Please login with your existing account.",
+          variant: "destructive",
+        });
+        setSendingOTP(false);
+        return;
+      }
+
+      // Check if phone already exists
+      const { data: existingPhone } = await supabase
+        .from('candidate_profiles')
+        .select('phone')
+        .eq('phone', phone.replace(/\s/g, ''))
+        .maybeSingle();
+
+      if (existingPhone) {
+        setErrors({ phone: 'This phone number is already registered.' });
+        toast({
+          title: "Phone Number Already Registered",
+          description: "Please use a different phone number or login with your existing account.",
+          variant: "destructive",
+        });
+        setSendingOTP(false);
+        return;
+      }
+
       // Send OTP to email
       const { data, error } = await supabase.functions.invoke("send-otp", {
         body: { email, firstName },
