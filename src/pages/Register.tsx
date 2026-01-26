@@ -357,8 +357,11 @@ const Register = () => {
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   className={errors.phone ? 'border-red-500 focus-visible:ring-red-500' : ''}
                   aria-invalid={!!errors.phone}
-                  aria-describedby={errors.phone ? 'phone-error' : undefined}
+                  aria-describedby={errors.phone ? 'phone-error' : 'phone-note'}
                 />
+                <p id="phone-note" className="text-sm text-muted-foreground">
+                  Note: Must be an active phone number
+                </p>
                 {errors.phone && (
                   <p id="phone-error" className="text-sm text-red-500 flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />
