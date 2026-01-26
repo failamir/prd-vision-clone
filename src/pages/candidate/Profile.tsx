@@ -2460,7 +2460,7 @@ const Profile = () => {
                                 <TableRow key={row.id}>
                                   {department === "Hotel Department" ? (
                                     <>
-                                      <TableCell>{row.company}</TableCell>
+                                      <TableCell>{row.vessel_name_type || "-"}</TableCell>
                                       <TableCell>{row.position}</TableCell>
                                       <TableCell>{row.start_date ? new Date(row.start_date).toLocaleDateString() : "-"}</TableCell>
                                       <TableCell>{row.end_date ? new Date(row.end_date).toLocaleDateString() : "-"}</TableCell>
