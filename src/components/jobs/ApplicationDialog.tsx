@@ -147,25 +147,47 @@ export const ApplicationDialog = ({
   };
 
   const getCandidateDocuments = async (candidateId: string) => {
-    // Get default CV
-    const { data: cvData } = await supabase
+    // Get default CV first, if not found get the latest one
+    let { data: cvData } = await supabase
       .from("candidate_cvs")
       .select("file_path")
       .eq("candidate_id", candidateId)
       .eq("is_default", true)
       .maybeSingle();
 
-    // Get default Form Letter
-    const { data: formLetterData } = await supabase
-      .from("candidate_form_letters" as any)
+    if (!cvData) {
+      const { data: latestCv } = await supabase
+        .from("candidate_cvs")
+        .select("file_path")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      cvData = latestCv;
+    }
+
+    // Get default Form Letter first, if not found get the latest one
+    let { data: formLetterData } = await supabase
+      .from("candidate_form_letters")
       .select("file_path")
       .eq("candidate_id", candidateId)
       .eq("is_default", true)
       .maybeSingle();
 
+    if (!formLetterData) {
+      const { data: latestFormLetter } = await supabase
+        .from("candidate_form_letters")
+        .select("file_path")
+        .eq("candidate_id", candidateId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      formLetterData = latestFormLetter;
+    }
+
     return {
       cv_url: cvData?.file_path || null,
-      letter_form_url: (formLetterData as any)?.file_path || null,
+      letter_form_url: formLetterData?.file_path || null,
     };
   };
 
