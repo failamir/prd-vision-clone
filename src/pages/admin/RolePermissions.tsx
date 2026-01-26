@@ -21,7 +21,7 @@ export default function RolePermissions() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const roles = ["admin", "employer", "candidate", "manajer", "staff", "interviewer", "interviewer_principal"];
+  const roles = ["admin", "employer", "candidate", "manajer", "staff", "interviewer", "interviewer_principal", "hrd", "pic", "direktur", "superadmin"];
 
   useEffect(() => {
     fetchRolePermissions();
@@ -73,6 +73,7 @@ export default function RolePermissions() {
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "admin":
+      case "superadmin":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       case "manajer":
         return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
@@ -84,6 +85,12 @@ export default function RolePermissions() {
         return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
       case "employer":
         return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
+      case "hrd":
+        return "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200";
+      case "pic":
+        return "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200";
+      case "direktur":
+        return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200";
       default:
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
     }
@@ -93,6 +100,8 @@ export default function RolePermissions() {
     switch (role) {
       case "admin":
         return "Full system access and control";
+      case "superadmin":
+        return "Super administrator with highest privileges";
       case "employer":
         return "Can post and manage jobs";
       case "candidate":
@@ -105,6 +114,12 @@ export default function RolePermissions() {
         return "Can conduct interviews and assessments";
       case "interviewer_principal":
         return "Can conduct principal interviews";
+      case "hrd":
+        return "Human Resources - manages recruitment and employee data";
+      case "pic":
+        return "Person In Charge - manages specific operational areas";
+      case "direktur":
+        return "Director level access with oversight capabilities";
       default:
         return "";
     }

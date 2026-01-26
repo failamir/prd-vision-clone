@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Shield, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DatabaseToggle } from "@/components/DatabaseToggle";
 
 const AdminSetup = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ const AdminSetup = () => {
       const { data, error } = await supabase
         .from("user_roles")
         .select("id")
-        .eq("role", "admin")
+        .in("role", ["admin", "superadmin"])
         .limit(1);
 
       if (error) throw error;
@@ -126,25 +127,30 @@ const AdminSetup = () => {
   if (adminExists) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-ocean-light/10 to-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-ocean-light/20 flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-ocean-blue" />
-            </div>
-            <CardTitle>Admin Sudah Ada</CardTitle>
-            <CardDescription>
-              Sistem sudah memiliki admin. Halaman setup ini hanya untuk membuat admin pertama.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              onClick={() => navigate("/login")} 
-              className="w-full"
-            >
-              Kembali ke Login
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="w-full max-w-md space-y-4">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-ocean-light/20 flex items-center justify-center">
+                <AlertCircle className="w-8 h-8 text-ocean-blue" />
+              </div>
+              <CardTitle>Admin Sudah Ada</CardTitle>
+              <CardDescription>
+                Sistem sudah memiliki admin. Halaman setup ini hanya untuk membuat admin pertama.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => navigate("/login")} 
+                className="w-full"
+              >
+                Kembali ke Login
+              </Button>
+            </CardContent>
+          </Card>
+          
+          {/* Database Import Tool */}
+          <DatabaseToggle />
+        </div>
       </div>
     );
   }

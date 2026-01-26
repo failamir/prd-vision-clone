@@ -7,6 +7,9 @@ interface AdminRouteProps {
   children: React.ReactNode;
 }
 
+// All roles that can access admin-level routes
+const adminRoles = ['admin', 'superadmin', 'manajer', 'manager', 'staff', 'interviewer', 'interviewer_principal', 'direktur', 'pic', 'hrd'];
+
 export const AdminRoute = ({ children }: AdminRouteProps) => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -28,12 +31,13 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+        .eq("user_id", user.id);
 
       if (error) throw error;
-      setIsAdmin(!!data);
+      
+      // Check if user has any admin-level role
+      const userRole = data?.[0]?.role;
+      setIsAdmin(userRole ? adminRoles.includes(userRole) : false);
     } catch (error) {
       console.error("Error checking admin role:", error);
       setIsAdmin(false);
