@@ -580,6 +580,18 @@ const Profile = () => {
 
       if (error) throw error;
 
+      // Auto unlock Step 3 when Step 2 data is saved
+      if (stepUnlocked < 3) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from("candidate_profiles")
+            .update({ profile_step_unlocked: 3 })
+            .eq("user_id", user.id);
+          setStepUnlocked(3);
+        }
+      }
+
       toast({
         title: `${newTest.test_name} saved successfully`,
       });
