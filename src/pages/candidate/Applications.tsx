@@ -145,7 +145,7 @@ const Applications = () => {
                       View Job
                     </Button>
                   </Link>
-                  <Button
+                  {/* <Button
                     size="sm"
                     onClick={() => {
                       setSelectedApplication(application);
@@ -153,7 +153,7 @@ const Applications = () => {
                     }}
                   >
                     Track Status
-                  </Button>
+                  </Button> */}
                 </div>
 
                 {application.cover_letter && (
