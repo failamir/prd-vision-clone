@@ -33,7 +33,7 @@ const Register = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState("+62");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -79,6 +79,10 @@ const Register = () => {
         if (!value.trim()) return 'Email is required';
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Please enter a valid email address';
         return '';
+      case 'phone':
+        if (!value.trim() || value === '+62') return 'Phone number is required';
+        if (!/^\+62\d{9,13}$/.test(value.replace(/\s/g, ''))) return 'Please enter a valid Indonesian phone number';
+        return '';
       case 'password':
         if (!value) return 'Password is required';
         if (value.length < 6) return 'Password must be at least 6 characters';
@@ -109,6 +113,10 @@ const Register = () => {
         setEmail(value);
         break;
       case 'phone':
+        // Ensure +62 prefix is always present
+        if (!value.startsWith('+62')) {
+          value = '+62' + value.replace(/^\+?62?/, '');
+        }
         setPhone(value);
         break;
       case 'password':
@@ -128,6 +136,7 @@ const Register = () => {
     newErrors.firstName = validateField('firstName', firstName);
     newErrors.lastName = validateField('lastName', lastName);
     newErrors.email = validateField('email', email);
+    newErrors.phone = validateField('phone', phone);
     newErrors.password = validateField('password', password);
     newErrors.confirmPassword = validateField('confirmPassword', confirmPassword);
 
@@ -303,14 +312,23 @@ const Register = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">Phone Number <span className="text-red-500">*</span></Label>
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="+62 xxx xxxx xxxx"
+                  placeholder="+62 8xx xxxx xxxx"
                   value={phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
+                  className={errors.phone ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                  aria-invalid={!!errors.phone}
+                  aria-describedby={errors.phone ? 'phone-error' : undefined}
                 />
+                {errors.phone && (
+                  <p id="phone-error" className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.phone}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
