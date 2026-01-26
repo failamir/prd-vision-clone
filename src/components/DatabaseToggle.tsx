@@ -1,17 +1,16 @@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Database, Copy, Download } from "lucide-react";
+import { Database, Copy } from "lucide-react";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
 
 export function DatabaseToggle() {
-  const { currentDatabase, switchDatabase, duplicateToSecondary, importFromOldProject } = useDatabase();
+  const { currentDatabase, switchDatabase, duplicateToSecondary } = useDatabase();
   const { toast } = useToast();
   const [isDuplicating, setIsDuplicating] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
 
   const handleSwitch = (checked: boolean) => {
     const newDb = checked ? 'secondary' : 'primary';
@@ -41,30 +40,6 @@ export function DatabaseToggle() {
     }
   };
 
-  const handleImport = async () => {
-    setIsImporting(true);
-    try {
-      const results = await importFromOldProject();
-      const successCount = results.filter(r => r.count > 0).length;
-      const totalRecords = results.reduce((sum, r) => sum + r.count, 0);
-      
-      toast({
-        title: "Import Complete",
-        description: `Imported ${totalRecords} records from ${successCount} tables`,
-      });
-      
-      console.log('Import results:', results);
-    } catch (error) {
-      toast({
-        title: "Import Failed",
-        description: "Error importing data from old project",
-        variant: "destructive",
-      });
-    } finally {
-      setIsImporting(false);
-    }
-  };
-
   return (
     <Card className="p-4">
       <div className="space-y-4">
@@ -83,15 +58,6 @@ export function DatabaseToggle() {
         </div>
 
         <Button
-          onClick={handleImport}
-          disabled={isImporting}
-          className="w-full"
-        >
-          <Download className="w-4 h-4 mr-2" />
-          {isImporting ? 'Importing...' : 'Import dari Project Lama'}
-        </Button>
-
-        <Button
           onClick={handleDuplicate}
           disabled={isDuplicating}
           variant="outline"
@@ -102,7 +68,7 @@ export function DatabaseToggle() {
         </Button>
 
         <p className="text-xs text-muted-foreground">
-          Klik "Import dari Project Lama" untuk mengambil data skills, jobs, testimonials dari project sebelumnya.
+          Switch between primary and secondary database for testing.
         </p>
       </div>
     </Card>
