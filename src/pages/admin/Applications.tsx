@@ -2959,48 +2959,78 @@ return (
               </div>
             </div>
 
-            {/* Work Experience - filtered by job department */}
+            {/* Ship Experience */}
             {(() => {
-              const jobDepartment = viewingCandidate?.job?.department?.toLowerCase();
-              const filteredExperiences = jobDepartment
-                ? candidateExperiences.filter(exp => {
-                  const expType = (exp.experience_type || 'Hotel').toLowerCase();
-                  return expType === jobDepartment;
-                })
-                : candidateExperiences;
+              const shipExperiences = candidateExperiences.filter(exp => 
+                (exp.experience_type || '').toLowerCase() === 'ship'
+              );
 
               return (
                 <div>
                   <h3 className="text-sm font-semibold mb-2 text-primary">
-                    {jobDepartment ? `${jobDepartment === 'hotel' ? 'Hotel' : 'Ship'} Experience` : 'Work Experience'} ({filteredExperiences.length})
-                    {jobDepartment && candidateExperiences.length !== filteredExperiences.length && (
-                      <span className="font-normal text-muted-foreground ml-2">
-                        ({candidateExperiences.length} total)
-                      </span>
-                    )}
+                    Ship Experience ({shipExperiences.length})
+                    <span className="font-normal text-muted-foreground ml-2">
+                      ({candidateExperiences.length} total)
+                    </span>
                   </h3>
-                  {filteredExperiences.length === 0 ? (
+                  {shipExperiences.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                      No {jobDepartment ? `${jobDepartment} ` : ''}experience records
+                      No ship experience records
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      {filteredExperiences.slice(0, 3).map((exp, idx) => (
+                      {shipExperiences.slice(0, 3).map((exp, idx) => (
                         <div key={idx} className="border rounded p-2 text-sm">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{exp.position}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {exp.experience_type || 'Hotel'}
-                            </Badge>
+                            <Badge variant="outline" className="text-xs">Ship</Badge>
                           </div>
-                          <div className="text-muted-foreground">{exp.company || exp.vessel_name_type || "-"}</div>
+                          <div className="text-muted-foreground">{exp.vessel_name_type || exp.company || "-"}</div>
                           <div className="text-xs text-muted-foreground">
                             {exp.start_date ? formatDate(exp.start_date) : ""} - {exp.end_date ? formatDate(exp.end_date) : "Present"}
                           </div>
                         </div>
                       ))}
-                      {filteredExperiences.length > 3 && (
-                        <p className="text-xs text-muted-foreground">+{filteredExperiences.length - 3} more experiences</p>
+                      {shipExperiences.length > 3 && (
+                        <p className="text-xs text-muted-foreground">+{shipExperiences.length - 3} more experiences</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Hotel Experience */}
+            {(() => {
+              const hotelExperiences = candidateExperiences.filter(exp => 
+                (exp.experience_type || 'Hotel').toLowerCase() === 'hotel'
+              );
+
+              return (
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 text-primary">
+                    Hotel Experience ({hotelExperiences.length})
+                  </h3>
+                  {hotelExperiences.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No hotel experience records
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {hotelExperiences.slice(0, 3).map((exp, idx) => (
+                        <div key={idx} className="border rounded p-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{exp.position}</span>
+                            <Badge variant="outline" className="text-xs">Hotel</Badge>
+                          </div>
+                          <div className="text-muted-foreground">{exp.vessel_name_type || exp.company || "-"}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {exp.start_date ? formatDate(exp.start_date) : ""} - {exp.end_date ? formatDate(exp.end_date) : "Present"}
+                          </div>
+                        </div>
+                      ))}
+                      {hotelExperiences.length > 3 && (
+                        <p className="text-xs text-muted-foreground">+{hotelExperiences.length - 3} more experiences</p>
                       )}
                     </div>
                   )}
