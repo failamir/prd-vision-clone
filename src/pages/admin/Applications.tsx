@@ -267,6 +267,10 @@ const AdminApplications = () => {
   const [loadingReferences, setLoadingReferences] = useState(false);
   const [latestReferenceByCandidate, setLatestReferenceByCandidate] = useState<Record<string, any>>({});
 
+  // CV and Form Letter by candidate
+  const [cvByCandidate, setCvByCandidate] = useState<Record<string, string | null>>({});
+  const [formLetterByCandidate, setFormLetterByCandidate] = useState<Record<string, string | null>>({});
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -932,6 +936,7 @@ const AdminApplications = () => {
       await fetchLatestEmergencyContacts(candidateIds as string[]);
       await fetchLatestNextOfKin(candidateIds as string[]);
       await fetchLatestReferences(candidateIds as string[]);
+      await fetchCandidateDocuments(candidateIds as string[]);
 
       // Generate crew codes for applications without them
       await generateCrewCodes();
@@ -1056,6 +1061,47 @@ const AdminApplications = () => {
       });
       setLatestReferenceByCandidate(map);
     } catch (e) { }
+  };
+
+  const fetchCandidateDocuments = async (candidateIds: string[]) => {
+    if (!candidateIds || candidateIds.length === 0) return;
+    try {
+      // Fetch CVs
+      const { data: cvData, error: cvError } = await supabase
+        .from("candidate_cvs")
+        .select("candidate_id, file_path, is_default")
+        .in("candidate_id", candidateIds)
+        .eq("is_default", true);
+
+      if (cvError) throw cvError;
+
+      const cvMap: Record<string, string | null> = {};
+      (cvData || []).forEach((row: any) => {
+        if (row.candidate_id && row.file_path) {
+          cvMap[row.candidate_id] = row.file_path;
+        }
+      });
+      setCvByCandidate(cvMap);
+
+      // Fetch Form Letters
+      const { data: flData, error: flError } = await supabase
+        .from("candidate_form_letters")
+        .select("candidate_id, file_path, is_default")
+        .in("candidate_id", candidateIds)
+        .eq("is_default", true);
+
+      if (flError) throw flError;
+
+      const flMap: Record<string, string | null> = {};
+      (flData || []).forEach((row: any) => {
+        if (row.candidate_id && row.file_path) {
+          flMap[row.candidate_id] = row.file_path;
+        }
+      });
+      setFormLetterByCandidate(flMap);
+    } catch (e) {
+      console.error("Error fetching candidate documents:", e);
+    }
   };
 
   const fetchMedicalTests = async (candidateIds: string[]) => {
@@ -3711,28 +3757,40 @@ return (
                     ) : "-"}
                   </TableCell>
                   <TableCell>
-                    {app.cv_url ? (
-                      <a
-                        href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/cvs/${app.cv_url}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline text-sm"
-                      >
-                        View CV
-                      </a>
-                    ) : "-"}
+                    {(() => {
+                      const cvPath = app.cv_url || cvByCandidate[app.candidate_id || ""];
+                      if (cvPath) {
+                        return (
+                          <a
+                            href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/cvs/${cvPath}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline text-sm"
+                          >
+                            View CV
+                          </a>
+                        );
+                      }
+                      return "-";
+                    })()}
                   </TableCell>
                   <TableCell>
-                    {app.letter_form_url ? (
-                      <a
-                        href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${app.letter_form_url}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline text-sm"
-                      >
-                        View Form
-                      </a>
-                    ) : "-"}
+                    {(() => {
+                      const flPath = app.letter_form_url || formLetterByCandidate[app.candidate_id || ""];
+                      if (flPath) {
+                        return (
+                          <a
+                            href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${flPath}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline text-sm"
+                          >
+                            View Form
+                          </a>
+                        );
+                      }
+                      return "-";
+                    })()}
                   </TableCell>
                   <TableCell>
                     {app.candidate?.covid_vaccinated 
