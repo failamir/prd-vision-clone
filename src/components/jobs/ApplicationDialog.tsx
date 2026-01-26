@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -283,12 +284,23 @@ export const ApplicationDialog = ({
   // Allow re-applying to update second position
   // Removed the hasApplied block to allow updates
 
+  // Determine if dialog should be non-dismissable (when profile is incomplete)
+  const isNonDismissable = !checkingProfile && !profileComplete;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={isNonDismissable ? undefined : setOpen}>
       <DialogTrigger asChild>
         <Button className="w-full bg-primary hover:bg-primary/90">Apply Now</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] bg-background">
+      <DialogContent 
+        className={cn(
+          "sm:max-w-[600px] bg-background",
+          isNonDismissable && "[&>button]:hidden"
+        )}
+        onPointerDownOutside={isNonDismissable ? (e) => e.preventDefault() : undefined}
+        onEscapeKeyDown={isNonDismissable ? (e) => e.preventDefault() : undefined}
+        onInteractOutside={isNonDismissable ? (e) => e.preventDefault() : undefined}
+      >
         <DialogHeader>
           <DialogTitle>Apply for {jobTitle}</DialogTitle>
           <DialogDescription>
