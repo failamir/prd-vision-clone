@@ -121,15 +121,10 @@ export const ApplicationDialog = ({
 
       setProfile(profileData);
 
-      // Check required fields for application
+      // Check required fields for application - only basic registration data needed
       const required: { field: keyof CandidateProfile; label: string }[] = [
         { field: "full_name", label: "Full Name" },
         { field: "phone", label: "Phone Number" },
-        { field: "date_of_birth", label: "Date of Birth" },
-        { field: "gender", label: "Gender" },
-        { field: "address", label: "Address" },
-        { field: "city", label: "City" },
-        { field: "country", label: "Country" },
       ];
 
       const missing = required
@@ -137,30 +132,10 @@ export const ApplicationDialog = ({
         .map(r => r.label);
 
       setMissingFields(missing);
+      setMissingDocuments([]); // Documents are optional for initial application
 
-      // Check for CV and Form Letter
-      const { data: cvData } = await supabase
-        .from("candidate_cvs")
-        .select("id")
-        .eq("candidate_id", profileData.id)
-        .limit(1);
-
-      const { data: formLetterData } = await supabase
-        .from("candidate_form_letters" as any)
-        .select("id")
-        .eq("candidate_id", profileData.id)
-        .limit(1);
-
-      const missingDocs: string[] = [];
-      if (!cvData || cvData.length === 0) {
-        missingDocs.push("CV");
-      }
-      if (!formLetterData || (formLetterData as any[]).length === 0) {
-        missingDocs.push("Form Letter");
-      }
-      setMissingDocuments(missingDocs);
-
-      setProfileComplete(missing.length === 0 && missingDocs.length === 0);
+      // Profile is complete if basic registration data exists
+      setProfileComplete(missing.length === 0);
 
       // Check if already applied
       const { data: existingApp } = await supabase
