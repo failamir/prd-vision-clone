@@ -70,9 +70,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send OTP email using Resend
     const { error: emailError } = await resend.emails.send({
-      from: "CWT Maritime <noreply@ciptawiratirta.com>",
+      from: "Cipta Wira Tirta <noreply@ciptawiratirta.com>",
       to: [email],
-      subject: "Email Verification Code - CWT Maritime",
+      subject: "Email Verification Code - Cipta Wira Tirta",
       html: `
         <!DOCTYPE html>
         <html>
@@ -82,12 +82,12 @@ const handler = async (req: Request): Promise<Response> => {
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">CWT Maritime</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">Cipta Wira Tirta</h1>
           </div>
           <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
             <h2 style="color: #0066cc; margin-top: 0;">Email Verification</h2>
             <p>Hello ${firstName || "there"},</p>
-            <p>Thank you for registering with CWT Maritime. Please use the following verification code to complete your registration:</p>
+            <p>Thank you for registering with Cipta Wira Tirta. Please use the following verification code to complete your registration:</p>
             <div style="background: #0066cc; color: white; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
               <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px;">${otpCode}</span>
             </div>
@@ -95,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
             <p style="color: #666; font-size: 14px;">If you didn't request this code, please ignore this email.</p>
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
             <p style="color: #999; font-size: 12px; text-align: center;">
-              © ${new Date().getFullYear()} CWT Maritime. All rights reserved.
+              © ${new Date().getFullYear()} Cipta Wira Tirta. All rights reserved.
             </p>
           </div>
         </body>
@@ -114,9 +114,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("OTP sent successfully to:", email);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Verification code sent to your email" 
+      JSON.stringify({
+        success: true,
+        message: "Verification code sent to your email"
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
