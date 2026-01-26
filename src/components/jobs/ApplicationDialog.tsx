@@ -26,12 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const applicationSchema = z.object({
-  cover_letter: z
-    .string()
-    .min(50, "Cover letter must be at least 50 characters")
-    .max(2000, "Cover letter must be less than 2000 characters"),
-});
+const applicationSchema = z.object({});
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
 
@@ -76,9 +71,7 @@ export const ApplicationDialog = ({
 
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationSchema),
-    defaultValues: {
-      cover_letter: "",
-    },
+    defaultValues: {},
   });
 
   // Check profile on mount if autoOpen is true
@@ -204,7 +197,6 @@ export const ApplicationDialog = ({
           .from("job_applications")
           .update({ 
             second_position: jobData?.title || existingApp.second_position,
-            cover_letter: values.cover_letter,
             updated_at: new Date().toISOString()
           })
           .eq("id", existingApp.id);
@@ -224,7 +216,6 @@ export const ApplicationDialog = ({
           .insert({
             candidate_id: profile.id,
             job_id: jobId,
-            cover_letter: values.cover_letter,
             status: "pending",
             office_registered: profile.registration_city || null,
             contact_no: profile.phone || null,
@@ -336,27 +327,6 @@ export const ApplicationDialog = ({
 
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="cover_letter"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cover Letter *</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Explain why you're a great fit for this position..."
-                          className="min-h-[200px] resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <p className="text-sm text-muted-foreground">
-                        {field.value.length}/2000 characters
-                      </p>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <div className="flex gap-3">
                   <Button
                     type="button"
