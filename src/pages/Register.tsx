@@ -162,6 +162,42 @@ const Register = () => {
     setSendingOTP(true);
 
     try {
+      // Check if email already exists
+      const { data: existingEmail } = await supabase
+        .from('candidate_profiles')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (existingEmail) {
+        setErrors({ email: 'This email is already registered. Please login instead.' });
+        toast({
+          title: "Email Already Registered",
+          description: "Please login with your existing account.",
+          variant: "destructive",
+        });
+        setSendingOTP(false);
+        return;
+      }
+
+      // Check if phone already exists
+      const { data: existingPhone } = await supabase
+        .from('candidate_profiles')
+        .select('phone')
+        .eq('phone', phone.replace(/\s/g, ''))
+        .maybeSingle();
+
+      if (existingPhone) {
+        setErrors({ phone: 'This phone number is already registered.' });
+        toast({
+          title: "Phone Number Already Registered",
+          description: "Please use a different phone number or login with your existing account.",
+          variant: "destructive",
+        });
+        setSendingOTP(false);
+        return;
+      }
+
       // Send OTP to email
       const { data, error } = await supabase.functions.invoke("send-otp", {
         body: { email, firstName },
@@ -321,8 +357,11 @@ const Register = () => {
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   className={errors.phone ? 'border-red-500 focus-visible:ring-red-500' : ''}
                   aria-invalid={!!errors.phone}
-                  aria-describedby={errors.phone ? 'phone-error' : undefined}
+                  aria-describedby={errors.phone ? 'phone-error' : 'phone-note'}
                 />
+                <p id="phone-note" className="text-sm text-muted-foreground">
+                  Note: Must be an active phone number
+                </p>
                 {errors.phone && (
                   <p id="phone-error" className="text-sm text-red-500 flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />

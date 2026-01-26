@@ -1927,11 +1927,11 @@ const Profile = () => {
 
             {/* CV & Form Letter Section */}
             <div className="mt-8 pt-6 border-t">
-              <h3 className="text-xl font-semibold text-foreground mb-6">CV & Form Letter</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-6">CV & Form Letter <span className="text-destructive">*</span></h3>
               <Tabs value={documentsTab} onValueChange={setDocumentsTab}>
                 <TabsList className="mb-6">
-                  <TabsTrigger value="cv">CV / Resume</TabsTrigger>
-                  <TabsTrigger value="form_letter">Form Letter</TabsTrigger>
+                  <TabsTrigger value="cv">CV / Resume <span className="text-destructive ml-1">*</span></TabsTrigger>
+                  <TabsTrigger value="form_letter">Form Letter <span className="text-destructive ml-1">*</span></TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="cv">
@@ -3468,7 +3468,20 @@ const Profile = () => {
                 Next
               </Button>
             ) : (
-              <Button type="submit" disabled={saving}>
+              <Button 
+                type="submit" 
+                disabled={saving || (currentStep === 1 && (
+                  !profile.full_name ||
+                  !profile.phone ||
+                  !profile.date_of_birth ||
+                  !profile.gender ||
+                  !profile.address ||
+                  !profile.city ||
+                  !profile.country ||
+                  cvs.length === 0 ||
+                  formLetters.length === 0
+                ))}
+              >
                 {saving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
