@@ -18,6 +18,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, AlertCircle, Briefcase } from "lucide-react";
 import logo from "@/assets/logo-dark.png";
+import { EmailOTPVerification } from "@/components/auth/EmailOTPVerification";
+
+type RegistrationStep = "form" | "otp" | "complete";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -25,15 +28,17 @@ const Register = () => {
   const jobId = searchParams.get("job");
   const { toast } = useToast();
   const userType = "candidate"; // Fixed as candidate only
+  
+  const [step, setStep] = useState<RegistrationStep>("form");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sendingOTP, setSendingOTP] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDirectAccessDialog, setShowDirectAccessDialog] = useState(false);
 
@@ -115,7 +120,7 @@ const Register = () => {
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate all fields
@@ -145,6 +150,38 @@ const Register = () => {
       return;
     }
 
+    setSendingOTP(true);
+
+    try {
+      // Send OTP to email
+      const { data, error } = await supabase.functions.invoke("send-otp", {
+        body: { email, firstName },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Verification Code Sent",
+          description: "Please check your email for the verification code.",
+        });
+        setStep("otp");
+      } else {
+        throw new Error(data?.error || "Failed to send verification code");
+      }
+    } catch (error: any) {
+      console.error("Send OTP error:", error);
+      toast({
+        title: "Failed to Send Code",
+        description: error.message || "Could not send verification code. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingOTP(false);
+    }
+  };
+
+  const handleOTPVerified = async () => {
     setLoading(true);
 
     try {
@@ -182,197 +219,222 @@ const Register = () => {
         description: error.message || "An error occurred during registration",
         variant: "destructive",
       });
+      // Go back to form if registration fails
+      setStep("form");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleBackToForm = () => {
+    setStep("form");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ocean-deep via-ocean-blue to-ocean-light p-4">
       <Card className="w-full max-w-2xl p-8">
-        <div className="text-center mb-8">
-          {/* <div className="w-16 h-16 bg-gradient-to-br from-ocean-light to-ocean-blue rounded-lg flex items-center justify-center mx-auto mb-4"> */}
-          {/* <span className="text-white font-bold text-2xl">CWT</span> */}
-          <img src={logo} alt="Logo" width={264} height={264} className="mx-auto" />
-          {/* </div> */}
-          <br />
-          <h1 className="text-3xl font-bold text-foreground mb-2">Create Your Account</h1>
-          <p className="text-muted-foreground">Start your maritime career journey today</p>
-        </div>
-
-        <form className="space-y-6" onSubmit={handleRegister}>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
-              <Input
-                id="firstName"
-                placeholder="John"
-                value={firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
-                className={errors.firstName ? 'border-red-500 focus-visible:ring-red-500' : ''}
-                aria-invalid={!!errors.firstName}
-                aria-describedby={errors.firstName ? 'firstName-error' : undefined}
-              />
-              {errors.firstName && (
-                <p id="firstName-error" className="text-sm text-red-500 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.firstName}
-                </p>
-              )}
+        {step === "form" && (
+          <>
+            <div className="text-center mb-8">
+              <img src={logo} alt="Logo" width={264} height={264} className="mx-auto" />
+              <br />
+              <h1 className="text-3xl font-bold text-foreground mb-2">Create Your Account</h1>
+              <p className="text-muted-foreground">Start your maritime career journey today</p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name <span className="text-red-500">*</span></Label>
-              <Input
-                id="lastName"
-                placeholder="Doe"
-                value={lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
-                className={errors.lastName ? 'border-red-500 focus-visible:ring-red-500' : ''}
-                aria-invalid={!!errors.lastName}
-                aria-describedby={errors.lastName ? 'lastName-error' : undefined}
-              />
-              {errors.lastName && (
-                <p id="lastName-error" className="text-sm text-red-500 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.lastName}
-                </p>
-              )}
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address <span className="text-red-500">*</span></Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              className={errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}
-              aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? 'email-error' : undefined}
-            />
-            {errors.email && (
-              <p id="email-error" className="text-sm text-red-500 flex items-center gap-1">
-                <AlertCircle className="w-4 h-4" />
-                {errors.email}
-              </p>
-            )}
-          </div>
+            <form className="space-y-6" onSubmit={handleSendOTP}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
+                  <Input
+                    id="firstName"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    className={errors.firstName ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                    aria-invalid={!!errors.firstName}
+                    aria-describedby={errors.firstName ? 'firstName-error' : undefined}
+                  />
+                  {errors.firstName && (
+                    <p id="firstName-error" className="text-sm text-red-500 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.firstName}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name <span className="text-red-500">*</span></Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    className={errors.lastName ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                    aria-invalid={!!errors.lastName}
+                    aria-describedby={errors.lastName ? 'lastName-error' : undefined}
+                  />
+                  {errors.lastName && (
+                    <p id="lastName-error" className="text-sm text-red-500 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.lastName}
+                    </p>
+                  )}
+                </div>
+              </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address <span className="text-red-500">*</span></Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className={errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? 'email-error' : undefined}
+                />
+                {errors.email && (
+                  <p id="email-error" className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.email}
+                  </p>
+                )}
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="+62 xxx xxxx xxxx"
-              value={phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
-            />
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+62 xxx xxxx xxxx"
+                  value={phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password <span className="text-red-500">*</span></Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Create a strong password"
-              value={password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              className={errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}
-              aria-invalid={!!errors.password}
-              aria-describedby={errors.password ? 'password-error' : undefined}
-            />
-            {errors.password && (
-              <p id="password-error" className="text-sm text-red-500 flex items-center gap-1">
-                <AlertCircle className="w-4 h-4" />
-                {errors.password}
-              </p>
-            )}
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password <span className="text-red-500">*</span></Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Create a strong password"
+                  value={password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  className={errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? 'password-error' : undefined}
+                />
+                {errors.password && (
+                  <p id="password-error" className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.password}
+                  </p>
+                )}
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password <span className="text-red-500">*</span></Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-              className={errors.confirmPassword ? 'border-red-500 focus-visible:ring-red-500' : ''}
-              aria-invalid={!!errors.confirmPassword}
-              aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
-            />
-            {errors.confirmPassword && (
-              <p id="confirmPassword-error" className="text-sm text-red-500 flex items-center gap-1">
-                <AlertCircle className="w-4 h-4" />
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password <span className="text-red-500">*</span></Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  className={errors.confirmPassword ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                  aria-invalid={!!errors.confirmPassword}
+                  aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
+                />
+                {errors.confirmPassword && (
+                  <p id="confirmPassword-error" className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
 
-          <div className="space-y-2">
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="terms"
-                checked={agreedToTerms}
-                onCheckedChange={(checked) => {
-                  setAgreedToTerms(checked as boolean);
-                  if (checked && errors.terms) {
-                    setErrors((prev) => ({ ...prev, terms: '' }));
-                  }
-                }}
-                className={errors.terms ? 'border-red-500' : ''}
-                aria-invalid={!!errors.terms}
-                aria-describedby={errors.terms ? 'terms-error' : undefined}
-              />
-              <label htmlFor="terms" className="text-sm text-foreground cursor-pointer leading-relaxed">
-                I agree to the{" "}
-                <Link to="/terms" className="text-primary hover:underline">
-                  Terms & Conditions
-                </Link>{" "}
-                and{" "}
-                <Link to="/privacy" className="text-primary hover:underline">
-                  Privacy Policy
+              <div className="space-y-2">
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="terms"
+                    checked={agreedToTerms}
+                    onCheckedChange={(checked) => {
+                      setAgreedToTerms(checked as boolean);
+                      if (checked && errors.terms) {
+                        setErrors((prev) => ({ ...prev, terms: '' }));
+                      }
+                    }}
+                    className={errors.terms ? 'border-red-500' : ''}
+                    aria-invalid={!!errors.terms}
+                    aria-describedby={errors.terms ? 'terms-error' : undefined}
+                  />
+                  <label htmlFor="terms" className="text-sm text-foreground cursor-pointer leading-relaxed">
+                    I agree to the{" "}
+                    <Link to="/terms" className="text-primary hover:underline">
+                      Terms & Conditions
+                    </Link>{" "}
+                    and{" "}
+                    <Link to="/privacy" className="text-primary hover:underline">
+                      Privacy Policy
+                    </Link>
+                    <span className="text-red-500"> *</span>
+                  </label>
+                </div>
+                {errors.terms && (
+                  <p id="terms-error" className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.terms}
+                  </p>
+                )}
+              </div>
+
+              <Button
+                className="w-full bg-primary hover:bg-primary/90"
+                size="lg"
+                type="submit"
+                disabled={sendingOTP}
+              >
+                {sendingOTP ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sending Verification Code...
+                  </>
+                ) : (
+                  "Continue"
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link to="/login" className="text-primary font-medium hover:underline">
+                  Sign In
                 </Link>
-                <span className="text-red-500"> *</span>
-              </label>
-            </div>
-            {errors.terms && (
-              <p id="terms-error" className="text-sm text-red-500 flex items-center gap-1">
-                <AlertCircle className="w-4 h-4" />
-                {errors.terms}
               </p>
-            )}
-          </div>
+            </div>
+          </>
+        )}
 
-          <Button
-            className="w-full bg-primary hover:bg-primary/90"
-            size="lg"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
+        {step === "otp" && (
+          <>
+            <div className="text-center mb-8">
+              <img src={logo} alt="Logo" width={200} height={200} className="mx-auto" />
+            </div>
+            <EmailOTPVerification
+              email={email}
+              firstName={firstName}
+              onVerified={handleOTPVerified}
+              onBack={handleBackToForm}
+            />
+            {loading && (
+              <div className="flex items-center justify-center mt-4 text-muted-foreground">
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating account...
-              </>
-            ) : (
-              "Create Account"
+                Creating your account...
+              </div>
             )}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">
-              Sign In
-            </Link>
-          </p>
-        </div>
+          </>
+        )}
       </Card>
 
       {/* Direct Access Warning Dialog */}
