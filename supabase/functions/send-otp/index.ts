@@ -70,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send OTP email using Resend
     const { error: emailError } = await resend.emails.send({
-      from: "CWT Maritime <noreply@cwtmanning.com>",
+      from: "CWT Maritime <noreply@ciptawiratirta.com>",
       to: [email],
       subject: "Email Verification Code - CWT Maritime",
       html: `
