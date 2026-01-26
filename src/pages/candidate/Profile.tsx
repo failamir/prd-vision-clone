@@ -2468,8 +2468,8 @@ const Profile = () => {
                                       <TableCell className="max-w-[240px] truncate" title={row.job_description || ""}>
                                         {row.job_description || "-"}
                                       </TableCell>
-                                      <TableCell className="max-w-[240px] truncate" title={row.description || ""}>
-                                        {row.description || "-"}
+                                      <TableCell className="max-w-[240px] truncate" title={row.route || ""}>
+                                        {row.route || "-"}
                                       </TableCell>
                                     </>
                                   ) : (
