@@ -1,1 +1,22 @@
 project_id = "inhzuywdomfccuxmwejb"
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false
+
+[functions.create-user]
+verify_jwt = false
+
+[functions.create-pic-accounts]
+verify_jwt = false
+
+[functions.get-all-users]
+verify_jwt = false
+
+[functions.reset-staff-passwords]
+verify_jwt = false
+
+[functions.seed-staff-accounts]
+verify_jwt = false
