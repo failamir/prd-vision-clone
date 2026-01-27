@@ -43,6 +43,8 @@ import AdminContactSubmissions from "./pages/admin/ContactSubmissions";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ScrollToTop from "./components/ScrollToTop";
+import HRDDashboard from "./pages/hrd/Dashboard";
+import PICDashboard from "./pages/pic/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +97,10 @@ const App = () => (
               <Route path="/admin/role-permissions" element={<AdminRoute><AdminRolePermissions /></AdminRoute>} />
               <Route path="/admin/contact-submissions" element={<AdminRoute><AdminContactSubmissions /></AdminRoute>} />
               <Route path="/admin/message-center" element={<AdminRoute><AdminMessageCenter /></AdminRoute>} />
+
+              {/* Role-specific Dashboards */}
+              <Route path="/hrd" element={<AdminRoute><HRDDashboard /></AdminRoute>} />
+              <Route path="/pic" element={<AdminRoute><PICDashboard /></AdminRoute>} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

@@ -126,6 +126,61 @@ INSERT INTO role_permissions (role, permission_id) VALUES
 ('interviewer_principal', 'b2e3f4a5-d6c7-8b90-1234-567890abcdef')  -- send_messages
 ON CONFLICT (role, permission_id) DO NOTHING;
 
+-- Direktur permissions (high-level access like admin but without role management)
+INSERT INTO role_permissions (role, permission_id) VALUES
+('direktur', 'b03fb3c7-de55-48e6-a06a-4c3ea8d20e32'), -- view_applications
+('direktur', 'be69a37a-6da3-4c47-82af-ed9cba15f88a'), -- manage_applications
+('direktur', 'e3a0b41d-04b7-4cf3-9f4e-dc4f3f5cf1e5'), -- view_interviews
+('direktur', 'd46af6ae-a1d2-44d6-a4e9-3f1f3dd9c0b2'), -- manage_interviews
+('direktur', 'bf1d4bf9-64b6-433a-a7c9-ec6621f20e92'), -- view_users
+('direktur', '25acb20e-5b58-4f63-8b73-02f8d800a422'), -- manage_users
+('direktur', '67a63e01-9e81-4a95-a5e9-fba69ae2f891'), -- view_jobs
+('direktur', 'eab91ab9-e51d-4d06-9b6a-a85fb8f9f6e2'), -- manage_jobs
+('direktur', 'bc7d0fb9-7fac-438f-b9e7-d3f5eb9e1b26'), -- view_departures
+('direktur', 'e3d8d0c8-1f8a-4820-bb96-b5e6a9d7c0e3'), -- manage_departures
+('direktur', 'a1f2e3d4-c5b6-7a89-0123-456789abcdef'), -- view_messages
+('direktur', 'b2e3f4a5-d6c7-8b90-1234-567890abcdef'), -- send_messages
+('direktur', 'c3f4a5b6-e7d8-9c01-2345-678901abcdef'), -- manage_messages
+('direktur', 'd4a5b6c7-f8e9-0d12-3456-789012abcdef'), -- view_testimonials
+('direktur', 'e5b6c7d8-a9f0-1e23-4567-890123abcdef'), -- manage_testimonials
+('direktur', 'f6c7d8e9-b0a1-2f34-5678-901234abcdef'), -- view_contact_submissions
+('direktur', 'a7d8e9f0-c1b2-3a45-6789-012345abcdef'), -- manage_contact_submissions
+('direktur', 'b8e9f0a1-d2c3-4b56-7890-123456abcdef')  -- view_reports
+ON CONFLICT (role, permission_id) DO NOTHING;
+
+-- Manager/Manajer permissions
+INSERT INTO role_permissions (role, permission_id) VALUES
+('manajer', 'b03fb3c7-de55-48e6-a06a-4c3ea8d20e32'), -- view_applications
+('manajer', 'be69a37a-6da3-4c47-82af-ed9cba15f88a'), -- manage_applications
+('manajer', 'e3a0b41d-04b7-4cf3-9f4e-dc4f3f5cf1e5'), -- view_interviews
+('manajer', 'd46af6ae-a1d2-44d6-a4e9-3f1f3dd9c0b2'), -- manage_interviews
+('manajer', 'bf1d4bf9-64b6-433a-a7c9-ec6621f20e92'), -- view_users
+('manajer', '67a63e01-9e81-4a95-a5e9-fba69ae2f891'), -- view_jobs
+('manajer', 'eab91ab9-e51d-4d06-9b6a-a85fb8f9f6e2'), -- manage_jobs
+('manajer', 'bc7d0fb9-7fac-438f-b9e7-d3f5eb9e1b26'), -- view_departures
+('manajer', 'e3d8d0c8-1f8a-4820-bb96-b5e6a9d7c0e3'), -- manage_departures
+('manajer', 'a1f2e3d4-c5b6-7a89-0123-456789abcdef'), -- view_messages
+('manajer', 'b2e3f4a5-d6c7-8b90-1234-567890abcdef'), -- send_messages
+('manajer', 'c3f4a5b6-e7d8-9c01-2345-678901abcdef'), -- manage_messages
+('manajer', 'b8e9f0a1-d2c3-4b56-7890-123456abcdef')  -- view_reports
+ON CONFLICT (role, permission_id) DO NOTHING;
+
+INSERT INTO role_permissions (role, permission_id) VALUES
+('manager', 'b03fb3c7-de55-48e6-a06a-4c3ea8d20e32'), -- view_applications
+('manager', 'be69a37a-6da3-4c47-82af-ed9cba15f88a'), -- manage_applications
+('manager', 'e3a0b41d-04b7-4cf3-9f4e-dc4f3f5cf1e5'), -- view_interviews
+('manager', 'd46af6ae-a1d2-44d6-a4e9-3f1f3dd9c0b2'), -- manage_interviews
+('manager', 'bf1d4bf9-64b6-433a-a7c9-ec6621f20e92'), -- view_users
+('manager', '67a63e01-9e81-4a95-a5e9-fba69ae2f891'), -- view_jobs
+('manager', 'eab91ab9-e51d-4d06-9b6a-a85fb8f9f6e2'), -- manage_jobs
+('manager', 'bc7d0fb9-7fac-438f-b9e7-d3f5eb9e1b26'), -- view_departures
+('manager', 'e3d8d0c8-1f8a-4820-bb96-b5e6a9d7c0e3'), -- manage_departures
+('manager', 'a1f2e3d4-c5b6-7a89-0123-456789abcdef'), -- view_messages
+('manager', 'b2e3f4a5-d6c7-8b90-1234-567890abcdef'), -- send_messages
+('manager', 'c3f4a5b6-e7d8-9c01-2345-678901abcdef'), -- manage_messages
+('manager', 'b8e9f0a1-d2c3-4b56-7890-123456abcdef')  -- view_reports
+ON CONFLICT (role, permission_id) DO NOTHING;
+
 -- ============================================
 -- SEED COMPLETE!
 -- ============================================
