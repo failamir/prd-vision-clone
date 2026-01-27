@@ -19,6 +19,9 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // All roles that can access admin-level routes
+  const adminRoles = ['admin', 'superadmin', 'manajer', 'manager', 'staff', 'interviewer', 'interviewer_principal', 'direktur', 'pic', 'hrd'];
+
   const redirectBasedOnRole = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -31,8 +34,7 @@ const Login = () => {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin");
+        .eq("user_id", user.id);
 
       if (error) {
         console.error("Error fetching user roles:", error);
@@ -40,7 +42,19 @@ const Login = () => {
         return;
       }
 
-      if (data && data.length > 0) {
+      const userRole = data?.[0]?.role;
+
+      if (!userRole) {
+        navigate("/candidate/dashboard");
+        return;
+      }
+
+      // Role-specific redirects
+      if (userRole === 'hrd') {
+        navigate("/hrd");
+      } else if (userRole === 'pic') {
+        navigate("/pic");
+      } else if (adminRoles.includes(userRole)) {
         navigate("/admin");
       } else {
         navigate("/candidate/dashboard");
