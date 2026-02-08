@@ -47,7 +47,7 @@ export const RoleManagementDialog = ({
     role: string;
   } | null>(null);
 
-  const availableRoles = ["admin", "employer", "candidate", "manajer", "staff", "interviewer", "interviewer_principal"];
+  const availableRoles = ["admin", "superadmin", "employer", "candidate", "manajer", "manager", "staff", "interviewer", "interviewer_principal", "hrd", "pic", "direktur"];
 
   const handleRoleAction = async (action: "add" | "remove", role: string) => {
     setPendingAction({ type: action, role });
@@ -64,7 +64,7 @@ export const RoleManagementDialog = ({
           .from("user_roles")
           .insert({ 
             user_id: userId, 
-            role: pendingAction.role as "admin" | "employer" | "candidate"
+            role: pendingAction.role as any
           });
 
         if (error) throw error;
@@ -78,7 +78,7 @@ export const RoleManagementDialog = ({
           .from("user_roles")
           .delete()
           .eq("user_id", userId)
-          .eq("role", pendingAction.role as "admin" | "employer" | "candidate");
+          .eq("role", pendingAction.role as any);
 
         if (error) throw error;
 
@@ -106,8 +106,10 @@ export const RoleManagementDialog = ({
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "admin":
+      case "superadmin":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       case "manajer":
+      case "manager":
         return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
       case "interviewer":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
@@ -117,6 +119,12 @@ export const RoleManagementDialog = ({
         return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
       case "employer":
         return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200";
+      case "hrd":
+        return "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200";
+      case "pic":
+        return "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200";
+      case "direktur":
+        return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200";
       default:
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
     }
@@ -171,12 +179,17 @@ export const RoleManagementDialog = ({
                         </Badge>
                         <span className="text-sm text-muted-foreground">
                           {role === "admin" && "Full system access"}
+                          {role === "superadmin" && "Super administrator privileges"}
                           {role === "employer" && "Can post and manage jobs"}
                           {role === "candidate" && "Can apply to jobs"}
                           {role === "manajer" && "Can manage teams and operations"}
+                          {role === "manager" && "Can manage teams and operations"}
                           {role === "staff" && "Can access staff functions"}
                           {role === "interviewer" && "Can conduct interviews"}
                           {role === "interviewer_principal" && "Can conduct principal interviews"}
+                          {role === "hrd" && "Human Resources - manages recruitment"}
+                          {role === "pic" && "Person In Charge - regional operations"}
+                          {role === "direktur" && "Director level oversight"}
                         </span>
                       </div>
                       {hasRole ? (
