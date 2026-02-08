@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter, Download, Upload, Archive, ArchiveRestore, KeyRound } from "lucide-react";
+import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter, Download, Upload, Archive, ArchiveRestore, KeyRound, Eye } from "lucide-react";
 import { RoleManagementDialog } from "@/components/admin/RoleManagementDialog";
 import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
 import * as XLSX from "xlsx";
@@ -62,6 +63,7 @@ interface User {
 }
 
 const AdminUsers = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -682,6 +684,14 @@ const AdminUsers = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/admin/users/${user.id}/edit`)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Profile
+                      </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
