@@ -40,6 +40,7 @@ import AdminMessageCenter from "./pages/admin/MessageCenter";
 import AdminTestimonials from "./pages/admin/Testimonials";
 import AdminRolePermissions from "./pages/admin/RolePermissions";
 import AdminContactSubmissions from "./pages/admin/ContactSubmissions";
+import AdminEditProfile from "./pages/admin/EditProfile";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ScrollToTop from "./components/ScrollToTop";
@@ -97,6 +98,7 @@ const App = () => (
               <Route path="/admin/role-permissions" element={<AdminRoute><AdminRolePermissions /></AdminRoute>} />
               <Route path="/admin/contact-submissions" element={<AdminRoute><AdminContactSubmissions /></AdminRoute>} />
               <Route path="/admin/message-center" element={<AdminRoute><AdminMessageCenter /></AdminRoute>} />
+              <Route path="/admin/users/:userId/edit" element={<AdminRoute><AdminEditProfile /></AdminRoute>} />
 
               {/* Role-specific Dashboards */}
               <Route path="/hrd" element={<AdminRoute><HRDDashboard /></AdminRoute>} />
