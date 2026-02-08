@@ -123,8 +123,8 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Chart */}
-        <Card className="p-6">
+        {/* Chart - hidden for now */}
+        {/* <Card className="p-6">
           <h2 className="text-xl font-bold text-foreground mb-6">Applications by Status</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
@@ -141,7 +141,7 @@ const AdminDashboard = () => {
               <Bar dataKey="count" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </Card>
+        </Card> */}
 
         {/* Recent Activity */}
         <Card className="p-6">
