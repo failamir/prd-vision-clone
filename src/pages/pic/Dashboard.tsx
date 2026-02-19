@@ -27,6 +27,8 @@ const PICDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [selectedOffice, setSelectedOffice] = useState<string>("all");
+  const [isPicUser, setIsPicUser] = useState(false);
+  const [picCity, setPicCity] = useState<string | null>(null);
   const [stats, setStats] = useState({
     totalCandidates: 0,
     pendingApplications: 0,
@@ -47,6 +49,32 @@ const PICDashboard = () => {
     { value: "Yogyakarta", label: "Yogyakarta" },
     { value: "Bali", label: "Bali" }
   ];
+
+  // Detect PIC role and auto-set office filter
+  useEffect(() => {
+    const detectPicRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      const hasPicRole = roles?.some(r => r.role === 'pic');
+      const hasAdminRole = roles?.some(r => ['admin', 'superadmin'].includes(r.role));
+
+      if (hasPicRole && !hasAdminRole) {
+        const city = user.user_metadata?.city || null;
+        setIsPicUser(true);
+        setPicCity(city);
+        if (city) {
+          setSelectedOffice(city);
+        }
+      }
+    };
+    detectPicRole();
+  }, []);
 
   useEffect(() => {
     fetchDashboardData();
@@ -214,7 +242,7 @@ const PICDashboard = () => {
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedOffice} onValueChange={setSelectedOffice}>
+            <Select value={selectedOffice} onValueChange={(val) => !isPicUser && setSelectedOffice(val)} disabled={isPicUser}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Pilih Kantor" />
               </SelectTrigger>
@@ -226,6 +254,9 @@ const PICDashboard = () => {
                 ))}
               </SelectContent>
             </Select>
+            {isPicUser && picCity && (
+              <Badge variant="outline" className="text-xs">Wilayah: {picCity}</Badge>
+            )}
           </div>
         </div>
 
