@@ -848,9 +848,6 @@ const AdminApplications = () => {
         title: "Crew codes generated",
         description: `Generated ${appsWithoutCodes.length} crew codes`,
       });
-
-      // Refresh applications to show the new crew codes
-      fetchApplications();
     } catch (error) {
       console.error("Error generating crew codes:", error);
       toast({
