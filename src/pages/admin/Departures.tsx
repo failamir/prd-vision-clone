@@ -3,6 +3,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -25,6 +26,7 @@ import {
 interface Row {
   id: string;
   date_of_entry: string | null;
+  office_registered: string | null;
   candidate: { full_name: string } | null;
   job: { title: string; location: string | null } | null;
 }
@@ -37,23 +39,52 @@ export default function AdminDepartures() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<Row | null>(null);
   const [date, setDate] = useState("");
+  const [isPicUser, setIsPicUser] = useState(false);
+  const [picCity, setPicCity] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchRows();
+    const detectPicRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      const hasPicRole = roles?.some(r => r.role === 'pic');
+      const hasAdminRole = roles?.some(r => ['admin', 'superadmin'].includes(r.role));
+
+      if (hasPicRole && !hasAdminRole) {
+        const city = user.user_metadata?.city || null;
+        setIsPicUser(true);
+        setPicCity(city);
+      }
+      fetchRows(hasPicRole && !hasAdminRole ? (user.user_metadata?.city || null) : null);
+    };
+    detectPicRole();
   }, []);
 
-  const fetchRows = async () => {
+  const fetchRows = async (cityFilter?: string | null) => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("job_applications")
         .select(`
           id,
           date_of_entry,
+          office_registered,
           candidate:candidate_profiles!job_applications_candidate_id_fkey(full_name),
           job:jobs(title, location)
         `)
         .eq("status", "accepted")
         .order("date_of_entry", { ascending: true });
+
+      const city = cityFilter !== undefined ? cityFilter : picCity;
+      if (city) {
+        query = query.eq("office_registered", city);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       setRows((data as any) || []);
     } catch (e: any) {
@@ -95,9 +126,14 @@ export default function AdminDepartures() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Departure Schedule</h1>
-          <p className="text-muted-foreground mt-2">Kelola jadwal keberangkatan kandidat</p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Departure Schedule</h1>
+            <p className="text-muted-foreground mt-2">Kelola jadwal keberangkatan kandidat</p>
+          </div>
+          {isPicUser && picCity && (
+            <Badge variant="outline" className="self-start">Wilayah: {picCity}</Badge>
+          )}
         </div>
 
         <Card className="p-4">
