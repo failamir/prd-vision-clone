@@ -60,6 +60,7 @@ interface User {
   roles: string[];
   is_archived: boolean;
   archived_at: string | null;
+  registration_city: string | null;
 }
 
 const AdminUsers = () => {
@@ -88,16 +89,49 @@ const AdminUsers = () => {
   const [resettingPasswords, setResettingPasswords] = useState(false);
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isPicUser, setIsPicUser] = useState(false);
+  const [picCity, setPicCity] = useState<string | null>(null);
+
+  // Detect PIC role and auto-set city filter
+  useEffect(() => {
+    const detectPicRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      const hasPicRole = roles?.some(r => r.role === 'pic');
+      const hasAdminRole = roles?.some(r => ['admin', 'superadmin'].includes(r.role));
+
+      if (hasPicRole && !hasAdminRole) {
+        const city = user.user_metadata?.city || null;
+        setIsPicUser(true);
+        setPicCity(city);
+      }
+    };
+    detectPicRole();
+  }, []);
+
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [isPicUser, picCity]);
 
   const fetchUsers = async () => {
     try {
-      const { data: profiles, error: profilesError } = await supabase
+      let profilesQuery = supabase
         .from("candidate_profiles")
         .select("*")
         .order("created_at", { ascending: false });
+
+      // PIC users only see candidates from their city
+      if (isPicUser && picCity) {
+        profilesQuery = profilesQuery.eq("registration_city", picCity);
+      }
+
+      const { data: profiles, error: profilesError } = await profilesQuery;
 
       if (profilesError) throw profilesError;
 
@@ -117,6 +151,7 @@ const AdminUsers = () => {
             roles: roles?.map(r => r.role) || ["candidate"],
             is_archived: profile.is_archived || false,
             archived_at: profile.archived_at,
+            registration_city: profile.registration_city || null,
           };
         })
       );
@@ -482,6 +517,9 @@ const AdminUsers = () => {
             <h1 className="text-3xl font-bold text-foreground">User Management</h1>
             <p className="text-muted-foreground mt-2">Manage all registered users</p>
           </div>
+          {isPicUser && picCity && (
+            <Badge variant="outline">Wilayah: {picCity}</Badge>
+          )}
           <div className="flex items-center gap-2">
             <input
               type="file"
