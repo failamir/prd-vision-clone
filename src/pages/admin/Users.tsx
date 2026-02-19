@@ -528,26 +528,32 @@ const AdminUsers = () => {
               accept=".xlsx,.xls"
               className="hidden"
             />
-            <Button variant="outline" size="sm" onClick={handleImportClick} disabled={importing}>
-              {importing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-              Import
-            </Button>
+            {!isPicUser && (
+              <Button variant="outline" size="sm" onClick={handleImportClick} disabled={importing}>
+                {importing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                Import
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button variant="outline" size="sm" onClick={openCreateUserDialog}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add User
-            </Button>
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={() => setResetPasswordDialogOpen(true)}
-            >
-              <KeyRound className="w-4 h-4 mr-2" />
-              Reset Staff Passwords
-            </Button>
+            {!isPicUser && (
+              <Button variant="outline" size="sm" onClick={openCreateUserDialog}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add User
+              </Button>
+            )}
+            {!isPicUser && (
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={() => setResetPasswordDialogOpen(true)}
+              >
+                <KeyRound className="w-4 h-4 mr-2" />
+                Reset Staff Passwords
+              </Button>
+            )}
           </div>
         </div>
 
