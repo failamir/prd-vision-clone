@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 
 import { Link, useLocation } from 'react-router-dom';
@@ -60,6 +61,31 @@ export default function AdminMessageCenter() {
   const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isPicUser, setIsPicUser] = useState(false);
+  const [picCity, setPicCity] = useState<string | null>(null);
+
+  // Detect PIC role and auto-set city filter
+  useEffect(() => {
+    const detectPicRole = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", authUser.id);
+
+      const hasPicRole = roles?.some(r => r.role === 'pic');
+      const hasAdminRole = roles?.some(r => ['admin', 'superadmin'].includes(r.role));
+
+      if (hasPicRole && !hasAdminRole) {
+        const city = authUser.user_metadata?.city || null;
+        setIsPicUser(true);
+        setPicCity(city);
+      }
+    };
+    detectPicRole();
+  }, []);
 
   // Fetch all conversations for the admin
   const fetchConversations = async () => {
@@ -92,21 +118,28 @@ export default function AdminMessageCenter() {
 
       const ids = Array.from(allUserIds);
       // fetch profiles for these ids, trying 'candidate_profiles'
-      let profilesMap: Record<string, { full_name: string; email: string; avatar_url?: string }> = {};
+      let profilesMap: Record<string, { full_name: string; email: string; avatar_url?: string; registration_city?: string }> = {};
       if (ids.length) {
-        const { data, error } = await supabase
+        let profileQuery = supabase
           .from('candidate_profiles')
-          .select('id, full_name, email, avatar_url')
+          .select('id, full_name, email, avatar_url, registration_city')
           .in('id', ids);
+
+        const { data, error } = await profileQuery;
 
         if (!error && data) {
           profilesMap = Object.fromEntries(
-            data.map((p: any) => [p.id, { full_name: p.full_name, email: p.email, avatar_url: p.avatar_url }])
+            data.map((p: any) => [p.id, { full_name: p.full_name, email: p.email, avatar_url: p.avatar_url, registration_city: p.registration_city }])
           );
         }
       }
 
-      for (const uid of ids) {
+      // For PIC users, filter to only show candidates from their city
+      const filteredIds = isPicUser && picCity
+        ? ids.filter(id => profilesMap[id]?.registration_city === picCity)
+        : ids;
+
+      for (const uid of filteredIds) {
         const prof = profilesMap[uid];
         uniqueUsers.set(uid, {
           userId: uid,
@@ -447,6 +480,9 @@ export default function AdminMessageCenter() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Message Center</h1>
+          {isPicUser && picCity && (
+            <Badge variant="outline">Wilayah: {picCity}</Badge>
+          )}
         </div>
 
         <div className="flex h-[calc(100vh-200px)] border rounded-lg overflow-hidden">
