@@ -402,6 +402,21 @@ const AdminUsers = () => {
     try {
       // If user is already archived, delete permanently
       if (selectedUser.is_archived) {
+        // Get candidate profile id first
+        const { data: profileData } = await supabase
+          .from("candidate_profiles")
+          .select("id")
+          .eq("user_id", selectedUser.id)
+          .single();
+
+        if (profileData) {
+          // Delete job applications first
+          await supabase
+            .from("job_applications")
+            .delete()
+            .eq("candidate_id", profileData.id);
+        }
+
         await supabase.from("user_roles").delete().eq("user_id", selectedUser.id);
 
         const { error } = await supabase
@@ -411,7 +426,7 @@ const AdminUsers = () => {
 
         if (error) throw error;
 
-        toast({ title: "User berhasil dihapus permanen" });
+        toast({ title: "User dan semua aplikasinya berhasil dihapus permanen" });
       } else {
         // If user is active, move to archive instead of deleting
         const { error } = await supabase
