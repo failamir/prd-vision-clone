@@ -587,50 +587,32 @@ const AdminUsers = () => {
             </div>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-muted-foreground" />
-              <Button
-                type="button"
-                variant={roleFilter === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setRoleFilter("all");
+              <Select
+                value={roleFilter}
+                onValueChange={(value) => {
+                  setRoleFilter(value);
                   setPage(1);
                 }}
               >
-                All
-              </Button>
-              <Button
-                type="button"
-                variant={roleFilter === "admin" ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setRoleFilter("admin");
-                  setPage(1);
-                }}
-              >
-                Admin
-              </Button>
-              <Button
-                type="button"
-                variant={roleFilter === "employer" ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setRoleFilter("employer");
-                  setPage(1);
-                }}
-              >
-                Employer
-              </Button>
-              <Button
-                type="button"
-                variant={roleFilter === "candidate" ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setRoleFilter("candidate");
-                  setPage(1);
-                }}
-              >
-                Candidate
-              </Button>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="superadmin">Superadmin</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="direktur">Direktur</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="manajer">Manajer</SelectItem>
+                  <SelectItem value="hrd">HRD</SelectItem>
+                  <SelectItem value="pic">PIC</SelectItem>
+                  <SelectItem value="staff">Staff</SelectItem>
+                  <SelectItem value="interviewer">Interviewer</SelectItem>
+                  <SelectItem value="interviewer_principal">Interviewer Principal</SelectItem>
+                  <SelectItem value="employer">Employer</SelectItem>
+                  <SelectItem value="candidate">Candidate</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center gap-2">
               <Archive className="w-4 h-4 text-muted-foreground" />
