@@ -112,6 +112,9 @@ const AdminApplications = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
+  // PIC city lock - auto-filter for PIC users
+  const [isPicUser, setIsPicUser] = useState(false);
+  const [picCity, setPicCity] = useState<string | null>(null);
   // Advanced filters
   const [principal, setPrincipal] = useState("");
   const [department, setDepartment] = useState("");
@@ -283,7 +286,10 @@ const AdminApplications = () => {
     setPrincipal("");
     setDepartment("");
     setPosition("");
-    setOffice("");
+    // Don't clear office filter for PIC users
+    if (!isPicUser) {
+      setOffice("");
+    }
     setAgeMin("");
     setAgeMax("");
     setGender("");
@@ -765,6 +771,32 @@ const AdminApplications = () => {
     }
   };
 
+  // Detect PIC role and auto-set office filter to their city
+  useEffect(() => {
+    const detectPicRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      const hasPicRole = roles?.some(r => r.role === 'pic');
+      const hasAdminRole = roles?.some(r => ['admin', 'superadmin'].includes(r.role));
+
+      if (hasPicRole && !hasAdminRole) {
+        const city = user.user_metadata?.city || null;
+        setIsPicUser(true);
+        setPicCity(city);
+        if (city) {
+          setOffice(city);
+        }
+      }
+    };
+    detectPicRole();
+  }, []);
+
   useEffect(() => {
     fetchApplications();
   }, []);
@@ -848,9 +880,6 @@ const AdminApplications = () => {
         title: "Crew codes generated",
         description: `Generated ${appsWithoutCodes.length} crew codes`,
       });
-
-      // Refresh applications to show the new crew codes
-      fetchApplications();
     } catch (error) {
       console.error("Error generating crew codes:", error);
       toast({
@@ -3315,8 +3344,8 @@ return (
                 <Input placeholder="Select Position" value={position} onChange={(e) => setPosition(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">Office</label>
-                <Input placeholder="Select Office" value={office} onChange={(e) => setOffice(e.target.value)} />
+                <label className="text-sm font-medium mb-2 block">Office {isPicUser && picCity ? `(${picCity})` : ""}</label>
+                <Input placeholder="Select Office" value={office} onChange={(e) => !isPicUser && setOffice(e.target.value)} disabled={isPicUser} />
               </div>
               <div>
                 <label className="text-sm font-medium mb-2 block">Age Minimum</label>

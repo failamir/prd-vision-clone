@@ -1,54 +1,233 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Users,
-  FileText,
-  MapPin,
-  Calendar,
+import { 
+  Users, 
+  FileText, 
+  MapPin, 
+  Calendar, 
   Ship,
   TrendingUp,
   Clock,
   CheckCircle,
+  AlertCircle,
   Building,
   BarChart3
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from "date-fns";
+import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Line, LineChart } from "recharts";
-import { useDashboardData } from "@/hooks/use-dashboard-data";
-import { OFFICES } from "@/lib/constants";
-
-const getStatusBadge = (status: string) => {
-  const statusConfig: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
-    pending: { variant: "secondary", label: "Pending" },
-    reviewing: { variant: "outline", label: "Reviewing" },
-    interview: { variant: "default", label: "Interview" },
-    approved: { variant: "default", label: "Approved" },
-    rejected: { variant: "destructive", label: "Rejected" },
-  };
-  const config = statusConfig[status] || { variant: "secondary" as const, label: status };
-  return <Badge variant={config.variant}>{config.label}</Badge>;
-};
 
 const PICDashboard = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [selectedOffice, setSelectedOffice] = useState<string>("all");
-
-  const {
-    stats,
-    recentCandidates,
-    recentApplications,
-    monthlyData,
-    loading,
-  } = useDashboardData({
-    officeFilter: selectedOffice,
-    includeMonthlyTrends: true,
-    includeRecentCandidates: true,
+  const [isPicUser, setIsPicUser] = useState(false);
+  const [picCity, setPicCity] = useState<string | null>(null);
+  const [stats, setStats] = useState({
+    totalCandidates: 0,
+    pendingApplications: 0,
+    scheduledInterviews: 0,
+    approvedCandidates: 0,
+    upcomingDepartures: 0,
+    activeJobs: 0
   });
+  const [recentCandidates, setRecentCandidates] = useState<any[]>([]);
+  const [recentApplications, setRecentApplications] = useState<any[]>([]);
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
+
+  const offices = [
+    { value: "all", label: "Semua Kantor" },
+    { value: "Jakarta", label: "Jakarta" },
+    { value: "Surabaya", label: "Surabaya" },
+    { value: "Bandung", label: "Bandung" },
+    { value: "Yogyakarta", label: "Yogyakarta" },
+    { value: "Bali", label: "Bali" }
+  ];
+
+  // Detect PIC role and auto-set office filter
+  useEffect(() => {
+    const detectPicRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      const hasPicRole = roles?.some(r => r.role === 'pic');
+      const hasAdminRole = roles?.some(r => ['admin', 'superadmin'].includes(r.role));
+
+      if (hasPicRole && !hasAdminRole) {
+        const city = user.user_metadata?.city || null;
+        setIsPicUser(true);
+        setPicCity(city);
+        if (city) {
+          setSelectedOffice(city);
+        }
+      }
+    };
+    detectPicRole();
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+    fetchMonthlyTrends();
+  }, [selectedOffice]);
+
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      // Build query for candidates based on office filter
+      let candidatesQuery = supabase
+        .from("candidate_profiles")
+        .select("*", { count: "exact" });
+      
+      if (selectedOffice !== "all") {
+        candidatesQuery = candidatesQuery.eq("registration_city", selectedOffice);
+      }
+      
+      const { count: candidateCount } = await candidatesQuery;
+
+      // Get applications with office filter
+      let applicationsQuery = supabase
+        .from("job_applications")
+        .select(`
+          *,
+          candidate:candidate_profiles!job_applications_candidate_id_fkey(full_name, registration_city),
+          job:jobs!job_applications_job_id_fkey(title, company_name)
+        `)
+        .order("applied_at", { ascending: false });
+
+      if (selectedOffice !== "all") {
+        applicationsQuery = applicationsQuery.eq("office_registered", selectedOffice);
+      }
+
+      const { data: applications } = await applicationsQuery;
+
+      // Calculate statistics
+      const pendingApps = applications?.filter(app => app.status === "pending").length || 0;
+      const scheduledInterviews = applications?.filter(app => app.interview_date).length || 0;
+      const approvedApps = applications?.filter(app => app.status === "approved").length || 0;
+
+      // Get active jobs count
+      const { count: jobsCount } = await supabase
+        .from("jobs")
+        .select("*", { count: "exact" })
+        .eq("is_active", true);
+
+      // Get recent candidates
+      let recentCandidatesQuery = supabase
+        .from("candidate_profiles")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (selectedOffice !== "all") {
+        recentCandidatesQuery = recentCandidatesQuery.eq("registration_city", selectedOffice);
+      }
+
+      const { data: candidatesData } = await recentCandidatesQuery;
+
+      setStats({
+        totalCandidates: candidateCount || 0,
+        pendingApplications: pendingApps,
+        scheduledInterviews: scheduledInterviews,
+        approvedCandidates: approvedApps,
+        upcomingDepartures: applications?.filter(app => app.status === "approved").length || 0,
+        activeJobs: jobsCount || 0
+      });
+
+      setRecentCandidates(candidatesData || []);
+      setRecentApplications(applications?.slice(0, 5) || []);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMonthlyTrends = async () => {
+    try {
+      // Get data for the last 6 months
+      const months = [];
+      for (let i = 5; i >= 0; i--) {
+        const date = subMonths(new Date(), i);
+        const monthStart = startOfMonth(date);
+        const monthEnd = endOfMonth(date);
+        months.push({
+          label: format(date, "MMM yyyy", { locale: idLocale }),
+          start: monthStart.toISOString(),
+          end: monthEnd.toISOString()
+        });
+      }
+
+      const monthlyStats = await Promise.all(
+        months.map(async (month) => {
+          // Get candidates registered this month
+          let candidatesQuery = supabase
+            .from("candidate_profiles")
+            .select("id", { count: "exact" })
+            .gte("created_at", month.start)
+            .lte("created_at", month.end);
+
+          if (selectedOffice !== "all") {
+            candidatesQuery = candidatesQuery.eq("registration_city", selectedOffice);
+          }
+
+          const { count: candidateCount } = await candidatesQuery;
+
+          // Get applications this month
+          let applicationsQuery = supabase
+            .from("job_applications")
+            .select("id, status")
+            .gte("applied_at", month.start)
+            .lte("applied_at", month.end);
+
+          if (selectedOffice !== "all") {
+            applicationsQuery = applicationsQuery.eq("office_registered", selectedOffice);
+          }
+
+          const { data: applications } = await applicationsQuery;
+
+          const approved = applications?.filter(a => a.status === "approved").length || 0;
+          const pending = applications?.filter(a => a.status === "pending").length || 0;
+          const interview = applications?.filter(a => a.status === "interview").length || 0;
+
+          return {
+            month: month.label,
+            kandidat: candidateCount || 0,
+            aplikasi: applications?.length || 0,
+            approved: approved,
+            pending: pending,
+            interview: interview
+          };
+        })
+      );
+
+      setMonthlyData(monthlyStats);
+    } catch (error) {
+      console.error("Error fetching monthly trends:", error);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
+      pending: { variant: "secondary", label: "Pending" },
+      reviewing: { variant: "outline", label: "Reviewing" },
+      interview: { variant: "default", label: "Interview" },
+      approved: { variant: "default", label: "Approved" },
+      rejected: { variant: "destructive", label: "Rejected" }
+    };
+    const config = statusConfig[status] || { variant: "secondary" as const, label: status };
+    return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
 
   return (
     <AdminLayout>
@@ -63,18 +242,21 @@ const PICDashboard = () => {
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedOffice} onValueChange={setSelectedOffice}>
+            <Select value={selectedOffice} onValueChange={(val) => !isPicUser && setSelectedOffice(val)} disabled={isPicUser}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Pilih Kantor" />
               </SelectTrigger>
               <SelectContent>
-                {OFFICES.map((office) => (
+                {offices.map((office) => (
                   <SelectItem key={office.value} value={office.value}>
                     {office.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {isPicUser && picCity && (
+              <Badge variant="outline" className="text-xs">Wilayah: {picCity}</Badge>
+            )}
           </div>
         </div>
 
@@ -121,7 +303,7 @@ const PICDashboard = () => {
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.approvedApplications}</div>
+              <div className="text-2xl font-bold">{stats.approvedCandidates}</div>
               <p className="text-xs text-muted-foreground">Diterima</p>
             </CardContent>
           </Card>
@@ -143,7 +325,7 @@ const PICDashboard = () => {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalJobs}</div>
+              <div className="text-2xl font-bold">{stats.activeJobs}</div>
               <p className="text-xs text-muted-foreground">Posisi tersedia</p>
             </CardContent>
           </Card>
@@ -151,32 +333,32 @@ const PICDashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             className="h-auto py-4 flex flex-col items-center gap-2"
             onClick={() => navigate("/admin/applications")}
           >
             <FileText className="h-5 w-5" />
             <span>Kelola Aplikasi</span>
           </Button>
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             className="h-auto py-4 flex flex-col items-center gap-2"
             onClick={() => navigate("/admin/interviews")}
           >
             <Calendar className="h-5 w-5" />
             <span>Jadwal Interview</span>
           </Button>
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             className="h-auto py-4 flex flex-col items-center gap-2"
             onClick={() => navigate("/admin/departures")}
           >
             <Ship className="h-5 w-5" />
             <span>Departures</span>
           </Button>
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             className="h-auto py-4 flex flex-col items-center gap-2"
             onClick={() => navigate("/admin/message-center")}
           >
@@ -210,18 +392,18 @@ const PICDashboard = () => {
                   {recentCandidates.map((candidate) => (
                     <div key={candidate.id} className="flex items-center justify-between border-b pb-3 last:border-0">
                       <div>
-                        <p className="font-medium">{candidate.fullName}</p>
+                        <p className="font-medium">{candidate.full_name}</p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <MapPin className="h-3 w-3" />
-                          <span>{candidate.registrationCity || "Tidak diketahui"}</span>
+                          <span>{candidate.registration_city || "Tidak diketahui"}</span>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-muted-foreground">
-                          {candidate.professionalTitle || "-"}
+                          {candidate.professional_title || "-"}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(candidate.createdAt), "dd MMM yyyy")}
+                          {format(new Date(candidate.created_at), "dd MMM yyyy")}
                         </p>
                       </div>
                     </div>
@@ -254,15 +436,15 @@ const PICDashboard = () => {
                   {recentApplications.map((app) => (
                     <div key={app.id} className="flex items-center justify-between border-b pb-3 last:border-0">
                       <div>
-                        <p className="font-medium">{app.candidateName}</p>
+                        <p className="font-medium">{app.candidate?.full_name || "Unknown"}</p>
                         <p className="text-sm text-muted-foreground">
-                          {app.jobTitle}{app.companyName ? ` - ${app.companyName}` : ""}
+                          {app.job?.title} - {app.job?.company_name}
                         </p>
                       </div>
                       <div className="text-right space-y-1">
                         {getStatusBadge(app.status)}
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(app.appliedAt), "dd MMM yyyy")}
+                          {format(new Date(app.applied_at), "dd MMM yyyy")}
                         </p>
                       </div>
                     </div>
@@ -290,17 +472,17 @@ const PICDashboard = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis
-                    dataKey="month"
+                  <XAxis 
+                    dataKey="month" 
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
-                  <YAxis
+                  <YAxis 
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
-                  <Tooltip
-                    contentStyle={{
+                  <Tooltip 
+                    contentStyle={{ 
                       backgroundColor: "hsl(var(--background))",
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px"
@@ -329,44 +511,44 @@ const PICDashboard = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis
-                    dataKey="month"
+                  <XAxis 
+                    dataKey="month" 
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
-                  <YAxis
+                  <YAxis 
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
-                  <Tooltip
-                    contentStyle={{
+                  <Tooltip 
+                    contentStyle={{ 
                       backgroundColor: "hsl(var(--background))",
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px"
                     }}
                   />
                   <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="approved"
-                    name="Approved"
-                    stroke="#22c55e"
+                  <Line 
+                    type="monotone" 
+                    dataKey="approved" 
+                    name="Approved" 
+                    stroke="#22c55e" 
                     strokeWidth={2}
                     dot={{ fill: '#22c55e' }}
                   />
-                  <Line
-                    type="monotone"
-                    dataKey="interview"
-                    name="Interview"
-                    stroke="#3b82f6"
+                  <Line 
+                    type="monotone" 
+                    dataKey="interview" 
+                    name="Interview" 
+                    stroke="#3b82f6" 
                     strokeWidth={2}
                     dot={{ fill: '#3b82f6' }}
                   />
-                  <Line
-                    type="monotone"
-                    dataKey="pending"
-                    name="Pending"
-                    stroke="#eab308"
+                  <Line 
+                    type="monotone" 
+                    dataKey="pending" 
+                    name="Pending" 
+                    stroke="#eab308" 
                     strokeWidth={2}
                     dot={{ fill: '#eab308' }}
                   />
@@ -389,16 +571,13 @@ const PICDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {OFFICES.filter(o => o.value !== "all").map((office) => (
-                <div
+              {offices.filter(o => o.value !== "all").map((office) => (
+                <div 
                   key={office.value}
-                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${selectedOffice === office.value ? "bg-primary/10 border-primary" : "hover:bg-muted"
-                    }`}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    selectedOffice === office.value ? "bg-primary/10 border-primary" : "hover:bg-muted"
+                  }`}
                   onClick={() => setSelectedOffice(office.value)}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Filter by ${office.label}`}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedOffice(office.value); }}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <Building className="h-4 w-4 text-muted-foreground" />

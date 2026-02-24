@@ -60,6 +60,7 @@ interface User {
   roles: string[];
   is_archived: boolean;
   archived_at: string | null;
+  registration_city: string | null;
 }
 
 const AdminUsers = () => {
@@ -88,16 +89,49 @@ const AdminUsers = () => {
   const [resettingPasswords, setResettingPasswords] = useState(false);
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isPicUser, setIsPicUser] = useState(false);
+  const [picCity, setPicCity] = useState<string | null>(null);
+
+  // Detect PIC role and auto-set city filter
+  useEffect(() => {
+    const detectPicRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      const hasPicRole = roles?.some(r => r.role === 'pic');
+      const hasAdminRole = roles?.some(r => ['admin', 'superadmin'].includes(r.role));
+
+      if (hasPicRole && !hasAdminRole) {
+        const city = user.user_metadata?.city || null;
+        setIsPicUser(true);
+        setPicCity(city);
+      }
+    };
+    detectPicRole();
+  }, []);
+
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [isPicUser, picCity]);
 
   const fetchUsers = async () => {
     try {
-      const { data: profiles, error: profilesError } = await supabase
+      let profilesQuery = supabase
         .from("candidate_profiles")
         .select("*")
         .order("created_at", { ascending: false });
+
+      // PIC users only see candidates from their city
+      if (isPicUser && picCity) {
+        profilesQuery = profilesQuery.eq("registration_city", picCity);
+      }
+
+      const { data: profiles, error: profilesError } = await profilesQuery;
 
       if (profilesError) throw profilesError;
 
@@ -117,6 +151,7 @@ const AdminUsers = () => {
             roles: roles?.map(r => r.role) || ["candidate"],
             is_archived: profile.is_archived || false,
             archived_at: profile.archived_at,
+            registration_city: profile.registration_city || null,
           };
         })
       );
@@ -367,6 +402,21 @@ const AdminUsers = () => {
     try {
       // If user is already archived, delete permanently
       if (selectedUser.is_archived) {
+        // Get candidate profile id first
+        const { data: profileData } = await supabase
+          .from("candidate_profiles")
+          .select("id")
+          .eq("user_id", selectedUser.id)
+          .single();
+
+        if (profileData) {
+          // Delete job applications first
+          await supabase
+            .from("job_applications")
+            .delete()
+            .eq("candidate_id", profileData.id);
+        }
+
         await supabase.from("user_roles").delete().eq("user_id", selectedUser.id);
 
         const { error } = await supabase
@@ -376,7 +426,7 @@ const AdminUsers = () => {
 
         if (error) throw error;
 
-        toast({ title: "User berhasil dihapus permanen" });
+        toast({ title: "User dan semua aplikasinya berhasil dihapus permanen" });
       } else {
         // If user is active, move to archive instead of deleting
         const { error } = await supabase
@@ -482,6 +532,9 @@ const AdminUsers = () => {
             <h1 className="text-3xl font-bold text-foreground">User Management</h1>
             <p className="text-muted-foreground mt-2">Manage all registered users</p>
           </div>
+          {isPicUser && picCity && (
+            <Badge variant="outline">Wilayah: {picCity}</Badge>
+          )}
           <div className="flex items-center gap-2">
             <input
               type="file"
@@ -490,26 +543,32 @@ const AdminUsers = () => {
               accept=".xlsx,.xls"
               className="hidden"
             />
-            <Button variant="outline" size="sm" onClick={handleImportClick} disabled={importing}>
-              {importing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-              Import
-            </Button>
+            {!isPicUser && (
+              <Button variant="outline" size="sm" onClick={handleImportClick} disabled={importing}>
+                {importing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                Import
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button variant="outline" size="sm" onClick={openCreateUserDialog}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add User
-            </Button>
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={() => setResetPasswordDialogOpen(true)}
-            >
-              <KeyRound className="w-4 h-4 mr-2" />
-              Reset Staff Passwords
-            </Button>
+            {!isPicUser && (
+              <Button variant="outline" size="sm" onClick={openCreateUserDialog}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add User
+              </Button>
+            )}
+            {!isPicUser && (
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={() => setResetPasswordDialogOpen(true)}
+              >
+                <KeyRound className="w-4 h-4 mr-2" />
+                Reset Staff Passwords
+              </Button>
+            )}
           </div>
         </div>
 
@@ -528,50 +587,32 @@ const AdminUsers = () => {
             </div>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-muted-foreground" />
-              <Button
-                type="button"
-                variant={roleFilter === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setRoleFilter("all");
+              <Select
+                value={roleFilter}
+                onValueChange={(value) => {
+                  setRoleFilter(value);
                   setPage(1);
                 }}
               >
-                All
-              </Button>
-              <Button
-                type="button"
-                variant={roleFilter === "admin" ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setRoleFilter("admin");
-                  setPage(1);
-                }}
-              >
-                Admin
-              </Button>
-              <Button
-                type="button"
-                variant={roleFilter === "employer" ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setRoleFilter("employer");
-                  setPage(1);
-                }}
-              >
-                Employer
-              </Button>
-              <Button
-                type="button"
-                variant={roleFilter === "candidate" ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setRoleFilter("candidate");
-                  setPage(1);
-                }}
-              >
-                Candidate
-              </Button>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="superadmin">Superadmin</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="direktur">Direktur</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="manajer">Manajer</SelectItem>
+                  <SelectItem value="hrd">HRD</SelectItem>
+                  <SelectItem value="pic">PIC</SelectItem>
+                  <SelectItem value="staff">Staff</SelectItem>
+                  <SelectItem value="interviewer">Interviewer</SelectItem>
+                  <SelectItem value="interviewer_principal">Interviewer Principal</SelectItem>
+                  <SelectItem value="employer">Employer</SelectItem>
+                  <SelectItem value="candidate">Candidate</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center gap-2">
               <Archive className="w-4 h-4 text-muted-foreground" />
