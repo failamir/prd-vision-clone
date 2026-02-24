@@ -1,80 +1,16 @@
-import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
 import { Users, Briefcase, FileText, TrendingUp } from "lucide-react";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-
-interface Stats {
-  totalUsers: number;
-  totalJobs: number;
-  totalApplications: number;
-  pendingApplications: number;
-}
+import { Loader2 } from "lucide-react";
+import { useDashboardData } from "@/hooks/use-dashboard-data";
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState<Stats>({
-    totalUsers: 0,
-    totalJobs: 0,
-    totalApplications: 0,
-    pendingApplications: 0,
-  });
-  const [chartData, setChartData] = useState<any[]>([]);
-
-  useEffect(() => {
-    fetchStats();
-    fetchChartData();
-  }, []);
-
-  const fetchStats = async () => {
-    try {
-      const [usersResult, jobsResult, applicationsResult, pendingResult] = await Promise.all([
-        supabase.from("candidate_profiles").select("id", { count: "exact", head: true }),
-        supabase.from("jobs").select("id", { count: "exact", head: true }),
-        supabase.from("job_applications").select("id", { count: "exact", head: true }),
-        supabase.from("job_applications").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      ]);
-
-      setStats({
-        totalUsers: usersResult.count || 0,
-        totalJobs: jobsResult.count || 0,
-        totalApplications: applicationsResult.count || 0,
-        pendingApplications: pendingResult.count || 0,
-      });
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    }
-  };
-
-  const fetchChartData = async () => {
-    try {
-      const { data: applications } = await supabase
-        .from("job_applications")
-        .select("status")
-        .order("status");
-
-      if (applications) {
-        const statusCounts = applications.reduce((acc: any, app) => {
-          acc[app.status] = (acc[app.status] || 0) + 1;
-          return acc;
-        }, {});
-
-        const chartData = Object.entries(statusCounts).map(([status, count]) => ({
-          status: status.charAt(0).toUpperCase() + status.slice(1),
-          count,
-        }));
-
-        setChartData(chartData);
-      }
-    } catch (error) {
-      console.error("Error fetching chart data:", error);
-    }
-  };
+  const { stats, loading } = useDashboardData();
 
   const statCards = [
     {
       title: "Total Users",
-      value: stats.totalUsers,
+      value: stats.totalCandidates,
       icon: Users,
       color: "from-blue-500 to-blue-600",
     },
@@ -86,7 +22,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Total Applications",
-      value: stats.totalApplications,
+      value: stats.pendingApplications + stats.approvedApplications + stats.rejectedApplications,
       icon: FileText,
       color: "from-purple-500 to-purple-600",
     },
@@ -97,6 +33,16 @@ const AdminDashboard = () => {
       color: "from-orange-500 to-orange-600",
     },
   ];
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -123,27 +69,7 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Chart - hidden for now */}
-        {/* <Card className="p-6">
-          <h2 className="text-xl font-bold text-foreground mb-6">Applications by Status</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="status" className="text-sm" />
-              <YAxis className="text-sm" />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: "hsl(var(--background))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px"
-                }}
-              />
-              <Bar dataKey="count" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card> */}
-
-        {/* Recent Activity */}
+        {/* Quick Actions */}
         <Card className="p-6">
           <h2 className="text-xl font-bold text-foreground mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

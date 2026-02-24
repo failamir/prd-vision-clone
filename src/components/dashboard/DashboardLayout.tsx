@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/NotificationBell";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -156,7 +157,8 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <div className="flex-1 lg:flex-none">
               <h1 className="text-xl font-bold text-foreground">Candidate Dashboard</h1>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <NotificationBell />
               <Link to="/jobs">
                 <Button variant="outline" size="sm">
                   Browse Jobs

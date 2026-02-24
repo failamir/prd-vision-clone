@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { NotificationBell } from "@/components/NotificationBell";
 import { useToast } from "@/hooks/use-toast";
 import {
   LayoutDashboard,
@@ -213,16 +214,17 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <div className="flex items-center justify-between px-4 lg:px-8 h-14">
             {/* Left side - spacer for mobile menu button */}
             <div className="lg:hidden w-10" />
-            
+
             {/* Right side - User info */}
-            <div className="ml-auto flex items-center gap-4">
+            <div className="ml-auto flex items-center gap-2">
+              <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-2 h-auto py-1.5 px-2">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || user?.email} />
                       <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                        {profile?.full_name 
+                        {profile?.full_name
                           ? profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
                           : user?.email?.charAt(0).toUpperCase() || 'U'}
                       </AvatarFallback>
@@ -232,7 +234,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                         {profile?.full_name || user?.email?.split('@')[0] || 'User'}
                       </span>
                       <span className="text-xs text-muted-foreground leading-tight mt-0.5">
-                        {userRoles.length > 0 
+                        {userRoles.length > 0
                           ? userRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')
                           : 'No role'}
                       </span>
@@ -250,7 +252,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-xs text-muted-foreground" disabled>
                     <UserIcon className="h-4 w-4 mr-2" />
-                    {userRoles.length > 0 
+                    {userRoles.length > 0
                       ? userRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')
                       : 'No assigned role'}
                   </DropdownMenuItem>
@@ -264,7 +266,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </div>
           </div>
         </header>
-        
+
         <div className="p-8">
           {children}
         </div>
