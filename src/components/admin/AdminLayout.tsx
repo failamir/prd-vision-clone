@@ -158,7 +158,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             </Link>
           </div>
 
-          <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
+          <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
             {navigationGroups.map((group) => (
               <div key={group.title} className="space-y-2">
                 <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -172,13 +172,13 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                         key={item.name}
                         to={item.href}
                         onClick={() => setSidebarOpen(false)}
-                        className={`flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors ${isActive
+                        className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${isActive
                           ? "bg-primary text-primary-foreground"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                           }`}
                       >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="font-medium">{item.name}</span>
+                        <span className="text-sm font-medium">{item.name}</span>
                         {item.href === "/admin/message-center" && unreadCount > 0 && (
                           <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center">
                             {unreadCount}
