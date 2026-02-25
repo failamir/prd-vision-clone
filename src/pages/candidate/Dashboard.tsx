@@ -89,30 +89,62 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Here's your job search activity overview</p>
         </div>
 
-        {/* Profile Completion Alert */}
-        {stats.profileCompletion < 100 && (
-          <Card className="p-4 bg-accent/50 border-accent">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-accent-foreground mt-0.5" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground mb-1">
-                  Complete Your Profile ({stats.profileCompletion}%)
-                </h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  A complete profile increases your chances of getting hired
-                </p>
-                <Link to="/candidate/profile">
-                  <Button size="sm" variant="default">
-                    Complete Profile
-                  </Button>
-                </Link>
+        {/* Top Cards Section */}
+        <div className={cn(
+          "grid grid-cols-1 gap-6",
+          stats.profileCompletion < 100 ? "lg:grid-cols-3" : "md:grid-cols-2"
+        )}>
+          {/* Profile Completion Alert */}
+          {stats.profileCompletion < 100 && (
+            <Card className="p-6 bg-accent/50 border-accent h-full">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-accent-foreground mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground mb-1">
+                    Complete Your Profile ({stats.profileCompletion}%)
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    A complete profile increases your chances of getting hired
+                  </p>
+                  <Link to="/candidate/profile">
+                    <Button size="sm" variant="default" className="w-full">
+                      Complete Profile
+                    </Button>
+                  </Link>
+                </div>
               </div>
+            </Card>
+          )}
+
+          <Card className="p-6 flex flex-col justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Browse Jobs</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Explore thousands of job opportunities
+              </p>
             </div>
+            <Link to="/jobs">
+              <Button className="w-full">Search Jobs</Button>
+            </Link>
           </Card>
-        )}
+
+          <Card className="p-6 flex flex-col justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Track Applications</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Monitor your application status
+              </p>
+            </div>
+            <Link to="/candidate/applications">
+              <Button className="w-full" variant="outline">
+                View Applications
+              </Button>
+            </Link>
+          </Card>
+        </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -123,16 +155,6 @@ const Dashboard = () => {
             <h3 className="text-2xl font-bold text-foreground mb-1">{stats.applications}</h3>
             <p className="text-sm text-muted-foreground">Job Applications</p>
           </Card>
-
-          {/* <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-secondary" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground mb-1">{stats.cvs}</h3>
-            <p className="text-sm text-muted-foreground">CVs Uploaded</p>
-          </Card> */}
 
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -152,43 +174,6 @@ const Dashboard = () => {
             </div>
             <h3 className="text-2xl font-bold text-foreground mb-1">Profile</h3>
             <p className="text-sm text-muted-foreground">Completion Rate</p>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-2">Browse Jobs</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Explore thousands of job opportunities
-            </p>
-            <Link to="/jobs">
-              <Button className="w-full">Search Jobs</Button>
-            </Link>
-          </Card>
-
-          {/* <Card className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-2">Update CV</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Keep your resume up to date
-            </p>
-            <Link to="/candidate/cvs">
-              <Button className="w-full" variant="secondary">
-                Manage CVs
-              </Button>
-            </Link>
-          </Card> */}
-
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-2">Track Applications</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Monitor your application status
-            </p>
-            <Link to="/candidate/applications">
-              <Button className="w-full" variant="outline">
-                View Applications
-              </Button>
-            </Link>
           </Card>
         </div>
       </div>
