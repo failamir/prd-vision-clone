@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -212,7 +211,7 @@ export default function AdminMessages() {
   }, [user, rows]);
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Messages</h1>
@@ -229,7 +228,7 @@ export default function AdminMessages() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center h-40 text-muted-foreground"><Loader2 className="w-5 h-5 animate-spin mr-2"/>Loading...</div>
+            <div className="flex items-center justify-center h-40 text-muted-foreground"><Loader2 className="w-5 h-5 animate-spin mr-2" />Loading...</div>
           ) : (
             <div className="overflow-x-auto border rounded-lg">
               <Table>
@@ -301,7 +300,7 @@ export default function AdminMessages() {
                                 <div className="flex items-center justify-end gap-2">
                                   <Button size="sm" variant="ghost" onClick={() => toggleReply(r.id)}>Cancel</Button>
                                   <Button size="sm" onClick={() => sendReply(r)} disabled={sending[r.id]}>
-                                    {sending[r.id] ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> : <Send className="w-4 h-4 mr-2"/>}
+                                    {sending[r.id] ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
                                     Send Reply
                                   </Button>
                                 </div>
@@ -317,6 +316,6 @@ export default function AdminMessages() {
           )}
         </Card>
       </div>
-    </AdminLayout>
+    </>
   );
 }

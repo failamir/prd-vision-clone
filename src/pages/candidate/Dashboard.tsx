@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Briefcase, FileText, Bookmark, TrendingUp, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -82,7 +82,7 @@ const Dashboard = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold text-foreground mb-2">Welcome Back!</h2>
@@ -177,7 +177,7 @@ const Dashboard = () => {
           </Card>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

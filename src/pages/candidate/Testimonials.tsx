@@ -80,7 +80,7 @@ export default function Testimonials() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Testimonials</h1>
@@ -109,11 +109,10 @@ export default function Testimonials() {
                     className="focus:outline-none"
                   >
                     <Star
-                      className={`w-8 h-8 ${
-                        value <= rating
+                      className={`w-8 h-8 ${value <= rating
                           ? "fill-yellow-400 text-yellow-400"
                           : "text-gray-300"
-                      }`}
+                        }`}
                     />
                   </button>
                 ))}
@@ -171,6 +170,6 @@ export default function Testimonials() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

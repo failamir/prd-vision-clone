@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -315,7 +314,7 @@ const AdminUsers = () => {
       const newArchivedState = !selectedUser.is_archived;
       const { error } = await supabase
         .from("candidate_profiles")
-        .update({ 
+        .update({
           is_archived: newArchivedState,
           archived_at: newArchivedState ? new Date().toISOString() : null
         })
@@ -323,10 +322,10 @@ const AdminUsers = () => {
 
       if (error) throw error;
 
-      toast({ 
-        title: newArchivedState 
-          ? "User berhasil diarsipkan" 
-          : "User berhasil dipulihkan dari arsip" 
+      toast({
+        title: newArchivedState
+          ? "User berhasil diarsipkan"
+          : "User berhasil dipulihkan dari arsip"
       });
       setArchiveDialogOpen(false);
       setSelectedUser(null);
@@ -431,7 +430,7 @@ const AdminUsers = () => {
         // If user is active, move to archive instead of deleting
         const { error } = await supabase
           .from("candidate_profiles")
-          .update({ 
+          .update({
             is_archived: true,
             archived_at: new Date().toISOString()
           })
@@ -441,7 +440,7 @@ const AdminUsers = () => {
 
         toast({ title: "User berhasil dipindahkan ke arsip" });
       }
-      
+
       setDeleteDialogOpen(false);
       setSelectedUser(null);
       await fetchUsers();
@@ -470,7 +469,7 @@ const AdminUsers = () => {
           Authorization: `Bearer ${sessionData.session.access_token}`,
         },
       });
-      
+
       if (error) throw error;
 
       toast({
@@ -516,16 +515,16 @@ const AdminUsers = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
+      <>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -560,9 +559,9 @@ const AdminUsers = () => {
               </Button>
             )}
             {!isPicUser && (
-              <Button 
-                variant="destructive" 
-                size="sm" 
+              <Button
+                variant="destructive"
+                size="sm"
                 onClick={() => setResetPasswordDialogOpen(true)}
               >
                 <KeyRound className="w-4 h-4 mr-2" />
@@ -733,8 +732,8 @@ const AdminUsers = () => {
                         <Eye className="w-4 h-4 mr-2" />
                         View Profile
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => handleManageRoles(user)}
                       >
@@ -887,7 +886,7 @@ const AdminUsers = () => {
                 {selectedUser?.is_archived ? "Hapus Permanen?" : "Arsipkan User?"}
               </AlertDialogTitle>
               <AlertDialogDescription>
-                {selectedUser?.is_archived 
+                {selectedUser?.is_archived
                   ? "Tindakan ini akan menghapus profil dan semua role user tersebut SECARA PERMANEN. Aksi ini tidak dapat dibatalkan."
                   : "User akan dipindahkan ke arsip. Untuk menghapus permanen, hapus dari halaman Archived."
                 }
@@ -895,8 +894,8 @@ const AdminUsers = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={handleDeleteUser} 
+              <AlertDialogAction
+                onClick={handleDeleteUser}
                 disabled={deleting}
                 className={selectedUser?.is_archived ? "bg-red-600 hover:bg-red-700" : ""}
               >
@@ -914,7 +913,7 @@ const AdminUsers = () => {
                 {selectedUser?.is_archived ? "Pulihkan user dari arsip?" : "Arsipkan user?"}
               </AlertDialogTitle>
               <AlertDialogDescription>
-                {selectedUser?.is_archived 
+                {selectedUser?.is_archived
                   ? "User akan dipulihkan dan dapat mengakses sistem kembali."
                   : "User yang diarsipkan tidak akan muncul di daftar aktif, tetapi datanya tetap tersimpan."
                 }
@@ -935,7 +934,7 @@ const AdminUsers = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Reset Password Semua Staff?</AlertDialogTitle>
               <AlertDialogDescription>
-                Semua user dengan role selain candidate akan password-nya direset ke "c1pt4w1r4". 
+                Semua user dengan role selain candidate akan password-nya direset ke "c1pt4w1r4".
                 Tindakan ini tidak bisa dibatalkan.
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -949,7 +948,7 @@ const AdminUsers = () => {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

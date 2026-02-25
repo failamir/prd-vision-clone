@@ -118,7 +118,7 @@ export default function ContactSubmissions() {
     );
 
     return (
-        <AdminLayout>
+        <>
             <div className="space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground">Contact Submissions</h1>
@@ -261,6 +261,6 @@ export default function ContactSubmissions() {
                     )}
                 </Card>
             </div>
-        </AdminLayout>
+        </>
     );
 }

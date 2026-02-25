@@ -80,7 +80,7 @@ export default function ChangePassword() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6 max-w-2xl">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Change Password</h1>
@@ -197,6 +197,6 @@ export default function ChangePassword() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

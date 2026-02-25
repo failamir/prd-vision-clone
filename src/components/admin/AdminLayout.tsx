@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -34,10 +34,10 @@ import { DatabaseToggle } from "@/components/DatabaseToggle";
 import { useUser } from "@/contexts/UserContext";
 
 interface AdminLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
-export const AdminLayout = ({ children }: AdminLayoutProps) => {
+export const AdminLayout = ({ children = null }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -268,7 +268,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
         </header>
 
         <div className="p-8">
-          {children}
+          {children || <Outlet />}
         </div>
       </main>
 

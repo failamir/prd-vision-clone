@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,16 +80,16 @@ const Applications = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold text-foreground mb-2">My Applications</h2>
@@ -174,7 +173,7 @@ const Applications = () => {
         onClose={() => setIsDialogOpen(false)}
         application={selectedApplication}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

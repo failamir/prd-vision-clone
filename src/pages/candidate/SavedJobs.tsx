@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -105,16 +104,16 @@ const SavedJobs = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold text-foreground mb-2">Saved Jobs</h2>
@@ -189,7 +188,7 @@ const SavedJobs = () => {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

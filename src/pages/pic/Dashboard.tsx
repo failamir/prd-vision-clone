@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Users, 
-  FileText, 
-  MapPin, 
-  Calendar, 
+import {
+  Users,
+  FileText,
+  MapPin,
+  Calendar,
   Ship,
   TrendingUp,
   Clock,
@@ -88,11 +87,11 @@ const PICDashboard = () => {
       let candidatesQuery = supabase
         .from("candidate_profiles")
         .select("*", { count: "exact" });
-      
+
       if (selectedOffice !== "all") {
         candidatesQuery = candidatesQuery.eq("registration_city", selectedOffice);
       }
-      
+
       const { count: candidateCount } = await candidatesQuery;
 
       // Get applications with office filter
@@ -230,7 +229,7 @@ const PICDashboard = () => {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -333,32 +332,32 @@ const PICDashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-auto py-4 flex flex-col items-center gap-2"
             onClick={() => navigate("/admin/applications")}
           >
             <FileText className="h-5 w-5" />
             <span>Kelola Aplikasi</span>
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-auto py-4 flex flex-col items-center gap-2"
             onClick={() => navigate("/admin/interviews")}
           >
             <Calendar className="h-5 w-5" />
             <span>Jadwal Interview</span>
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-auto py-4 flex flex-col items-center gap-2"
             onClick={() => navigate("/admin/departures")}
           >
             <Ship className="h-5 w-5" />
             <span>Departures</span>
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-auto py-4 flex flex-col items-center gap-2"
             onClick={() => navigate("/admin/message-center")}
           >
@@ -472,17 +471,17 @@ const PICDashboard = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="month" 
+                  <XAxis
+                    dataKey="month"
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
-                  <YAxis 
+                  <YAxis
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
+                  <Tooltip
+                    contentStyle={{
                       backgroundColor: "hsl(var(--background))",
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px"
@@ -511,44 +510,44 @@ const PICDashboard = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="month" 
+                  <XAxis
+                    dataKey="month"
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
-                  <YAxis 
+                  <YAxis
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
+                  <Tooltip
+                    contentStyle={{
                       backgroundColor: "hsl(var(--background))",
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px"
                     }}
                   />
                   <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="approved" 
-                    name="Approved" 
-                    stroke="#22c55e" 
+                  <Line
+                    type="monotone"
+                    dataKey="approved"
+                    name="Approved"
+                    stroke="#22c55e"
                     strokeWidth={2}
                     dot={{ fill: '#22c55e' }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="interview" 
-                    name="Interview" 
-                    stroke="#3b82f6" 
+                  <Line
+                    type="monotone"
+                    dataKey="interview"
+                    name="Interview"
+                    stroke="#3b82f6"
                     strokeWidth={2}
                     dot={{ fill: '#3b82f6' }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="pending" 
-                    name="Pending" 
-                    stroke="#eab308" 
+                  <Line
+                    type="monotone"
+                    dataKey="pending"
+                    name="Pending"
+                    stroke="#eab308"
                     strokeWidth={2}
                     dot={{ fill: '#eab308' }}
                   />
@@ -572,11 +571,10 @@ const PICDashboard = () => {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {offices.filter(o => o.value !== "all").map((office) => (
-                <div 
+                <div
                   key={office.value}
-                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                    selectedOffice === office.value ? "bg-primary/10 border-primary" : "hover:bg-muted"
-                  }`}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${selectedOffice === office.value ? "bg-primary/10 border-primary" : "hover:bg-muted"
+                    }`}
                   onClick={() => setSelectedOffice(office.value)}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -592,7 +590,7 @@ const PICDashboard = () => {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

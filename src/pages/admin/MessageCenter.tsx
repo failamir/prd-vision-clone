@@ -476,7 +476,7 @@ export default function AdminMessageCenter() {
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Message Center</h1>
@@ -670,6 +670,6 @@ export default function AdminMessageCenter() {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </>
   );
 }

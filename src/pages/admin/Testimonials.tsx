@@ -75,7 +75,7 @@ export default function AdminTestimonials() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Testimonials</h1>
@@ -126,6 +126,6 @@ export default function AdminTestimonials() {
           </div>
         </Card>
       </div>
-    </AdminLayout>
+    </>
   );
 }

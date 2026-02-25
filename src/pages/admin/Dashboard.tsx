@@ -1,4 +1,3 @@
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Users, Briefcase, FileText, TrendingUp } from "lucide-react";
 import { Loader2 } from "lucide-react";
@@ -36,16 +35,16 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
+      <>
         <div className="flex items-center justify-center min-h-[60vh]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </>
     );
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
@@ -100,7 +99,7 @@ const AdminDashboard = () => {
           </div>
         </Card>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 

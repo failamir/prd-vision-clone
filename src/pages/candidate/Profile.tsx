@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -860,7 +859,7 @@ const Profile = () => {
 
   const handleAddDeck = async () => {
     if (!candidateId) return;
-    
+
     // Different validation based on department
     if (department === "Hotel Department") {
       if (!newDeck.vessel_name_type || !newDeck.position || !newDeck.start_date || !newDeck.reason || !newDeck.job_description) {
@@ -3373,18 +3372,18 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   const isSubmitting = saving || uploading || uploadingCV || uploadingFormLetter || uploadingTest || uploadingDeck || uploadingCertificate || uploadingTravel;
 
   return (
-    <DashboardLayout>
+    <>
       {isSubmitting && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-auto">
           <div className="bg-background p-6 rounded-lg shadow-xl flex flex-col items-center gap-4">
@@ -3480,8 +3479,8 @@ const Profile = () => {
                 Next
               </Button>
             ) : (
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={saving || (currentStep === 1 && (
                   !profile.full_name ||
                   !profile.phone ||
@@ -3507,7 +3506,7 @@ const Profile = () => {
           </div>
         </form>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

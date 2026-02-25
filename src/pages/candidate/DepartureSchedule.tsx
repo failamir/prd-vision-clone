@@ -83,7 +83,7 @@ export default function DepartureSchedule() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Departure Schedule</h1>
@@ -134,6 +134,6 @@ export default function DepartureSchedule() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

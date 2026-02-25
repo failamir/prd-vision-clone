@@ -126,7 +126,7 @@ export default function RolePermissions() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -205,6 +205,6 @@ export default function RolePermissions() {
           onPermissionsUpdated={fetchRolePermissions}
         />
       )}
-    </AdminLayout>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import bmiReferenceImage from "@/assets/bmi-reference.png";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -251,7 +250,7 @@ const AdminApplications = () => {
   const [loadingVisa, setLoadingVisa] = useState(false);
   const [visaDocsByCandidate, setVisaDocsByCandidate] = useState<Record<string, any[]>>({});
   const [bstCcByCandidate, setBstCcByCandidate] = useState<Record<string, { label: string; certs: { type: string; file_path: string | null }[] }>>({});
-  
+
   // BST/CC Modal state
   const [bstCcModalOpen, setBstCcModalOpen] = useState(false);
   const [bstCcModalCandidate, setBstCcModalCandidate] = useState<Application | null>(null);
@@ -421,7 +420,7 @@ const AdminApplications = () => {
         const now = new Date();
         const sixMonthsFromNow = new Date();
         sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
-        
+
         const hasStatus = visaDocs.some((doc: any) => {
           if (!doc.expiry_date) return false;
           const expiry = new Date(doc.expiry_date);
@@ -1187,11 +1186,11 @@ const AdminApplications = () => {
       (data || []).forEach((row: any) => {
         const cid = row.candidate_id;
         const certType = (row.type_certificate || "").toUpperCase();
-        
+
         // Check if certificate contains BST or CC (like CCM, COC)
         const hasBst = certType.includes("BST") || certType.includes("BASIC SAFETY");
         const hasCc = certType.includes("CCM") || certType.includes("COC") || certType.includes("CC");
-        
+
         if (hasBst || hasCc) {
           if (!map[cid]) {
             map[cid] = { label: "", certs: [] };
@@ -1568,7 +1567,7 @@ const AdminApplications = () => {
     const expiry = new Date(expiryDate);
     const sixMonthsFromNow = new Date();
     sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
-    
+
     if (expiry < today) return 'expired';
     if (expiry <= sixMonthsFromNow) return 'expiring';
     return 'valid';
@@ -1587,3054 +1586,3054 @@ const AdminApplications = () => {
     }
   };
 
-const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
-  if (!candidateId) return { total: 0, relevant: 0 };
-  const allExps = allExperiencesByCandidate[candidateId] || [];
-  const department = (jobDepartment || "").toLowerCase();
-  const isHotelDepartment = department.includes("hotel");
-  const targetType = isHotelDepartment ? "hotel" : "ship";
-  const relevantExps = allExps.filter((exp: any) => {
-    const expType = (exp.experience_type || "Hotel").toLowerCase();
-    return expType === targetType;
-  });
-  return { total: allExps.length, relevant: relevantExps.length };
-};
+  const getExperienceCount = (candidateId?: string, jobDepartment?: string) => {
+    if (!candidateId) return { total: 0, relevant: 0 };
+    const allExps = allExperiencesByCandidate[candidateId] || [];
+    const department = (jobDepartment || "").toLowerCase();
+    const isHotelDepartment = department.includes("hotel");
+    const targetType = isHotelDepartment ? "hotel" : "ship";
+    const relevantExps = allExps.filter((exp: any) => {
+      const expType = (exp.experience_type || "Hotel").toLowerCase();
+      return expType === targetType;
+    });
+    return { total: allExps.length, relevant: relevantExps.length };
+  };
 
-const getExperienceCountByType = (candidateId?: string, type?: 'ship' | 'hotel') => {
-  if (!candidateId) return 0;
-  const allExps = allExperiencesByCandidate[candidateId] || [];
-  if (!type) return allExps.length;
-  return allExps.filter((exp: any) => {
-    const expType = (exp.experience_type || "Hotel").toLowerCase();
-    return expType === type;
-  }).length;
-};
+  const getExperienceCountByType = (candidateId?: string, type?: 'ship' | 'hotel') => {
+    if (!candidateId) return 0;
+    const allExps = allExperiencesByCandidate[candidateId] || [];
+    if (!type) return allExps.length;
+    return allExps.filter((exp: any) => {
+      const expType = (exp.experience_type || "Hotel").toLowerCase();
+      return expType === type;
+    }).length;
+  };
 
-const getLatestEducationText = (candidateId?: string, fallback?: string) => {
-  if (!candidateId) return fallback || "-";
-  const edu = latestEducationByCandidate[candidateId];
-  if (!edu) return fallback || "-";
-  const title = [edu.degree, edu.institution].filter(Boolean).join(" @ ");
-  const start = edu.start_date ? formatDate(edu.start_date) : "";
-  const end = edu.end_date ? formatDate(edu.end_date) : "";
-  const period = (start || end) ? ` (${[start, end].filter(Boolean).join(" - ")})` : "";
-  return `${title}${period}`;
-};
+  const getLatestEducationText = (candidateId?: string, fallback?: string) => {
+    if (!candidateId) return fallback || "-";
+    const edu = latestEducationByCandidate[candidateId];
+    if (!edu) return fallback || "-";
+    const title = [edu.degree, edu.institution].filter(Boolean).join(" @ ");
+    const start = edu.start_date ? formatDate(edu.start_date) : "";
+    const end = edu.end_date ? formatDate(edu.end_date) : "";
+    const period = (start || end) ? ` (${[start, end].filter(Boolean).join(" - ")})` : "";
+    return `${title}${period}`;
+  };
 
-const calculateAge = (dob: string) => {
-  if (!dob) return "-";
-  const today = new Date();
-  const birthDate = new Date(dob);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  return age;
-};
+  const calculateAge = (dob: string) => {
+    if (!dob) return "-";
+    const today = new Date();
+    const birthDate = new Date(dob);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
 
-const handleSelectAll = () => {
-  setSelectedIds(new Set(applications.map(app => app.id)));
-};
+  const handleSelectAll = () => {
+    setSelectedIds(new Set(applications.map(app => app.id)));
+  };
 
-const handleDeselectAll = () => {
-  setSelectedIds(new Set());
-};
-
-const handleToggleSelect = (id: string) => {
-  const newSelected = new Set(selectedIds);
-  if (newSelected.has(id)) {
-    newSelected.delete(id);
-  } else {
-    newSelected.add(id);
-  }
-  setSelectedIds(newSelected);
-};
-
-const handleBulkDelete = async () => {
-  if (selectedIds.size === 0) return;
-
-  if (!confirm(`Delete ${selectedIds.size} selected application(s)?`)) return;
-
-  try {
-    const { error } = await supabase
-      .from("job_applications")
-      .delete()
-      .in("id", Array.from(selectedIds));
-
-    if (error) throw error;
-
-    toast({ title: "Applications deleted successfully" });
+  const handleDeselectAll = () => {
     setSelectedIds(new Set());
-    fetchApplications();
-  } catch (error) {
-    toast({ title: "Error deleting applications", variant: "destructive" });
-  }
-};
+  };
 
-const handleSetInterview = async () => {
-  if (selectedIds.size === 0) return;
-
-  try {
-    const { error } = await supabase
-      .from("job_applications")
-      .update({ status: "interview", remarks: "interview" })
-      .in("id", Array.from(selectedIds));
-
-    if (error) throw error;
-
-    toast({ title: "Applications updated to interview status" });
-    fetchApplications();
-  } catch (error) {
-    toast({ title: "Error updating applications", variant: "destructive" });
-  }
-};
-
-// Handlers for column modals
-const openSuitableDialog = (app: Application) => {
-  setActiveApp(app);
-  const raw = (app.suitable || "").toString().toLowerCase();
-  let mapped: "Yes" | "No" | "" = "";
-  if (["yes", "y", "approved", "approve"].includes(raw)) mapped = "Yes";
-  else if (["no", "n", "rejected", "reject"].includes(raw)) mapped = "No";
-  setSuitableChoice(mapped || (app.suitable as any) || "");
-  setSuitableDialogOpen(true);
-};
-
-const saveSuitable = async () => {
-  if (!activeApp || !suitableChoice) return;
-  try {
-    // When setting suitable to "Yes", also update remarks to "Step 2" and unlock step 2
-    const updateData: any = { suitable: suitableChoice };
-    
-    if (suitableChoice === "Yes") {
-      const currentStep = (activeApp.candidate as any)?.profile_step_unlocked || 1;
-      // Only update if current step is less than 2
-      if (currentStep < 2) {
-        updateData.remarks = "Step 2";
-      }
+  const handleToggleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
     }
+    setSelectedIds(newSelected);
+  };
 
-    const { error } = await supabase
-      .from("job_applications")
-      .update(updateData)
-      .eq("id", activeApp.id);
-    if (error) throw error;
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
 
-    // If suitable is "Yes" and step was less than 2, also update candidate profile
-    if (suitableChoice === "Yes" && activeApp.candidate_id) {
-      const currentStep = (activeApp.candidate as any)?.profile_step_unlocked || 1;
-      if (currentStep < 2) {
-        await supabase
-          .from("candidate_profiles")
-          .update({ profile_step_unlocked: 2 } as any)
-          .eq("id", activeApp.candidate_id);
-      }
+    if (!confirm(`Delete ${selectedIds.size} selected application(s)?`)) return;
+
+    try {
+      const { error } = await supabase
+        .from("job_applications")
+        .delete()
+        .in("id", Array.from(selectedIds));
+
+      if (error) throw error;
+
+      toast({ title: "Applications deleted successfully" });
+      setSelectedIds(new Set());
+      fetchApplications();
+    } catch (error) {
+      toast({ title: "Error deleting applications", variant: "destructive" });
     }
+  };
 
-    toast({ title: "Suitable updated" });
-    setSuitableDialogOpen(false);
-    setActiveApp(null);
-    fetchApplications();
-  } catch (e: any) {
-    toast({ title: "Failed to update suitable", description: e.message, variant: "destructive" });
-  }
-};
+  const handleSetInterview = async () => {
+    if (selectedIds.size === 0) return;
 
-const fetchInterviewers = async () => {
-  try {
-    const { data: roles, error } = await supabase
-      .from("user_roles")
-      .select("user_id")
-      .eq("role", "interviewer");
-    if (error) throw error;
-    const uniqueIds = Array.from(new Set(((roles || []) as any[]).map((r: any) => r.user_id)));
-    if (uniqueIds.length === 0) {
+    try {
+      const { error } = await supabase
+        .from("job_applications")
+        .update({ status: "interview", remarks: "interview" })
+        .in("id", Array.from(selectedIds));
+
+      if (error) throw error;
+
+      toast({ title: "Applications updated to interview status" });
+      fetchApplications();
+    } catch (error) {
+      toast({ title: "Error updating applications", variant: "destructive" });
+    }
+  };
+
+  // Handlers for column modals
+  const openSuitableDialog = (app: Application) => {
+    setActiveApp(app);
+    const raw = (app.suitable || "").toString().toLowerCase();
+    let mapped: "Yes" | "No" | "" = "";
+    if (["yes", "y", "approved", "approve"].includes(raw)) mapped = "Yes";
+    else if (["no", "n", "rejected", "reject"].includes(raw)) mapped = "No";
+    setSuitableChoice(mapped || (app.suitable as any) || "");
+    setSuitableDialogOpen(true);
+  };
+
+  const saveSuitable = async () => {
+    if (!activeApp || !suitableChoice) return;
+    try {
+      // When setting suitable to "Yes", also update remarks to "Step 2" and unlock step 2
+      const updateData: any = { suitable: suitableChoice };
+
+      if (suitableChoice === "Yes") {
+        const currentStep = (activeApp.candidate as any)?.profile_step_unlocked || 1;
+        // Only update if current step is less than 2
+        if (currentStep < 2) {
+          updateData.remarks = "Step 2";
+        }
+      }
+
+      const { error } = await supabase
+        .from("job_applications")
+        .update(updateData)
+        .eq("id", activeApp.id);
+      if (error) throw error;
+
+      // If suitable is "Yes" and step was less than 2, also update candidate profile
+      if (suitableChoice === "Yes" && activeApp.candidate_id) {
+        const currentStep = (activeApp.candidate as any)?.profile_step_unlocked || 1;
+        if (currentStep < 2) {
+          await supabase
+            .from("candidate_profiles")
+            .update({ profile_step_unlocked: 2 } as any)
+            .eq("id", activeApp.candidate_id);
+        }
+      }
+
+      toast({ title: "Suitable updated" });
+      setSuitableDialogOpen(false);
+      setActiveApp(null);
+      fetchApplications();
+    } catch (e: any) {
+      toast({ title: "Failed to update suitable", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const fetchInterviewers = async () => {
+    try {
+      const { data: roles, error } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "interviewer");
+      if (error) throw error;
+      const uniqueIds = Array.from(new Set(((roles || []) as any[]).map((r: any) => r.user_id)));
+      if (uniqueIds.length === 0) {
+        setInterviewerOptions([]);
+        return [] as { user_id: string; full_name: string }[];
+      }
+      const { data: profiles, error: pErr } = await supabase
+        .from("candidate_profiles")
+        .select("user_id, full_name")
+        .in("user_id", uniqueIds);
+      if (pErr) throw pErr;
+      const dedup = Array.from(
+        new Map(((profiles as any) || []).map((p: any) => [p.user_id, p])).values()
+      ) as { user_id: string; full_name: string }[];
+      setInterviewerOptions(dedup);
+      return dedup;
+    } catch (e) {
       setInterviewerOptions([]);
       return [] as { user_id: string; full_name: string }[];
     }
-    const { data: profiles, error: pErr } = await supabase
-      .from("candidate_profiles")
-      .select("user_id, full_name")
-      .in("user_id", uniqueIds);
-    if (pErr) throw pErr;
-    const dedup = Array.from(
-      new Map(((profiles as any) || []).map((p: any) => [p.user_id, p])).values()
-    ) as { user_id: string; full_name: string }[];
-    setInterviewerOptions(dedup);
-    return dedup;
-  } catch (e) {
-    setInterviewerOptions([]);
-    return [] as { user_id: string; full_name: string }[];
-  }
-};
-
-const openInterviewerDialog = async (app: Application) => {
-  setActiveApp(app);
-  setInterviewerDialogOpen(true);
-  const opts = await fetchInterviewers();
-  if (app.interview_by) {
-    const found = (opts || interviewerOptions).find((o) => o.full_name === app.interview_by);
-    setSelectedInterviewer(found?.user_id || "");
-  } else {
-    setSelectedInterviewer("");
-  }
-};
-
-const saveInterviewer = async () => {
-  if (!activeApp) return;
-  try {
-    if (!selectedInterviewer) {
-      toast({ title: "Pilih interviewer dulu", variant: "destructive" });
-      return;
-    }
-    let name = interviewerOptions.find((o) => o.user_id === selectedInterviewer)?.full_name || null;
-    if (!name && selectedInterviewer) {
-      const { data: prof } = await supabase
-        .from("candidate_profiles")
-        .select("full_name")
-        .eq("user_id", selectedInterviewer)
-        .maybeSingle();
-      name = (prof as any)?.full_name || null;
-    }
-    const toStore = name ?? (selectedInterviewer || null);
-    const { data, error } = await supabase
-      .from("job_applications")
-      .update({ interview_by: toStore })
-      .eq("id", activeApp.id)
-      .select("id, interview_by")
-      .maybeSingle();
-    if (error) throw error;
-    if (!data) {
-      toast({ title: "Tidak ada data diupdate", variant: "destructive" });
-      return;
-    }
-    // Optimistic UI update
-    setApplications((prev) => prev.map((a) => a.id === activeApp.id ? { ...a, interview_by: toStore as any } : a));
-    toast({ title: "Interview By updated" });
-    setInterviewerDialogOpen(false);
-    setActiveApp(null);
-    await fetchApplications();
-  } catch (e: any) {
-    toast({ title: "Failed to update", description: e.message, variant: "destructive" });
-  }
-};
-
-const openInterviewDateDialog = (app: Application) => {
-  setActiveApp(app);
-  setInterviewDateValue(app.interview_date ? app.interview_date.substring(0, 10) : "");
-  setInterviewDateDialogOpen(true);
-};
-
-const saveInterviewDate = async () => {
-  if (!activeApp) return;
-  try {
-    const { error } = await supabase
-      .from("job_applications")
-      .update({ interview_date: interviewDateValue || null })
-      .eq("id", activeApp.id);
-    if (error) throw error;
-    toast({ title: "Interview Date updated" });
-    setInterviewDateDialogOpen(false);
-    setActiveApp(null);
-    fetchApplications();
-  } catch (e: any) {
-    toast({ title: "Failed to update", description: e.message, variant: "destructive" });
-  }
-};
-
-const openInterviewResultDialog = (app: Application) => {
-  setActiveApp(app);
-  // Normalisasi value lama kalau ada (misal: pass / not pass) ke salah satu dari 4 opsi baru bila perlu
-  const raw = (app.interview_result || "") as string;
-  let mapped: "Approved" | "Not Approved" | "Reclassed" | "Review" | "" = "";
-  const lower = raw.toLowerCase();
-  if (["approved", "approve", "pass"].includes(lower)) mapped = "Approved";
-  else if (["not approved", "notapprove", "not pass", "fail"].includes(lower)) mapped = "Not Approved";
-  else if (lower === "reclassed") mapped = "Reclassed";
-  else if (lower === "review") mapped = "Review";
-  setInterviewResultValue(mapped || (raw as any) || "");
-  setInterviewResultDialogOpen(true);
-};
-
-const saveInterviewResult = async () => {
-  if (!activeApp || !interviewResultValue) return;
-  try {
-    const { error } = await supabase
-      .from("job_applications")
-      .update({ interview_result: interviewResultValue })
-      .eq("id", activeApp.id);
-    if (error) throw error;
-    toast({ title: "Interview Result updated" });
-    setInterviewResultDialogOpen(false);
-    setActiveApp(null);
-    fetchApplications();
-  } catch (e: any) {
-    toast({ title: "Failed to update", description: e.message, variant: "destructive" });
-  }
-};
-
-const openInterviewNotesDialog = (app: Application) => {
-  setActiveApp(app);
-  setInterviewNotesValue(app.interview_result_notes || "");
-  setInterviewNotesDialogOpen(true);
-};
-
-const saveInterviewNotes = async () => {
-  if (!activeApp) return;
-  try {
-    const { error } = await supabase
-      .from("job_applications")
-      .update({ interview_result_notes: interviewNotesValue || null })
-      .eq("id", activeApp.id);
-    if (error) throw error;
-    toast({ title: "Notes updated" });
-    setInterviewNotesDialogOpen(false);
-    setActiveApp(null);
-    fetchApplications();
-  } catch (e: any) {
-    toast({ title: "Failed to update", description: e.message, variant: "destructive" });
-  }
-};
-
-const getExportData = () => {
-  const dash = (v: any) => (v === undefined || v === null || v === "" ? "-" : v);
-
-  const headers = [
-    "Remarks/Record",
-    "Crew Code",
-    "First Name",
-    "Last Name",
-    "Office Registered",
-    "Registration City (Candidate)",
-    "Date of Entry",
-    "Source",
-    "How Found Us (Candidate)",
-    "Position",
-    "Department",
-    "Second Position",
-    "Gender",
-    "DOB",
-    "Age",
-    "Weight/Height",
-    "Ship Experience",
-    "Visa Expiry Date",
-    "Previous Experience",
-    "Education Background",
-    "Contact No",
-    "Email",
-    "Emergency Contact",
-    "Photo URL",
-    "CV URL",
-    "Letter Form URL",
-    "Vaccin Covid Booster",
-    "BST/CC",
-    "Suitable",
-    "Interview By",
-    "Interview Date",
-    "Interview Result",
-    "Interview Result Notes",
-    "Approved Position",
-    "Marlin / English Score",
-    "Neha/CES Test",
-    "Test Result",
-    "Principal Interview By",
-    "Principal Interview Date",
-    "Principal Interview Result",
-    "Approved As",
-    "Notes",
-    "Employment Offer",
-    "EO Acceptance",
-    "Applied At",
-    "Company",
-  ];
-
-  const rows = applications.map((app) => {
-    const firstName = app.candidate?.full_name ? app.candidate.full_name.split(" ")[0] : "";
-    const lastName = app.candidate?.full_name ? app.candidate.full_name.split(" ").slice(1).join(" ") : "";
-
-    return [
-      dash(app.remarks || app.status),
-      dash(app.crew_code),
-      dash(firstName),
-      dash(lastName),
-      dash(app.office_registered),
-      dash(app.candidate?.registration_city),
-      dash(app.date_of_entry ? formatDate(app.date_of_entry) : "-"),
-      dash(app.source),
-      dash(app.candidate?.how_found_us),
-      dash(app.job?.title),
-      dash(app.job?.department),
-      dash(app.second_position),
-      dash(app.candidate?.gender),
-      dash(app.candidate?.date_of_birth ? formatDate(app.candidate.date_of_birth) : "-"),
-      dash(app.candidate?.date_of_birth ? calculateAge(app.candidate.date_of_birth) : "-"),
-      dash(app.candidate?.weight_kg && app.candidate?.height_cm ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}` : "-"),
-      dash(getShipExperienceFlag(app.candidate_id, app.job?.department)),
-      dash(app.c1d_expiry_date ? formatDate(app.c1d_expiry_date) : "-"),
-      dash(`${getExperienceCount(app.candidate_id, app.job?.department).relevant}/${getExperienceCount(app.candidate_id, app.job?.department).total}`),
-      dash(getLatestEducationText(app.candidate_id, app.education_background)),
-      dash(app.contact_no || app.candidate?.phone),
-      dash(app.candidate?.email),
-      dash(app.emergency_contact),
-      dash(app.candidate?.avatar_url || app.photo_url),
-      dash(app.cv_url),
-      dash(app.letter_form_url),
-      dash(app.vaccin_covid_booster ? "Yes" : "-"),
-      dash(app.bst_cc),
-      dash(app.suitable),
-      dash(app.interview_by),
-      dash(app.interview_date ? formatDate(app.interview_date) : "-"),
-      dash(app.interview_result),
-      dash(app.interview_result_notes),
-      dash(app.approved_position),
-      dash(app.marlin_english_score),
-      dash(app.neha_ces_test),
-      dash(app.test_result),
-      dash(app.principal_interview_by),
-      dash(app.principal_interview_date ? formatDate(app.principal_interview_date) : "-"),
-      dash(app.principal_interview_result),
-      dash(app.approved_as),
-      dash(app.status),
-      dash(app.employment_offer),
-      dash(app.eo_acceptance),
-      dash(app.applied_at ? formatDate(app.applied_at) : "-"),
-      dash(app.job?.company_name),
-    ];
-  });
-
-  return { headers, rows };
-};
-
-const exportToCSV = () => {
-  const { headers, rows } = getExportData();
-  const safe = (v: any) => {
-    // CSV escape (wrap in quotes and double any quotes inside)
-    return `"${String(v).replace(/"/g, '""')}"`;
   };
 
-  const csv = [headers.map(safe).join(","), ...rows.map((row) => row.map(safe).join(","))].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "sgp-applications.csv";
-  a.click();
-};
+  const openInterviewerDialog = async (app: Application) => {
+    setActiveApp(app);
+    setInterviewerDialogOpen(true);
+    const opts = await fetchInterviewers();
+    if (app.interview_by) {
+      const found = (opts || interviewerOptions).find((o) => o.full_name === app.interview_by);
+      setSelectedInterviewer(found?.user_id || "");
+    } else {
+      setSelectedInterviewer("");
+    }
+  };
 
-const exportToExcel = () => {
-  const { headers, rows } = getExportData();
-  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
-  XLSX.writeFile(workbook, "sgp-applications.xlsx");
-};
+  const saveInterviewer = async () => {
+    if (!activeApp) return;
+    try {
+      if (!selectedInterviewer) {
+        toast({ title: "Pilih interviewer dulu", variant: "destructive" });
+        return;
+      }
+      let name = interviewerOptions.find((o) => o.user_id === selectedInterviewer)?.full_name || null;
+      if (!name && selectedInterviewer) {
+        const { data: prof } = await supabase
+          .from("candidate_profiles")
+          .select("full_name")
+          .eq("user_id", selectedInterviewer)
+          .maybeSingle();
+        name = (prof as any)?.full_name || null;
+      }
+      const toStore = name ?? (selectedInterviewer || null);
+      const { data, error } = await supabase
+        .from("job_applications")
+        .update({ interview_by: toStore })
+        .eq("id", activeApp.id)
+        .select("id, interview_by")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        toast({ title: "Tidak ada data diupdate", variant: "destructive" });
+        return;
+      }
+      // Optimistic UI update
+      setApplications((prev) => prev.map((a) => a.id === activeApp.id ? { ...a, interview_by: toStore as any } : a));
+      toast({ title: "Interview By updated" });
+      setInterviewerDialogOpen(false);
+      setActiveApp(null);
+      await fetchApplications();
+    } catch (e: any) {
+      toast({ title: "Failed to update", description: e.message, variant: "destructive" });
+    }
+  };
 
-const getTestRow = (app: Application, type: "CES" | "NEHA" | "Marlins") => {
-  if (!app.candidate_id) return null;
-  const byCandidate = medicalTestsByCandidate[app.candidate_id];
-  if (!byCandidate) return null;
-  return byCandidate[type] || null;
-};
+  const openInterviewDateDialog = (app: Application) => {
+    setActiveApp(app);
+    setInterviewDateValue(app.interview_date ? app.interview_date.substring(0, 10) : "");
+    setInterviewDateDialogOpen(true);
+  };
 
-const handleDownloadFile = async (filePath: string, fileName: string) => {
-  try {
-    const { data, error } = await supabase.storage
-      .from("candidate-documents")
-      .download(filePath);
+  const saveInterviewDate = async () => {
+    if (!activeApp) return;
+    try {
+      const { error } = await supabase
+        .from("job_applications")
+        .update({ interview_date: interviewDateValue || null })
+        .eq("id", activeApp.id);
+      if (error) throw error;
+      toast({ title: "Interview Date updated" });
+      setInterviewDateDialogOpen(false);
+      setActiveApp(null);
+      fetchApplications();
+    } catch (e: any) {
+      toast({ title: "Failed to update", description: e.message, variant: "destructive" });
+    }
+  };
 
-    if (error) throw error;
+  const openInterviewResultDialog = (app: Application) => {
+    setActiveApp(app);
+    // Normalisasi value lama kalau ada (misal: pass / not pass) ke salah satu dari 4 opsi baru bila perlu
+    const raw = (app.interview_result || "") as string;
+    let mapped: "Approved" | "Not Approved" | "Reclassed" | "Review" | "" = "";
+    const lower = raw.toLowerCase();
+    if (["approved", "approve", "pass"].includes(lower)) mapped = "Approved";
+    else if (["not approved", "notapprove", "not pass", "fail"].includes(lower)) mapped = "Not Approved";
+    else if (lower === "reclassed") mapped = "Reclassed";
+    else if (lower === "review") mapped = "Review";
+    setInterviewResultValue(mapped || (raw as any) || "");
+    setInterviewResultDialogOpen(true);
+  };
 
-    const url = URL.createObjectURL(data);
+  const saveInterviewResult = async () => {
+    if (!activeApp || !interviewResultValue) return;
+    try {
+      const { error } = await supabase
+        .from("job_applications")
+        .update({ interview_result: interviewResultValue })
+        .eq("id", activeApp.id);
+      if (error) throw error;
+      toast({ title: "Interview Result updated" });
+      setInterviewResultDialogOpen(false);
+      setActiveApp(null);
+      fetchApplications();
+    } catch (e: any) {
+      toast({ title: "Failed to update", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const openInterviewNotesDialog = (app: Application) => {
+    setActiveApp(app);
+    setInterviewNotesValue(app.interview_result_notes || "");
+    setInterviewNotesDialogOpen(true);
+  };
+
+  const saveInterviewNotes = async () => {
+    if (!activeApp) return;
+    try {
+      const { error } = await supabase
+        .from("job_applications")
+        .update({ interview_result_notes: interviewNotesValue || null })
+        .eq("id", activeApp.id);
+      if (error) throw error;
+      toast({ title: "Notes updated" });
+      setInterviewNotesDialogOpen(false);
+      setActiveApp(null);
+      fetchApplications();
+    } catch (e: any) {
+      toast({ title: "Failed to update", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const getExportData = () => {
+    const dash = (v: any) => (v === undefined || v === null || v === "" ? "-" : v);
+
+    const headers = [
+      "Remarks/Record",
+      "Crew Code",
+      "First Name",
+      "Last Name",
+      "Office Registered",
+      "Registration City (Candidate)",
+      "Date of Entry",
+      "Source",
+      "How Found Us (Candidate)",
+      "Position",
+      "Department",
+      "Second Position",
+      "Gender",
+      "DOB",
+      "Age",
+      "Weight/Height",
+      "Ship Experience",
+      "Visa Expiry Date",
+      "Previous Experience",
+      "Education Background",
+      "Contact No",
+      "Email",
+      "Emergency Contact",
+      "Photo URL",
+      "CV URL",
+      "Letter Form URL",
+      "Vaccin Covid Booster",
+      "BST/CC",
+      "Suitable",
+      "Interview By",
+      "Interview Date",
+      "Interview Result",
+      "Interview Result Notes",
+      "Approved Position",
+      "Marlin / English Score",
+      "Neha/CES Test",
+      "Test Result",
+      "Principal Interview By",
+      "Principal Interview Date",
+      "Principal Interview Result",
+      "Approved As",
+      "Notes",
+      "Employment Offer",
+      "EO Acceptance",
+      "Applied At",
+      "Company",
+    ];
+
+    const rows = applications.map((app) => {
+      const firstName = app.candidate?.full_name ? app.candidate.full_name.split(" ")[0] : "";
+      const lastName = app.candidate?.full_name ? app.candidate.full_name.split(" ").slice(1).join(" ") : "";
+
+      return [
+        dash(app.remarks || app.status),
+        dash(app.crew_code),
+        dash(firstName),
+        dash(lastName),
+        dash(app.office_registered),
+        dash(app.candidate?.registration_city),
+        dash(app.date_of_entry ? formatDate(app.date_of_entry) : "-"),
+        dash(app.source),
+        dash(app.candidate?.how_found_us),
+        dash(app.job?.title),
+        dash(app.job?.department),
+        dash(app.second_position),
+        dash(app.candidate?.gender),
+        dash(app.candidate?.date_of_birth ? formatDate(app.candidate.date_of_birth) : "-"),
+        dash(app.candidate?.date_of_birth ? calculateAge(app.candidate.date_of_birth) : "-"),
+        dash(app.candidate?.weight_kg && app.candidate?.height_cm ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}` : "-"),
+        dash(getShipExperienceFlag(app.candidate_id, app.job?.department)),
+        dash(app.c1d_expiry_date ? formatDate(app.c1d_expiry_date) : "-"),
+        dash(`${getExperienceCount(app.candidate_id, app.job?.department).relevant}/${getExperienceCount(app.candidate_id, app.job?.department).total}`),
+        dash(getLatestEducationText(app.candidate_id, app.education_background)),
+        dash(app.contact_no || app.candidate?.phone),
+        dash(app.candidate?.email),
+        dash(app.emergency_contact),
+        dash(app.candidate?.avatar_url || app.photo_url),
+        dash(app.cv_url),
+        dash(app.letter_form_url),
+        dash(app.vaccin_covid_booster ? "Yes" : "-"),
+        dash(app.bst_cc),
+        dash(app.suitable),
+        dash(app.interview_by),
+        dash(app.interview_date ? formatDate(app.interview_date) : "-"),
+        dash(app.interview_result),
+        dash(app.interview_result_notes),
+        dash(app.approved_position),
+        dash(app.marlin_english_score),
+        dash(app.neha_ces_test),
+        dash(app.test_result),
+        dash(app.principal_interview_by),
+        dash(app.principal_interview_date ? formatDate(app.principal_interview_date) : "-"),
+        dash(app.principal_interview_result),
+        dash(app.approved_as),
+        dash(app.status),
+        dash(app.employment_offer),
+        dash(app.eo_acceptance),
+        dash(app.applied_at ? formatDate(app.applied_at) : "-"),
+        dash(app.job?.company_name),
+      ];
+    });
+
+    return { headers, rows };
+  };
+
+  const exportToCSV = () => {
+    const { headers, rows } = getExportData();
+    const safe = (v: any) => {
+      // CSV escape (wrap in quotes and double any quotes inside)
+      return `"${String(v).replace(/"/g, '""')}"`;
+    };
+
+    const csv = [headers.map(safe).join(","), ...rows.map((row) => row.map(safe).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = fileName || "document.pdf";
-    document.body.appendChild(a);
+    a.download = "sgp-applications.csv";
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  } catch (error: any) {
-    toast({
-      title: "Error downloading file",
-      description: error.message,
-      variant: "destructive",
-    });
-  }
-};
+  };
 
-const renderTestDownloadButton = (app: Application, type: "CES" | "NEHA" | "Marlins") => {
-  const row = getTestRow(app, type);
-  if (row?.file_path) {
-    return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-6 w-6 ml-1"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleDownloadFile(row.file_path, row.file_name || `${type}.pdf`);
-        }}
-        title="Download"
-      >
-        <Download className="w-3 h-3" />
-      </Button>
-    );
-  }
-  return null;
-};
+  const exportToExcel = () => {
+    const { headers, rows } = getExportData();
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
+    XLSX.writeFile(workbook, "sgp-applications.xlsx");
+  };
 
-const getTestScoreText = (app: Application, type: "CES" | "NEHA" | "Marlins", fallback?: string) => {
-  const row = getTestRow(app, type);
-  if (row && row.score != null) {
-    return row.score.toString();
-  }
+  const getTestRow = (app: Application, type: "CES" | "NEHA" | "Marlins") => {
+    if (!app.candidate_id) return null;
+    const byCandidate = medicalTestsByCandidate[app.candidate_id];
+    if (!byCandidate) return null;
+    return byCandidate[type] || null;
+  };
 
-  if (fallback) return fallback;
-
-  switch (type) {
-    case "Marlins":
-      return app.marlin_english_score || "-";
-    case "NEHA":
-      return app.neha_ces_test || "-";
-    case "CES":
-      return app.test_result || "-";
-    default:
-      return "-";
-  }
-};
-
-const handleTestFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0] || null;
-  if (!file) return;
-
-  const maxSize = 8 * 1024 * 1024; // 8MB
-  if (file.size > maxSize || file.type !== "application/pdf") {
-    toast({ title: "Invalid file", description: "PDF max 8MB", variant: "destructive" });
-    return;
-  }
-
-  setTestFile(file);
-};
-
-const openTestDialog = (app: Application, type: "CES" | "NEHA" | "Marlins") => {
-  setActiveApp(app);
-  setTestType(type);
-  const existing = getTestRow(app, type);
-  setTestScore(existing?.score != null ? existing.score.toString() : "");
-  setTestFile(null);
-  setTestDialogOpen(true);
-};
-
-const saveTest = async () => {
-  if (!activeApp || !activeApp.candidate_id || !testType) return;
-
-  const trimmedScore = testScore.trim();
-  if (!trimmedScore) {
-    toast({ title: "Score tidak boleh kosong", variant: "destructive" });
-    return;
-  }
-
-  const numericScore = parseFloat(trimmedScore);
-  if (Number.isNaN(numericScore)) {
-    toast({ title: "Score harus berupa angka", variant: "destructive" });
-    return;
-  }
-
-  setSavingTest(true);
-  try {
-    const existing = getTestRow(activeApp, testType);
-    let filePath: string | null = existing?.file_path || null;
-    let fileName: string | null = existing?.file_name || null;
-
-    if (testFile) {
-      const ext = testFile.name.split(".").pop();
-      fileName = `${Date.now()}.${ext}`;
-      filePath = `candidate-${activeApp.candidate_id}/medical-tests/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
+  const handleDownloadFile = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
         .from("candidate-documents")
-        .upload(filePath, testFile);
-
-      if (uploadError) throw uploadError;
-    }
-
-    if (existing) {
-      const { error } = await supabase
-        .from("candidate_medical_tests" as any)
-        .update({
-          score: numericScore,
-          file_path: filePath,
-          file_name: fileName,
-        })
-        .eq("id", existing.id);
+        .download(filePath);
 
       if (error) throw error;
-    } else {
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName || "document.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error: any) {
+      toast({
+        title: "Error downloading file",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const renderTestDownloadButton = (app: Application, type: "CES" | "NEHA" | "Marlins") => {
+    const row = getTestRow(app, type);
+    if (row?.file_path) {
+      return (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 ml-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDownloadFile(row.file_path, row.file_name || `${type}.pdf`);
+          }}
+          title="Download"
+        >
+          <Download className="w-3 h-3" />
+        </Button>
+      );
+    }
+    return null;
+  };
+
+  const getTestScoreText = (app: Application, type: "CES" | "NEHA" | "Marlins", fallback?: string) => {
+    const row = getTestRow(app, type);
+    if (row && row.score != null) {
+      return row.score.toString();
+    }
+
+    if (fallback) return fallback;
+
+    switch (type) {
+      case "Marlins":
+        return app.marlin_english_score || "-";
+      case "NEHA":
+        return app.neha_ces_test || "-";
+      case "CES":
+        return app.test_result || "-";
+      default:
+        return "-";
+    }
+  };
+
+  const handleTestFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (!file) return;
+
+    const maxSize = 8 * 1024 * 1024; // 8MB
+    if (file.size > maxSize || file.type !== "application/pdf") {
+      toast({ title: "Invalid file", description: "PDF max 8MB", variant: "destructive" });
+      return;
+    }
+
+    setTestFile(file);
+  };
+
+  const openTestDialog = (app: Application, type: "CES" | "NEHA" | "Marlins") => {
+    setActiveApp(app);
+    setTestType(type);
+    const existing = getTestRow(app, type);
+    setTestScore(existing?.score != null ? existing.score.toString() : "");
+    setTestFile(null);
+    setTestDialogOpen(true);
+  };
+
+  const saveTest = async () => {
+    if (!activeApp || !activeApp.candidate_id || !testType) return;
+
+    const trimmedScore = testScore.trim();
+    if (!trimmedScore) {
+      toast({ title: "Score tidak boleh kosong", variant: "destructive" });
+      return;
+    }
+
+    const numericScore = parseFloat(trimmedScore);
+    if (Number.isNaN(numericScore)) {
+      toast({ title: "Score harus berupa angka", variant: "destructive" });
+      return;
+    }
+
+    setSavingTest(true);
+    try {
+      const existing = getTestRow(activeApp, testType);
+      let filePath: string | null = existing?.file_path || null;
+      let fileName: string | null = existing?.file_name || null;
+
+      if (testFile) {
+        const ext = testFile.name.split(".").pop();
+        fileName = `${Date.now()}.${ext}`;
+        filePath = `candidate-${activeApp.candidate_id}/medical-tests/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("candidate-documents")
+          .upload(filePath, testFile);
+
+        if (uploadError) throw uploadError;
+      }
+
+      if (existing) {
+        const { error } = await supabase
+          .from("candidate_medical_tests" as any)
+          .update({
+            score: numericScore,
+            file_path: filePath,
+            file_name: fileName,
+          })
+          .eq("id", existing.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("candidate_medical_tests" as any)
+          .insert({
+            candidate_id: activeApp.candidate_id,
+            test_name: testType,
+            score: numericScore,
+            file_path: filePath,
+            file_name: fileName,
+          });
+
+        if (error) throw error;
+      }
+
+      const updateFields: Record<string, any> = {};
+      if (testType === "Marlins") {
+        updateFields.marlin_english_score = trimmedScore;
+      } else if (testType === "NEHA") {
+        updateFields.neha_ces_test = trimmedScore;
+      } else if (testType === "CES") {
+        updateFields.test_result = trimmedScore;
+      }
+
+      if (Object.keys(updateFields).length > 0) {
+        const { error: appError } = await supabase
+          .from("job_applications")
+          .update(updateFields)
+          .eq("id", activeApp.id);
+
+        if (appError) throw appError;
+      }
+
+      toast({ title: "Test updated" });
+      setTestDialogOpen(false);
+      setActiveApp(null);
+      setTestType("");
+      setTestScore("");
+      setTestFile(null);
+      await fetchApplications();
+    } catch (e: any) {
+      toast({ title: "Failed to update test", description: e.message, variant: "destructive" });
+    } finally {
+      setSavingTest(false);
+    }
+  };
+
+  const openNotesDialog = (app: Application) => {
+    setActiveApp(app);
+    setNotesValue(app.status || "");
+    setNotesDialogOpen(true);
+  };
+
+  const saveNotes = async () => {
+    if (!activeApp) return;
+    const value = notesValue.trim();
+    if (!value) {
+      toast({ title: "Notes tidak boleh kosong", variant: "destructive" });
+      return;
+    }
+
+    try {
       const { error } = await supabase
-        .from("candidate_medical_tests" as any)
-        .insert({
-          candidate_id: activeApp.candidate_id,
-          test_name: testType,
-          score: numericScore,
-          file_path: filePath,
-          file_name: fileName,
-        });
-
-      if (error) throw error;
-    }
-
-    const updateFields: Record<string, any> = {};
-    if (testType === "Marlins") {
-      updateFields.marlin_english_score = trimmedScore;
-    } else if (testType === "NEHA") {
-      updateFields.neha_ces_test = trimmedScore;
-    } else if (testType === "CES") {
-      updateFields.test_result = trimmedScore;
-    }
-
-    if (Object.keys(updateFields).length > 0) {
-      const { error: appError } = await supabase
         .from("job_applications")
-        .update(updateFields)
+        .update({ status: value })
         .eq("id", activeApp.id);
 
-      if (appError) throw appError;
+      if (error) throw error;
+
+      setApplications((prev) =>
+        prev.map((a) => (a.id === activeApp.id ? { ...a, status: value } : a))
+      );
+
+      toast({ title: "Notes updated" });
+      setNotesDialogOpen(false);
+      setActiveApp(null);
+    } catch (e: any) {
+      toast({ title: "Failed to update notes", description: e.message, variant: "destructive" });
     }
+  };
 
-    toast({ title: "Test updated" });
-    setTestDialogOpen(false);
-    setActiveApp(null);
-    setTestType("");
-    setTestScore("");
-    setTestFile(null);
-    await fetchApplications();
-  } catch (e: any) {
-    toast({ title: "Failed to update test", description: e.message, variant: "destructive" });
-  } finally {
-    setSavingTest(false);
-  }
-};
+  // Profile Step Unlock functions
+  const openProfileStepDialog = (app: Application) => {
+    setActiveApp(app);
+    setProfileStepValue((app.candidate as any)?.profile_step_unlocked || 1);
+    setProfileStepDialogOpen(true);
+  };
 
-const openNotesDialog = (app: Application) => {
-  setActiveApp(app);
-  setNotesValue(app.status || "");
-  setNotesDialogOpen(true);
-};
+  const saveProfileStep = async () => {
+    if (!activeApp) return;
+    try {
+      const { error } = await supabase
+        .from("candidate_profiles")
+        .update({ profile_step_unlocked: profileStepValue } as any)
+        .eq("id", activeApp.candidate_id);
 
-const saveNotes = async () => {
-  if (!activeApp) return;
-  const value = notesValue.trim();
-  if (!value) {
-    toast({ title: "Notes tidak boleh kosong", variant: "destructive" });
-    return;
-  }
+      if (error) throw error;
 
-  try {
-    const { error } = await supabase
-      .from("job_applications")
-      .update({ status: value })
-      .eq("id", activeApp.id);
+      // Update local state
+      setApplications((prev) =>
+        prev.map((a) =>
+          a.id === activeApp.id
+            ? { ...a, candidate: { ...a.candidate, profile_step_unlocked: profileStepValue } }
+            : a
+        )
+      );
 
-    if (error) throw error;
+      toast({ title: `Profile step unlocked set to Step ${profileStepValue}` });
+      setProfileStepDialogOpen(false);
+      setActiveApp(null);
+    } catch (e: any) {
+      toast({ title: "Failed to update profile step", description: e.message, variant: "destructive" });
+    }
+  };
 
-    setApplications((prev) =>
-      prev.map((a) => (a.id === activeApp.id ? { ...a, status: value } : a))
+  const openEmploymentOfferDialog = (app: Application) => {
+    setActiveApp(app);
+    const raw = (app.employment_offer || "") as string;
+    const lower = raw.toLowerCase();
+    let mapped: "Received" | "Not Received" | "" = "";
+    if (["received"].includes(lower)) mapped = "Received";
+    else if (["not received", "notreceived", "not_receive"].includes(lower)) mapped = "Not Received";
+    setEmploymentOfferValue(mapped || (raw as any) || "");
+    setEmploymentOfferDialogOpen(true);
+  };
+
+  const saveEmploymentOffer = async () => {
+    if (!activeApp || !employmentOfferValue) return;
+
+    try {
+      const { error } = await supabase
+        .from("job_applications")
+        .update({ employment_offer: employmentOfferValue })
+        .eq("id", activeApp.id);
+
+      if (error) throw error;
+
+      setApplications((prev) =>
+        prev.map((a) => (a.id === activeApp.id ? { ...a, employment_offer: employmentOfferValue } : a))
+      );
+
+      toast({ title: "Employment Offer updated" });
+      setEmploymentOfferDialogOpen(false);
+      setActiveApp(null);
+    } catch (e: any) {
+      toast({ title: "Failed to update", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const openEoAcceptanceDialog = (app: Application) => {
+    setActiveApp(app);
+    const raw = (app.eo_acceptance || "") as string;
+    const lower = raw.toLowerCase();
+    let mapped: "Yes" | "No" | "" = "";
+    if (["yes", "y"].includes(lower)) mapped = "Yes";
+    else if (["no", "n"].includes(lower)) mapped = "No";
+    setEoAcceptanceValue(mapped || (raw as any) || "");
+    setEoAcceptanceDialogOpen(true);
+  };
+
+  const saveEoAcceptance = async () => {
+    if (!activeApp || !eoAcceptanceValue) return;
+
+    try {
+      const { error } = await supabase
+        .from("job_applications")
+        .update({ eo_acceptance: eoAcceptanceValue })
+        .eq("id", activeApp.id);
+
+      if (error) throw error;
+
+      setApplications((prev) =>
+        prev.map((a) => (a.id === activeApp.id ? { ...a, eo_acceptance: eoAcceptanceValue } : a))
+      );
+
+      toast({ title: "EO Acceptance updated" });
+      setEoAcceptanceDialogOpen(false);
+      setActiveApp(null);
+    } catch (e: any) {
+      toast({ title: "Failed to update", description: e.message, variant: "destructive" });
+    }
+  };
+
+  if (loading) {
+    return (
+      <>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </>
     );
-
-    toast({ title: "Notes updated" });
-    setNotesDialogOpen(false);
-    setActiveApp(null);
-  } catch (e: any) {
-    toast({ title: "Failed to update notes", description: e.message, variant: "destructive" });
   }
-};
 
-// Profile Step Unlock functions
-const openProfileStepDialog = (app: Application) => {
-  setActiveApp(app);
-  setProfileStepValue((app.candidate as any)?.profile_step_unlocked || 1);
-  setProfileStepDialogOpen(true);
-};
-
-const saveProfileStep = async () => {
-  if (!activeApp) return;
-  try {
-    const { error } = await supabase
-      .from("candidate_profiles")
-      .update({ profile_step_unlocked: profileStepValue } as any)
-      .eq("id", activeApp.candidate_id);
-
-    if (error) throw error;
-
-    // Update local state
-    setApplications((prev) =>
-      prev.map((a) =>
-        a.id === activeApp.id
-          ? { ...a, candidate: { ...a.candidate, profile_step_unlocked: profileStepValue } }
-          : a
-      )
-    );
-
-    toast({ title: `Profile step unlocked set to Step ${profileStepValue}` });
-    setProfileStepDialogOpen(false);
-    setActiveApp(null);
-  } catch (e: any) {
-    toast({ title: "Failed to update profile step", description: e.message, variant: "destructive" });
-  }
-};
-
-const openEmploymentOfferDialog = (app: Application) => {
-  setActiveApp(app);
-  const raw = (app.employment_offer || "") as string;
-  const lower = raw.toLowerCase();
-  let mapped: "Received" | "Not Received" | "" = "";
-  if (["received"].includes(lower)) mapped = "Received";
-  else if (["not received", "notreceived", "not_receive"].includes(lower)) mapped = "Not Received";
-  setEmploymentOfferValue(mapped || (raw as any) || "");
-  setEmploymentOfferDialogOpen(true);
-};
-
-const saveEmploymentOffer = async () => {
-  if (!activeApp || !employmentOfferValue) return;
-
-  try {
-    const { error } = await supabase
-      .from("job_applications")
-      .update({ employment_offer: employmentOfferValue })
-      .eq("id", activeApp.id);
-
-    if (error) throw error;
-
-    setApplications((prev) =>
-      prev.map((a) => (a.id === activeApp.id ? { ...a, employment_offer: employmentOfferValue } : a))
-    );
-
-    toast({ title: "Employment Offer updated" });
-    setEmploymentOfferDialogOpen(false);
-    setActiveApp(null);
-  } catch (e: any) {
-    toast({ title: "Failed to update", description: e.message, variant: "destructive" });
-  }
-};
-
-const openEoAcceptanceDialog = (app: Application) => {
-  setActiveApp(app);
-  const raw = (app.eo_acceptance || "") as string;
-  const lower = raw.toLowerCase();
-  let mapped: "Yes" | "No" | "" = "";
-  if (["yes", "y"].includes(lower)) mapped = "Yes";
-  else if (["no", "n"].includes(lower)) mapped = "No";
-  setEoAcceptanceValue(mapped || (raw as any) || "");
-  setEoAcceptanceDialogOpen(true);
-};
-
-const saveEoAcceptance = async () => {
-  if (!activeApp || !eoAcceptanceValue) return;
-
-  try {
-    const { error } = await supabase
-      .from("job_applications")
-      .update({ eo_acceptance: eoAcceptanceValue })
-      .eq("id", activeApp.id);
-
-    if (error) throw error;
-
-    setApplications((prev) =>
-      prev.map((a) => (a.id === activeApp.id ? { ...a, eo_acceptance: eoAcceptanceValue } : a))
-    );
-
-    toast({ title: "EO Acceptance updated" });
-    setEoAcceptanceDialogOpen(false);
-    setActiveApp(null);
-  } catch (e: any) {
-    toast({ title: "Failed to update", description: e.message, variant: "destructive" });
-  }
-};
-
-if (loading) {
   return (
-    <AdminLayout>
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    </AdminLayout>
-  );
-}
-
-return (
-  <AdminLayout>
-    <Dialog open={remarksDialogOpen} onOpenChange={setRemarksDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Update Remarks</DialogTitle>
-          <DialogDescription>
-            {activeApplication
-              ? `Update remarks untuk ${activeApplication.candidate.full_name}`
-              : "Select a step for this application."}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Remarks</label>
-            <Select
-              value={String(profileStepValue)}
-              onValueChange={(v) => {
-                const step = Number(v);
-                setProfileStepValue(step);
-                setSelectedRemark(`Step ${step}`);
+    <>
+      <Dialog open={remarksDialogOpen} onOpenChange={setRemarksDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Remarks</DialogTitle>
+            <DialogDescription>
+              {activeApplication
+                ? `Update remarks untuk ${activeApplication.candidate.full_name}`
+                : "Select a step for this application."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Remarks</label>
+              <Select
+                value={String(profileStepValue)}
+                onValueChange={(v) => {
+                  const step = Number(v);
+                  setProfileStepValue(step);
+                  setSelectedRemark(`Step ${step}`);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select step" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Step 1</SelectItem>
+                  <SelectItem value="2">Step 2</SelectItem>
+                  <SelectItem value="3">Step 3</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setRemarksDialogOpen(false);
+                setActiveApplication(null);
               }}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select step" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Step 1</SelectItem>
-                <SelectItem value="2">Step 2</SelectItem>
-                <SelectItem value="3">Step 3</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setRemarksDialogOpen(false);
-              setActiveApplication(null);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button type="button" onClick={handleSaveRemarks}>
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    <Dialog open={experienceDialogOpen} onOpenChange={setExperienceDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Latest Experience</DialogTitle>
-          <DialogDescription>
-            {activeApplication
-              ? `Latest experience for ${activeApplication.candidate.full_name}`
-              : "Latest candidate experience."}
-          </DialogDescription>
-        </DialogHeader>
-        {activeExperience ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-            <div><span className="font-medium">Company:</span> {activeExperience.company || "-"}</div>
-            <div><span className="font-medium">Position:</span> {activeExperience.position || "-"}</div>
-            <div><span className="font-medium">Vessel/Type:</span> {activeExperience.vessel_name_type || "-"}</div>
-            <div><span className="font-medium">Experience Type:</span> {activeExperience.experience_type || "-"}</div>
-            <div>
-              <span className="font-medium">Period:</span>{" "}
-              {activeExperience.start_date || activeExperience.end_date
-                ? `${formatDate(activeExperience.start_date)} - ${activeExperience.is_current ? "Present" : formatDate(activeExperience.end_date)}`
-                : "-"}
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleSaveRemarks}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={experienceDialogOpen} onOpenChange={setExperienceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Latest Experience</DialogTitle>
+            <DialogDescription>
+              {activeApplication
+                ? `Latest experience for ${activeApplication.candidate.full_name}`
+                : "Latest candidate experience."}
+            </DialogDescription>
+          </DialogHeader>
+          {activeExperience ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+              <div><span className="font-medium">Company:</span> {activeExperience.company || "-"}</div>
+              <div><span className="font-medium">Position:</span> {activeExperience.position || "-"}</div>
+              <div><span className="font-medium">Vessel/Type:</span> {activeExperience.vessel_name_type || "-"}</div>
+              <div><span className="font-medium">Experience Type:</span> {activeExperience.experience_type || "-"}</div>
+              <div>
+                <span className="font-medium">Period:</span>{" "}
+                {activeExperience.start_date || activeExperience.end_date
+                  ? `${formatDate(activeExperience.start_date)} - ${activeExperience.is_current ? "Present" : formatDate(activeExperience.end_date)}`
+                  : "-"}
+              </div>
             </div>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">No experience data.</p>
-        )}
-        <DialogFooter>
-          <Button type="button" onClick={() => setExperienceDialogOpen(false)}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    {/* Notes Dialog */}
-    <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Notes</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Isi catatan untuk ${activeApp.candidate.full_name}` : "Isi catatan."}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Notes</label>
-            <Textarea
-              value={notesValue}
-              onChange={(e) => setNotesValue(e.target.value)}
-              rows={4}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setNotesDialogOpen(false);
-              setActiveApp(null);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button onClick={saveNotes}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    {/* Employment Offer Dialog */}
-    <Dialog open={employmentOfferDialogOpen} onOpenChange={setEmploymentOfferDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Employment Offer</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Set status Employment Offer untuk ${activeApp.candidate.full_name}` : "Pilih status EO."}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Employment Offer</label>
-            <Select
-              value={employmentOfferValue}
-              onValueChange={(v: any) => setEmploymentOfferValue(v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select EO" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Received">Received</SelectItem>
-                <SelectItem value="Not Received">Not Received</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setEmploymentOfferDialogOpen(false);
-              setActiveApp(null);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button onClick={saveEmploymentOffer} disabled={!employmentOfferValue}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    {/* EO Acceptance Dialog */}
-    <Dialog open={eoAcceptanceDialogOpen} onOpenChange={setEoAcceptanceDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>EO Acceptance</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Set EO Acceptance untuk ${activeApp.candidate.full_name}` : "Pilih EO Acceptance."}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">EO Acceptance</label>
-            <Select value={eoAcceptanceValue} onValueChange={(v: any) => setEoAcceptanceValue(v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="- Please Select -" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Yes">Yes</SelectItem>
-                <SelectItem value="No">No</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setEoAcceptanceDialogOpen(false);
-              setActiveApp(null);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button onClick={saveEoAcceptance} disabled={!eoAcceptanceValue}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* Profile Step Dialog */}
-    <Dialog open={profileStepDialogOpen} onOpenChange={setProfileStepDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Profile Step Access</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Set profile step access untuk ${activeApp.candidate.full_name}` : "Pilih step yang dibuka."}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Unlock Step</label>
-            <Select value={profileStepValue.toString()} onValueChange={(v) => setProfileStepValue(parseInt(v))}>
-              <SelectTrigger>
-                <SelectValue placeholder="- Select Step -" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Step 1 : Personal Detail Only</SelectItem>
-                <SelectItem value="2">Step 2 : Pre Screening Unlocked</SelectItem>
-                <SelectItem value="3">Step 3 : Screening Unlocked</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setProfileStepDialogOpen(false);
-              setActiveApp(null);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button onClick={saveProfileStep}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    <Dialog open={approvedAsDialogOpen} onOpenChange={setApprovedAsDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Choose Approved As</DialogTitle>
-          <DialogDescription>
-            {activeApp
-              ? `Pilih posisi Approved As untuk department ${activeApp.job.department}`
-              : "Pilih posisi untuk kolom Approved As."}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          {approvedAsJobs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Tidak ada job lain untuk department ini.</p>
           ) : (
-            <div className="max-h-64 overflow-y-auto border rounded-md">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10"></TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Company</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {approvedAsJobs.map((job) => (
-                    <TableRow key={job.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedApprovedAsJobId === job.id}
-                          onCheckedChange={() => setSelectedApprovedAsJobId(job.id)}
-                        />
-                      </TableCell>
-                      <TableCell>{job.title}</TableCell>
-                      <TableCell>{job.company_name}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <p className="text-sm text-muted-foreground">No experience data.</p>
           )}
-        </div>
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setApprovedAsDialogOpen(false);
-              setSelectedApprovedAsJobId("");
-              setActiveApp(null);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button type="button" onClick={saveApprovedAs} disabled={!selectedApprovedAsJobId}>
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    {/* Principal Interview By Dialog */}
-    <Dialog open={principalInterviewerDialogOpen} onOpenChange={setPrincipalInterviewerDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Principal Interview By</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Pilih principal interviewer untuk ${activeApp.candidate.full_name}` : ""}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Principal Interview By</label>
-            <Select
-              value={selectedPrincipalInterviewer}
-              onValueChange={(v) => setSelectedPrincipalInterviewer(v)}
+          <DialogFooter>
+            <Button type="button" onClick={() => setExperienceDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Notes Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Notes</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Isi catatan untuk ${activeApp.candidate.full_name}` : "Isi catatan."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Notes</label>
+              <Textarea
+                value={notesValue}
+                onChange={(e) => setNotesValue(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setNotesDialogOpen(false);
+                setActiveApp(null);
+              }}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih principal interviewer" />
-              </SelectTrigger>
-              <SelectContent>
-                {principalInterviewerOptions.length === 0 ? (
-                  <SelectItem disabled value="none">
-                    Tidak ada user dengan role interviewer_principal
-                  </SelectItem>
-                ) : (
-                  principalInterviewerOptions.map((opt) => (
-                    <SelectItem key={opt.user_id} value={opt.user_id}>
-                      {opt.full_name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+              Cancel
+            </Button>
+            <Button onClick={saveNotes}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Employment Offer Dialog */}
+      <Dialog open={employmentOfferDialogOpen} onOpenChange={setEmploymentOfferDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Employment Offer</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Set status Employment Offer untuk ${activeApp.candidate.full_name}` : "Pilih status EO."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Employment Offer</label>
+              <Select
+                value={employmentOfferValue}
+                onValueChange={(v: any) => setEmploymentOfferValue(v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select EO" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Received">Received</SelectItem>
+                  <SelectItem value="Not Received">Not Received</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setPrincipalInterviewerDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={savePrincipalInterviewer}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    {/* Principal Interview Date Dialog */}
-    <Dialog
-      open={principalInterviewDateDialogOpen}
-      onOpenChange={setPrincipalInterviewDateDialogOpen}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Principal Interview Date</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Tentukan tanggal principal interview untuk ${activeApp.candidate.full_name}` : ""}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Date</label>
-            <Input
-              type="date"
-              value={principalInterviewDateValue}
-              onChange={(e) => setPrincipalInterviewDateValue(e.target.value)}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setPrincipalInterviewDateDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={savePrincipalInterviewDate}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    {/* Principal Interview Result Dialog */}
-    <Dialog
-      open={principalInterviewResultDialogOpen}
-      onOpenChange={setPrincipalInterviewResultDialogOpen}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Principal Interview Result</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Set hasil principal interview untuk ${activeApp.candidate.full_name}` : ""}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Result</label>
-            <Select
-              value={principalInterviewResultValue}
-              onValueChange={(v: any) => setPrincipalInterviewResultValue(v)}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEmploymentOfferDialogOpen(false);
+                setActiveApp(null);
+              }}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih hasil" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Approved">Approved</SelectItem>
-                <SelectItem value="Not Approved">Not Approved</SelectItem>
-                <SelectItem value="Reclassed">Reclassed</SelectItem>
-                <SelectItem value="Review">Review</SelectItem>
-              </SelectContent>
-            </Select>
+              Cancel
+            </Button>
+            <Button onClick={saveEmploymentOffer} disabled={!employmentOfferValue}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* EO Acceptance Dialog */}
+      <Dialog open={eoAcceptanceDialogOpen} onOpenChange={setEoAcceptanceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>EO Acceptance</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Set EO Acceptance untuk ${activeApp.candidate.full_name}` : "Pilih EO Acceptance."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">EO Acceptance</label>
+              <Select value={eoAcceptanceValue} onValueChange={(v: any) => setEoAcceptanceValue(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="- Please Select -" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setPrincipalInterviewResultDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={savePrincipalInterviewResult}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    {/* Test Score Dialog (Marlins / NEHA / CES) */}
-    <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Update Test Score</DialogTitle>
-          <DialogDescription>
-            {activeApp
-              ? `Update ${testType || "test"} untuk ${activeApp.candidate.full_name}`
-              : "Isi nilai test dan upload file (opsional)."}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Test Name</label>
-            <Select
-              value={testType}
-              onValueChange={(v: any) => setTestType(v)}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEoAcceptanceDialogOpen(false);
+                setActiveApp(null);
+              }}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih test" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Marlins">Marlins</SelectItem>
-                <SelectItem value="NEHA">NEHA</SelectItem>
-                <SelectItem value="CES">CES</SelectItem>
-              </SelectContent>
-            </Select>
+              Cancel
+            </Button>
+            <Button onClick={saveEoAcceptance} disabled={!eoAcceptanceValue}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Profile Step Dialog */}
+      <Dialog open={profileStepDialogOpen} onOpenChange={setProfileStepDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Profile Step Access</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Set profile step access untuk ${activeApp.candidate.full_name}` : "Pilih step yang dibuka."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Unlock Step</label>
+              <Select value={profileStepValue.toString()} onValueChange={(v) => setProfileStepValue(parseInt(v))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="- Select Step -" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Step 1 : Personal Detail Only</SelectItem>
+                  <SelectItem value="2">Step 2 : Pre Screening Unlocked</SelectItem>
+                  <SelectItem value="3">Step 3 : Screening Unlocked</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div>
-            <label className="text-sm font-medium mb-1 block">Score</label>
-            <Input
-              type="number"
-              value={testScore}
-              onChange={(e) => setTestScore(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium mb-1 block">File (PDF, max 8MB)</label>
-            <Input type="file" accept=".pdf" onChange={handleTestFileChange} />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setTestDialogOpen(false);
-              setTestType("");
-              setTestScore("");
-              setTestFile(null);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button onClick={saveTest} disabled={savingTest}>
-            {savingTest ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
-              </>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setProfileStepDialogOpen(false);
+                setActiveApp(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={saveProfileStep}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={approvedAsDialogOpen} onOpenChange={setApprovedAsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Choose Approved As</DialogTitle>
+            <DialogDescription>
+              {activeApp
+                ? `Pilih posisi Approved As untuk department ${activeApp.job.department}`
+                : "Pilih posisi untuk kolom Approved As."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {approvedAsJobs.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Tidak ada job lain untuk department ini.</p>
             ) : (
-              "Save"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    {/* Suitable Dialog */}
-    <Dialog open={suitableDialogOpen} onOpenChange={setSuitableDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Update Suitable</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Pilih keputusan untuk ${activeApp.candidate.full_name}` : ""}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Suitable</label>
-            <Select value={suitableChoice} onValueChange={(v: any) => setSuitableChoice(v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Yes">Yes</SelectItem>
-                <SelectItem value="No">No</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setSuitableDialogOpen(false)}>Cancel</Button>
-          <Button onClick={saveSuitable}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* Interviewer Dialog */}
-    <Dialog open={interviewerDialogOpen} onOpenChange={setInterviewerDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Pilih Interviewer</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Untuk kandidat ${activeApp.candidate.full_name}` : ""}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Interview By</label>
-            <Select value={selectedInterviewer} onValueChange={(v) => setSelectedInterviewer(v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih interviewer" />
-              </SelectTrigger>
-              <SelectContent>
-                {interviewerOptions.length === 0 ? (
-                  <SelectItem disabled value="none">
-                    Tidak ada user dengan role interviewer
-                  </SelectItem>
-                ) : (
-                  interviewerOptions.map((opt) => (
-                    <SelectItem key={opt.user_id} value={opt.user_id}>
-                      {opt.full_name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setInterviewerDialogOpen(false)}>Cancel</Button>
-          <Button onClick={saveInterviewer}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* Interview Date Dialog */}
-    <Dialog open={interviewDateDialogOpen} onOpenChange={setInterviewDateDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Tentukan Tanggal Interview</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Untuk ${activeApp.candidate.full_name}` : ""}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Interview Date</label>
-            <Input type="date" value={interviewDateValue} onChange={(e) => setInterviewDateValue(e.target.value)} />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setInterviewDateDialogOpen(false)}>Cancel</Button>
-          <Button onClick={saveInterviewDate}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* Interview Result Dialog */}
-    <Dialog open={interviewResultDialogOpen} onOpenChange={setInterviewResultDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Hasil Interview</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Untuk ${activeApp.candidate.full_name}` : ""}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Result</label>
-            <Select value={interviewResultValue} onValueChange={(v: any) => setInterviewResultValue(v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih hasil" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Approved">Approved</SelectItem>
-                <SelectItem value="Not Approved">Not Approved</SelectItem>
-                <SelectItem value="Reclassed">Reclassed</SelectItem>
-                <SelectItem value="Review">Review</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setInterviewResultDialogOpen(false)}>Cancel</Button>
-          <Button onClick={saveInterviewResult}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* Interview Notes Dialog */}
-    <Dialog open={interviewNotesDialogOpen} onOpenChange={setInterviewNotesDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Interview Result Notes</DialogTitle>
-          <DialogDescription>
-            {activeApp ? `Untuk ${activeApp.candidate.full_name}` : ""}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">Notes</label>
-            <Textarea value={interviewNotesValue} onChange={(e) => setInterviewNotesValue(e.target.value)} rows={4} />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setInterviewNotesDialogOpen(false)}>Cancel</Button>
-          <Button onClick={saveInterviewNotes}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* Candidate View Dialog */}
-    <Dialog open={candidateViewDialogOpen} onOpenChange={setCandidateViewDialogOpen}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            <div className="flex items-center gap-3">
-              {viewingCandidate?.candidate?.avatar_url && (
-                <img
-                  src={viewingCandidate.candidate.avatar_url}
-                  alt="Photo"
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              )}
-              <div>
-                <div className="text-lg">{viewingCandidate?.candidate?.full_name || "-"}</div>
-                <div className="text-sm font-normal text-muted-foreground">{viewingCandidate?.candidate?.email}</div>
-              </div>
-            </div>
-          </DialogTitle>
-          <DialogDescription>
-            Application for: {viewingCandidate?.job?.title} at {viewingCandidate?.job?.company_name}
-          </DialogDescription>
-        </DialogHeader>
-
-        {loadingCandidateData ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin" />
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Personal Information */}
-            <div>
-              <h3 className="text-sm font-semibold mb-2 text-primary">Personal Information</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Phone:</span> {viewingCandidate?.candidate?.phone || "-"}</div>
-                <div><span className="text-muted-foreground">Gender:</span> {viewingCandidate?.candidate?.gender || "-"}</div>
-                <div><span className="text-muted-foreground">DOB:</span> {formatDate(viewingCandidate?.candidate?.date_of_birth)}</div>
-                <div><span className="text-muted-foreground">Height:</span> {viewingCandidate?.candidate?.height_cm ? `${viewingCandidate.candidate.height_cm} cm` : "-"}</div>
-                <div><span className="text-muted-foreground">Weight:</span> {viewingCandidate?.candidate?.weight_kg ? `${viewingCandidate.candidate.weight_kg} kg` : "-"}</div>
-                <div><span className="text-muted-foreground">Office:</span> {viewingCandidate?.candidate?.registration_city || "-"}</div>
-                <div><span className="text-muted-foreground">Step:</span> Step {(viewingCandidate?.candidate as any)?.profile_step_unlocked || 1}</div>
-                <div><span className="text-muted-foreground">Status:</span> {viewingCandidate?.remarks || viewingCandidate?.status || "-"}</div>
-                <div><span className="text-muted-foreground">Crew Code:</span> {viewingCandidate?.crew_code || "-"}</div>
-              </div>
-            </div>
-
-            {/* Application Details */}
-            <div>
-              <h3 className="text-sm font-semibold mb-2 text-primary">Application Details</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Position:</span> {viewingCandidate?.job?.title || "-"}</div>
-                <div><span className="text-muted-foreground">Department:</span> {viewingCandidate?.job?.department || "-"}</div>
-                <div><span className="text-muted-foreground">Company:</span> {viewingCandidate?.job?.company_name || "-"}</div>
-                <div><span className="text-muted-foreground">Applied:</span> {formatDate(viewingCandidate?.applied_at || viewingCandidate?.date_of_entry)}</div>
-                <div><span className="text-muted-foreground">Suitable:</span> {viewingCandidate?.suitable || "-"}</div>
-                <div><span className="text-muted-foreground">Interview Result:</span> {viewingCandidate?.interview_result || "-"}</div>
-              </div>
-            </div>
-
-            {/* Ship Experience */}
-            {(() => {
-              const shipExperiences = candidateExperiences.filter(exp => 
-                (exp.experience_type || '').toLowerCase() === 'ship'
-              );
-
-              return (
-                <div>
-                  <h3 className="text-sm font-semibold mb-2 text-primary">
-                    Ship Experience ({shipExperiences.length})
-                    <span className="font-normal text-muted-foreground ml-2">
-                      ({candidateExperiences.length} total)
-                    </span>
-                  </h3>
-                  {shipExperiences.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No ship experience records
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {shipExperiences.slice(0, 3).map((exp, idx) => (
-                        <div key={idx} className="border rounded p-2 text-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{exp.position}</span>
-                            <Badge variant="outline" className="text-xs">Ship</Badge>
-                          </div>
-                          <div className="text-muted-foreground">{exp.vessel_name_type || exp.company || "-"}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {exp.start_date ? formatDate(exp.start_date) : ""} - {exp.end_date ? formatDate(exp.end_date) : "Present"}
-                          </div>
-                        </div>
-                      ))}
-                      {shipExperiences.length > 3 && (
-                        <p className="text-xs text-muted-foreground">+{shipExperiences.length - 3} more experiences</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Hotel Experience */}
-            {(() => {
-              const hotelExperiences = candidateExperiences.filter(exp => 
-                (exp.experience_type || 'Hotel').toLowerCase() === 'hotel'
-              );
-
-              return (
-                <div>
-                  <h3 className="text-sm font-semibold mb-2 text-primary">
-                    Hotel Experience ({hotelExperiences.length})
-                  </h3>
-                  {hotelExperiences.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No hotel experience records
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {hotelExperiences.slice(0, 3).map((exp, idx) => (
-                        <div key={idx} className="border rounded p-2 text-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{exp.position}</span>
-                            <Badge variant="outline" className="text-xs">Hotel</Badge>
-                          </div>
-                          <div className="text-muted-foreground">{exp.vessel_name_type || exp.company || "-"}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {exp.start_date ? formatDate(exp.start_date) : ""} - {exp.end_date ? formatDate(exp.end_date) : "Present"}
-                          </div>
-                        </div>
-                      ))}
-                      {hotelExperiences.length > 3 && (
-                        <p className="text-xs text-muted-foreground">+{hotelExperiences.length - 3} more experiences</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Education */}
-            <div>
-              <h3 className="text-sm font-semibold mb-2 text-primary">Education ({candidateEducation.length})</h3>
-              {candidateEducation.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No education records</p>
-              ) : (
-                <div className="space-y-2">
-                  {candidateEducation.slice(0, 3).map((edu, idx) => (
-                    <div key={idx} className="border rounded p-2 text-sm">
-                      <div className="font-medium">{edu.degree}</div>
-                      <div className="text-muted-foreground">{edu.institution}</div>
-                      <div className="text-xs text-muted-foreground">{edu.field_of_study || ""}</div>
-                    </div>
-                  ))}
-                  {candidateEducation.length > 3 && (
-                    <p className="text-xs text-muted-foreground">+{candidateEducation.length - 3} more education records</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Certificates */}
-            <div>
-              <h3 className="text-sm font-semibold mb-2 text-primary">Certificates ({candidateCertificates.length})</h3>
-              {candidateCertificates.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No certificates</p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {candidateCertificates.map((cert, idx) => (
-                    <Badge key={idx} variant="secondary" className="text-xs">
-                      {cert.type_certificate}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Travel Documents */}
-            <div>
-              <h3 className="text-sm font-semibold mb-2 text-primary">Travel Documents ({candidateTravelDocs.length})</h3>
-              {candidateTravelDocs.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No travel documents</p>
-              ) : (
-                <div className="space-y-2">
-                  {candidateTravelDocs.map((doc, idx) => (
-                    <div key={idx} className="border rounded p-2 text-sm flex justify-between">
-                      <div>
-                        <div className="font-medium">{doc.document_type}</div>
-                        <div className="text-xs text-muted-foreground">No: {doc.document_number || "-"}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs text-muted-foreground">Expires: {formatDate(doc.expiry_date)}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Emergency Contacts & Next of Kin */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-semibold mb-2 text-primary">Emergency Contacts ({candidateEmergencyContacts.length})</h3>
-                {candidateEmergencyContacts.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No emergency contacts</p>
-                ) : (
-                  <div className="space-y-2">
-                    {candidateEmergencyContacts.map((contact, idx) => (
-                      <div key={idx} className="border rounded p-2 text-sm">
-                        <div className="font-medium">{contact.full_name}</div>
-                        <div className="text-muted-foreground">{contact.relationship}</div>
-                        <div className="text-xs text-muted-foreground">{contact.phone}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold mb-2 text-primary">Next of Kin ({candidateNextOfKin.length})</h3>
-                {candidateNextOfKin.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No next of kin</p>
-                ) : (
-                  <div className="space-y-2">
-                    {candidateNextOfKin.map((nok, idx) => (
-                      <div key={idx} className="border rounded p-2 text-sm">
-                        <div className="font-medium">{nok.full_name}</div>
-                        <div className="text-muted-foreground">{nok.relationship}</div>
-                        <div className="text-xs text-muted-foreground">DOB: {formatDate(nok.date_of_birth)}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* References */}
-            <div>
-              <h3 className="text-sm font-semibold mb-2 text-primary">References ({candidateReferences.length})</h3>
-              {candidateReferences.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No references</p>
-              ) : (
-                <div className="space-y-2">
-                  {candidateReferences.map((ref, idx) => (
-                    <div key={idx} className="border rounded p-2 text-sm">
-                      <div className="font-medium">{ref.full_name}</div>
-                      <div className="text-muted-foreground">{ref.company} - {ref.position}</div>
-                      <div className="text-xs text-muted-foreground">{ref.phone}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        <DialogFooter>
-          <Button type="button" onClick={() => setCandidateViewDialogOpen(false)}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    <Dialog open={referenceDialogOpen} onOpenChange={setReferenceDialogOpen}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>BMI Reference Chart</DialogTitle>
-          <DialogDescription>
-            Body Mass Index (BMI) Classification
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex justify-center">
-          <img
-            src={bmiReferenceImage}
-            alt="BMI Reference Chart"
-            className="max-w-full h-auto rounded-lg border"
-          />
-        </div>
-        <DialogFooter>
-          <Button type="button" onClick={() => setReferenceDialogOpen(false)}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    <Dialog open={approvedPositionDialogOpen} onOpenChange={setApprovedPositionDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Choose Approved Position</DialogTitle>
-          <DialogDescription>
-            {activeApp
-              ? `Pilih posisi untuk department ${activeApp.job.department}`
-              : "Pilih posisi yang akan di-approve."}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          {approvedPositionJobs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Tidak ada job lain untuk department ini.</p>
-          ) : (
-            <div className="max-h-64 overflow-y-auto border rounded-md">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10"></TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Company</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {approvedPositionJobs.map((job) => (
-                    <TableRow key={job.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedApprovedJobId === job.id}
-                          onCheckedChange={() => setSelectedApprovedJobId(job.id)}
-                        />
-                      </TableCell>
-                      <TableCell>{job.title}</TableCell>
-                      <TableCell>{job.company_name}</TableCell>
+              <div className="max-h-64 overflow-y-auto border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10"></TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Company</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </div>
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setApprovedPositionDialogOpen(false);
-              setSelectedApprovedJobId("");
-              setActiveApp(null);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button type="button" onClick={saveApprovedPosition} disabled={!selectedApprovedJobId}>
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    <div className="space-y-4">
-      {/* Search Filter Section */}
-      <Card className="p-4">
-        <Collapsible open={filterOpen} onOpenChange={setFilterOpen}>
-          <div className="flex items-center justify-between">
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 p-0 hover:bg-transparent">
-                <h2 className="text-lg font-semibold">Search Filter</h2>
-                {filterOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </Button>
-            </CollapsibleTrigger>
-            <div className="flex items-center gap-2">
-              <Button onClick={exportToExcel} size="sm" className="bg-green-600 hover:bg-green-700">Export to Excel</Button>
-              <Button onClick={exportToCSV} size="sm" className="bg-blue-600 hover:bg-blue-700">Export to CSV</Button>
+                  </TableHeader>
+                  <TableBody>
+                    {approvedAsJobs.map((job) => (
+                      <TableRow key={job.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedApprovedAsJobId === job.id}
+                            onCheckedChange={() => setSelectedApprovedAsJobId(job.id)}
+                          />
+                        </TableCell>
+                        <TableCell>{job.title}</TableCell>
+                        <TableCell>{job.company_name}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setApprovedAsDialogOpen(false);
+                setSelectedApprovedAsJobId("");
+                setActiveApp(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={saveApprovedAs} disabled={!selectedApprovedAsJobId}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Principal Interview By Dialog */}
+      <Dialog open={principalInterviewerDialogOpen} onOpenChange={setPrincipalInterviewerDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Principal Interview By</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Pilih principal interviewer untuk ${activeApp.candidate.full_name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Principal Interview By</label>
+              <Select
+                value={selectedPrincipalInterviewer}
+                onValueChange={(v) => setSelectedPrincipalInterviewer(v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih principal interviewer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {principalInterviewerOptions.length === 0 ? (
+                    <SelectItem disabled value="none">
+                      Tidak ada user dengan role interviewer_principal
+                    </SelectItem>
+                  ) : (
+                    principalInterviewerOptions.map((opt) => (
+                      <SelectItem key={opt.user_id} value={opt.user_id}>
+                        {opt.full_name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-
-          <CollapsibleContent className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Principal</label>
-                <Input placeholder="Select Principal" value={principal} onChange={(e) => setPrincipal(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Department</label>
-                <Input placeholder="Select Department" value={department} onChange={(e) => setDepartment(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Position</label>
-                <Input placeholder="Select Position" value={position} onChange={(e) => setPosition(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Office {isPicUser && picCity ? `(${picCity})` : ""}</label>
-                <Input placeholder="Select Office" value={office} onChange={(e) => !isPicUser && setOffice(e.target.value)} disabled={isPicUser} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Age Minimum</label>
-                <Input type="number" value={ageMin} onChange={(e) => setAgeMin(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Age Maximum</label>
-                <Input type="number" value={ageMax} onChange={(e) => setAgeMax(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Gender</label>
-                <Select value={gender} onValueChange={setGender}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Neha Score</label>
-                <Input type="number" value={nehaScore} onChange={(e) => setNehaScore(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Marlin English Score Minimum</label>
-                <Input type="number" value={marlinScoreMin} onChange={(e) => setMarlinScoreMin(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Marlin English Score Maximum</label>
-                <Input type="number" value={marlinScoreMax} onChange={(e) => setMarlinScoreMax(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Information Source</label>
-                <Input placeholder="Select information_source" value={infoSource} onChange={(e) => setInfoSource(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Education Background</label>
-                <Input placeholder="Education Background" value={educationBackground} onChange={(e) => setEducationBackground(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Suitable</label>
-                <Select value={suitableFilter} onValueChange={setSuitableFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="- Select -" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Ship Experience</label>
-                <Input placeholder="Ship Experience" value={shipExperience} onChange={(e) => setShipExperience(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Interview Result</label>
-                <Select value={interviewResultFilter} onValueChange={setInterviewResultFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="- Select -" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Approved">Approved</SelectItem>
-                    <SelectItem value="Not Approved">Not Approved</SelectItem>
-                    <SelectItem value="Reclassed">Reclassed</SelectItem>
-                    <SelectItem value="Review">Review</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Interview By</label>
-                <Input placeholder="Interview By" value={interviewByFilter} onChange={(e) => setInterviewByFilter(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Interview Date Minimum</label>
-                <Input type="date" value={interviewDateMin} onChange={(e) => setInterviewDateMin(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Interview Date Maximum</label>
-                <Input type="date" value={interviewDateMax} onChange={(e) => setInterviewDateMax(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">STWC 2010</label>
-                <Select value={stwc2010} onValueChange={setStwc2010}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="- Select -" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Yes">Yes</SelectItem>
-                    <SelectItem value="No">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Approved As</label>
-                <Input placeholder="Approved As" value={approvedAsFilter} onChange={(e) => setApprovedAsFilter(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Approved Position</label>
-                <Input placeholder="Approved Position" value={approvedPositionFilter} onChange={(e) => setApprovedPositionFilter(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Principal Interview By</label>
-                <Input placeholder="Principal Interview By" value={principalInterviewByFilter} onChange={(e) => setPrincipalInterviewByFilter(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Principal Interview Date Minimum</label>
-                <Input type="date" value={principalInterviewDateMin} onChange={(e) => setPrincipalInterviewDateMin(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Principal Interview Date Maximum</label>
-                <Input type="date" value={principalInterviewDateMax} onChange={(e) => setPrincipalInterviewDateMax(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Principal Interview Result</label>
-                <Select value={principalInterviewResultFilter} onValueChange={setPrincipalInterviewResultFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="- Select -" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Approved">Approved</SelectItem>
-                    <SelectItem value="Not Approved">Not Approved</SelectItem>
-                    <SelectItem value="Reclassed">Reclassed</SelectItem>
-                    <SelectItem value="Review">Review</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Visa Status</label>
-                <Select value={visaStatusFilter} onValueChange={setVisaStatusFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="- Select -" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Valid">Valid</SelectItem>
-                    <SelectItem value="Expiring Soon">Expiring Soon</SelectItem>
-                    <SelectItem value="Expired">Expired</SelectItem>
-                    <SelectItem value="No Visa">No Visa</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">BST/CC Status</label>
-                <Select value={bstCcStatusFilter} onValueChange={setBstCcStatusFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="- Select -" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Has BST">Has BST</SelectItem>
-                    <SelectItem value="Has CC">Has CC</SelectItem>
-                    <SelectItem value="No Certificates">No Certificates</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Start Date</label>
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">End Date</label>
-                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-              </div>
-              <div className="flex items-end justify-end gap-2">
-                <Button variant="secondary" onClick={clearFilters} className="w-full">Clear</Button>
-              </div>
-              <div className="flex items-end justify-end gap-2">
-                <Button variant="secondary" onClick={clearFilters} className="w-full">Clear</Button>
-              </div>
-              <div className="flex items-end justify-end gap-2">
-                <Button className="w-full">Filter</Button>
-              </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPrincipalInterviewerDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={savePrincipalInterviewer}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Principal Interview Date Dialog */}
+      <Dialog
+        open={principalInterviewDateDialogOpen}
+        onOpenChange={setPrincipalInterviewDateDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Principal Interview Date</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Tentukan tanggal principal interview untuk ${activeApp.candidate.full_name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Date</label>
+              <Input
+                type="date"
+                value={principalInterviewDateValue}
+                onChange={(e) => setPrincipalInterviewDateValue(e.target.value)}
+              />
             </div>
-          </CollapsibleContent>
-        </Collapsible>
-      </Card>
-
-      {/* Selection Gap Pool List */}
-      <Card className="p-4">
-        <h2 className="text-lg font-semibold mb-4">Selection Gap Pool List</h2>
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex gap-2">
-            <Button onClick={handleSelectAll} size="sm" className="bg-blue-600 hover:bg-blue-700">
-              Select all
-            </Button>
-            <Button onClick={handleDeselectAll} size="sm" variant="secondary">
-              Deselect All
-            </Button>
-            <Button onClick={handleSetInterview} size="sm" className="bg-green-600 hover:bg-green-700">
-              Set Interview
-            </Button>
-            <Button onClick={handleBulkDelete} size="sm" variant="destructive">
-              Delete
-            </Button>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm">Search:</span>
-            <Input
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64"
-            />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPrincipalInterviewDateDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={savePrincipalInterviewDate}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Principal Interview Result Dialog */}
+      <Dialog
+        open={principalInterviewResultDialogOpen}
+        onOpenChange={setPrincipalInterviewResultDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Principal Interview Result</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Set hasil principal interview untuk ${activeApp.candidate.full_name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Result</label>
+              <Select
+                value={principalInterviewResultValue}
+                onValueChange={(v: any) => setPrincipalInterviewResultValue(v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih hasil" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Approved">Approved</SelectItem>
+                  <SelectItem value="Not Approved">Not Approved</SelectItem>
+                  <SelectItem value="Reclassed">Reclassed</SelectItem>
+                  <SelectItem value="Review">Review</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPrincipalInterviewResultDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={savePrincipalInterviewResult}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Test Score Dialog (Marlins / NEHA / CES) */}
+      <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Test Score</DialogTitle>
+            <DialogDescription>
+              {activeApp
+                ? `Update ${testType || "test"} untuk ${activeApp.candidate.full_name}`
+                : "Isi nilai test dan upload file (opsional)."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Test Name</label>
+              <Select
+                value={testType}
+                onValueChange={(v: any) => setTestType(v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih test" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Marlins">Marlins</SelectItem>
+                  <SelectItem value="NEHA">NEHA</SelectItem>
+                  <SelectItem value="CES">CES</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Score</label>
+              <Input
+                type="number"
+                value={testScore}
+                onChange={(e) => setTestScore(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">File (PDF, max 8MB)</label>
+              <Input type="file" accept=".pdf" onChange={handleTestFileChange} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setTestDialogOpen(false);
+                setTestType("");
+                setTestScore("");
+                setTestFile(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={saveTest} disabled={savingTest}>
+              {savingTest ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Suitable Dialog */}
+      <Dialog open={suitableDialogOpen} onOpenChange={setSuitableDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Suitable</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Pilih keputusan untuk ${activeApp.candidate.full_name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Suitable</label>
+              <Select value={suitableChoice} onValueChange={(v: any) => setSuitableChoice(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSuitableDialogOpen(false)}>Cancel</Button>
+            <Button onClick={saveSuitable}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        {/* Scrollable Table */}
-        <div className="table-responsive overflow-x-auto border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[60px] min-w-[60px] sticky left-0 z-20 bg-background">
-                  <Checkbox
-                    checked={selectedIds.size === applications.length && applications.length > 0}
-                    onCheckedChange={(checked) => checked ? handleSelectAll() : handleDeselectAll()}
+      {/* Interviewer Dialog */}
+      <Dialog open={interviewerDialogOpen} onOpenChange={setInterviewerDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pilih Interviewer</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Untuk kandidat ${activeApp.candidate.full_name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Interview By</label>
+              <Select value={selectedInterviewer} onValueChange={(v) => setSelectedInterviewer(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih interviewer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {interviewerOptions.length === 0 ? (
+                    <SelectItem disabled value="none">
+                      Tidak ada user dengan role interviewer
+                    </SelectItem>
+                  ) : (
+                    interviewerOptions.map((opt) => (
+                      <SelectItem key={opt.user_id} value={opt.user_id}>
+                        {opt.full_name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInterviewerDialogOpen(false)}>Cancel</Button>
+            <Button onClick={saveInterviewer}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Interview Date Dialog */}
+      <Dialog open={interviewDateDialogOpen} onOpenChange={setInterviewDateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tentukan Tanggal Interview</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Untuk ${activeApp.candidate.full_name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Interview Date</label>
+              <Input type="date" value={interviewDateValue} onChange={(e) => setInterviewDateValue(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInterviewDateDialogOpen(false)}>Cancel</Button>
+            <Button onClick={saveInterviewDate}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Interview Result Dialog */}
+      <Dialog open={interviewResultDialogOpen} onOpenChange={setInterviewResultDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hasil Interview</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Untuk ${activeApp.candidate.full_name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Result</label>
+              <Select value={interviewResultValue} onValueChange={(v: any) => setInterviewResultValue(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih hasil" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Approved">Approved</SelectItem>
+                  <SelectItem value="Not Approved">Not Approved</SelectItem>
+                  <SelectItem value="Reclassed">Reclassed</SelectItem>
+                  <SelectItem value="Review">Review</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInterviewResultDialogOpen(false)}>Cancel</Button>
+            <Button onClick={saveInterviewResult}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Interview Notes Dialog */}
+      <Dialog open={interviewNotesDialogOpen} onOpenChange={setInterviewNotesDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Interview Result Notes</DialogTitle>
+            <DialogDescription>
+              {activeApp ? `Untuk ${activeApp.candidate.full_name}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Notes</label>
+              <Textarea value={interviewNotesValue} onChange={(e) => setInterviewNotesValue(e.target.value)} rows={4} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInterviewNotesDialogOpen(false)}>Cancel</Button>
+            <Button onClick={saveInterviewNotes}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Candidate View Dialog */}
+      <Dialog open={candidateViewDialogOpen} onOpenChange={setCandidateViewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              <div className="flex items-center gap-3">
+                {viewingCandidate?.candidate?.avatar_url && (
+                  <img
+                    src={viewingCandidate.candidate.avatar_url}
+                    alt="Photo"
+                    className="w-12 h-12 rounded-full object-cover"
                   />
-                </TableHead>
-                <TableHead className="min-w-[180px] sticky left-[60px] z-20 bg-background">Remarks/Record</TableHead>
-                <TableHead className="min-w-[150px] sticky left-[240px] z-20 bg-background">Crew Code</TableHead>
-                <TableHead className="min-w-[80px] sticky left-[390px] z-20 bg-background">Photo</TableHead>
-                <TableHead className="min-w-[120px] sticky left-[470px] z-20 bg-background">First Name</TableHead>
-                <TableHead className="min-w-[120px]">Last Name</TableHead>
-                <TableHead className="min-w-[130px]">Office Registered</TableHead>
-                <TableHead className="min-w-[120px]">Date of Entry</TableHead>
-                <TableHead className="min-w-[100px]">Source</TableHead>
-                <TableHead className="min-w-[120px]">Position</TableHead>
-                <TableHead className="min-w-[120px]">Department</TableHead>
-                <TableHead className="min-w-[130px]">Second Position</TableHead>
-                <TableHead className="min-w-[80px]">Gender</TableHead>
-                <TableHead className="min-w-[100px]">DOB</TableHead>
-                <TableHead className="min-w-[60px]">Age</TableHead>
-                <TableHead className="min-w-[110px]">Weight/Height</TableHead>
-                <TableHead className="min-w-[100px]">Reference</TableHead>
-                <TableHead className="min-w-[110px]">Has Exp</TableHead>
-                <TableHead className="min-w-[150px]">Ship Experience</TableHead>
-                <TableHead className="min-w-[150px]">Hotel Experience</TableHead>
-                <TableHead className="min-w-[130px]">Visa Expiry Date</TableHead>
-                <TableHead className="min-w-[160px]">Education Background</TableHead>
-                <TableHead className="min-w-[120px]">Contact No</TableHead>
-                <TableHead className="min-w-[180px]">Email</TableHead>
-                <TableHead className="min-w-[150px]">Emergency Contact</TableHead>
-                <TableHead className="min-w-[130px]">Next of Kin</TableHead>
-                <TableHead className="min-w-[130px]">References</TableHead>
-                <TableHead className="min-w-[80px]">CV</TableHead>
-                <TableHead className="min-w-[140px]">
-                  <div className="flex items-center gap-1">
-                    <span>Form Letter</span>
-                    <a
-                      href="/templates/Form_Letter_Template.docx"
-                      download="Form_Letter_Template.docx"
-                      className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-muted"
-                      title="Download Template"
-                    >
-                      <Download className="h-3 w-3" />
-                    </a>
-                  </div>
-                </TableHead>
-                <TableHead className="min-w-[140px]">Vaccin Covid Booster</TableHead>
-                <TableHead className="min-w-[80px]">BST/CC</TableHead>
-                <TableHead className="min-w-[100px]">Suitable</TableHead>
-                <TableHead className="min-w-[120px]">Interview By</TableHead>
-                <TableHead className="min-w-[130px]">Interview Date</TableHead>
-                <TableHead className="min-w-[130px]">Interview Result</TableHead>
-                <TableHead className="min-w-[170px]">Interview Result Notes</TableHead>
-                <TableHead className="min-w-[140px]">Approved Position</TableHead>
-                <TableHead className="min-w-[160px]">Marlin / English Score</TableHead>
-                <TableHead className="min-w-[120px]">Neha Test</TableHead>
-                <TableHead className="min-w-[110px]">CES Test</TableHead>
-                <TableHead className="min-w-[170px]">Principal Interview By</TableHead>
-                <TableHead className="min-w-[180px]">Principal Interview Date</TableHead>
-                <TableHead className="min-w-[190px]">Principal Interview Result</TableHead>
-                <TableHead className="min-w-[120px]">Approved As</TableHead>
-                <TableHead className="min-w-[100px]">Notes</TableHead>
-                <TableHead className="min-w-[140px]">Employment Offer</TableHead>
-                <TableHead className="min-w-[130px]">EO Acceptance</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(() => {
-                const filtered = applications.filter(passesFilters);
-                const startIndex = (currentPage - 1) * itemsPerPage;
-                const endIndex = startIndex + itemsPerPage;
-                return filtered.slice(startIndex, endIndex);
-              })().map((app) => (
-                <TableRow key={app.id}>
-                  <TableCell className="w-[60px] min-w-[60px] sticky left-0 z-10 bg-background">
-                    <Checkbox
-                      checked={selectedIds.has(app.id)}
-                      onCheckedChange={() => handleToggleSelect(app.id)}
-                    />
-                  </TableCell>
-                  <TableCell className="sticky left-[60px] z-10 bg-background">
-                    <div className="flex flex-col gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs gap-1"
-                        onClick={() => openCandidateViewDialog(app)}
-                      >
-                        <Eye className="w-3 h-3" />
-                        View
-                      </Button>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openRemarksDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell className="sticky left-[240px] z-10 bg-background">{app.crew_code || "-"}</TableCell>
-                  <TableCell className="sticky left-[390px] z-10 bg-background">
-                    {app.candidate?.avatar_url || app.photo_url ? (
-                      <img
-                        src={app.candidate?.avatar_url || app.photo_url}
-                        alt="Photo"
-                        className="w-10 h-10 rounded object-cover"
-                      />
-                    ) : "-"}
-                  </TableCell>
-                  <TableCell className="font-medium sticky left-[470px] z-10 bg-background">{app.candidate.full_name.split(" ")[0]}</TableCell>
-                  <TableCell className="font-medium">{app.candidate.full_name.split(" ").slice(1).join(" ")}</TableCell>
-                  <TableCell>{app.candidate.registration_city || app.office_registered || "-"}</TableCell>
-                  <TableCell>{formatDate(app.applied_at || app.date_of_entry)}</TableCell>
-                  <TableCell>{app.candidate.how_found_us || app.source || "-"}</TableCell>
-                  <TableCell>{app.job.title}</TableCell>
-                  <TableCell>{app.job.department || "-"}</TableCell>
-                  <TableCell>{app.second_position || "-"}</TableCell>
-                  <TableCell>{app.candidate.gender || "-"}</TableCell>
-                  <TableCell>{formatDate(app.candidate.date_of_birth)}</TableCell>
-                  <TableCell>{calculateAge(app.candidate.date_of_birth)}</TableCell>
-                  <TableCell>
-                    {app.candidate.weight_kg && app.candidate.height_cm
-                      ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}`
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => openReferenceDialog(app)}>View Reference</Button>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getShipExperienceFlag(app.candidate_id, app.job?.department) === "Y" ? "default" : "secondary"}>
-                      {getShipExperienceFlag(app.candidate_id, app.job?.department)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setExperienceFilter('SHIP');
-                        openExperienceModal(app);
-                      }}
-                      className="text-xs"
-                    >
-                      View ({getExperienceCountByType(app.candidate_id, 'ship')}/{getExperienceCount(app.candidate_id).total})
-                    </Button>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setExperienceFilter('HOTEL');
-                        openExperienceModal(app);
-                      }}
-                      className="text-xs"
-                    >
-                      View ({getExperienceCountByType(app.candidate_id, 'hotel')}/{getExperienceCount(app.candidate_id).total})
-                    </Button>
-                  </TableCell>
-                  <TableCell>
-                    {getVisaCount(app.candidate_id) > 0 ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openVisaModal(app)}
-                        className={`text-xs ${getVisaButtonClass(getVisaExpiryStatus(app.c1d_expiry_date))}`}
-                      >
-                        {formatDate(app.c1d_expiry_date)} ({getVisaCount(app.candidate_id)})
-                      </Button>
-                    ) : (
-                      <span className="text-muted-foreground">{formatDate(app.c1d_expiry_date)}</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {getLatestEducationInstitution(app.candidate_id) ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEducationModal(app)}
-                        className="text-xs"
-                      >
-                        {getLatestEducationInstitution(app.candidate_id)}
-                      </Button>
-                    ) : (app.education_background || "-")}
-                  </TableCell>
-                  <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
-                  <TableCell>{app.candidate.email}</TableCell>
-                  <TableCell>
-                    {getLatestEmergencyContactName(app.candidate_id) ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEmergencyContactModal(app)}
-                        className="text-xs"
-                      >
-                        {getLatestEmergencyContactName(app.candidate_id)}
-                      </Button>
-                    ) : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {getLatestNextOfKinName(app.candidate_id) ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openNextOfKinModal(app)}
-                        className="text-xs"
-                      >
-                        {getLatestNextOfKinName(app.candidate_id)}
-                      </Button>
-                    ) : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {getLatestReferenceName(app.candidate_id) ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openReferencesModal(app)}
-                        className="text-xs"
-                      >
-                        {getLatestReferenceName(app.candidate_id)}
-                      </Button>
-                    ) : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {(() => {
-                      const cvPath = app.cv_url || cvByCandidate[app.candidate_id || ""];
-                      if (cvPath) {
-                        return (
-                          <a
-                            href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/cvs/${cvPath}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline text-sm"
-                          >
-                            View CV
-                          </a>
-                        );
-                      }
-                      return "-";
-                    })()}
-                  </TableCell>
-                  <TableCell>
-                    {(() => {
-                      const flPath = app.letter_form_url || formLetterByCandidate[app.candidate_id || ""];
-                      if (flPath) {
-                        return (
-                          <a
-                            href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${flPath}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline text-sm"
-                          >
-                            View Form
-                          </a>
-                        );
-                      }
-                      return "-";
-                    })()}
-                  </TableCell>
-                  <TableCell>
-                    {app.candidate?.covid_vaccinated 
-                      ? (app.candidate.covid_vaccinated.toLowerCase().includes("booster") 
-                          ? "Yes" 
-                          : app.candidate.covid_vaccinated)
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {getBstCcDisplay(app.candidate_id) ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openBstCcModal(app)}
-                        className="text-xs"
-                      >
-                        {getBstCcDisplay(app.candidate_id)}
-                      </Button>
-                    ) : (app.bst_cc || "-")}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>
-                        {(() => {
-                          // Show "Yes" if profile_step_unlocked >= 2, else show the suitable value
-                          const step = (app.candidate as any)?.profile_step_unlocked || 1;
-                          if (step >= 2) return "Yes";
-                          return app.suitable || "-";
-                        })()}
-                      </span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openSuitableDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{app.interview_by || "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openInterviewerDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{app.interview_date ? formatDate(app.interview_date) : "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openInterviewDateDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{app.interview_result || "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openInterviewResultDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span className="line-clamp-2 max-w-[200px]">{app.interview_result_notes || "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openInterviewNotesDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{app.approved_position || "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openApprovedPositionDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center">
-                        <span>{getTestScoreText(app, "Marlins")}</span>
-                        {renderTestDownloadButton(app, "Marlins")}
-                      </div>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openTestDialog(app, "Marlins")}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center">
-                        <span>{getTestScoreText(app, "NEHA")}</span>
-                        {renderTestDownloadButton(app, "NEHA")}
-                      </div>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openTestDialog(app, "NEHA")}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center">
-                        <span>{getTestScoreText(app, "CES")}</span>
-                        {renderTestDownloadButton(app, "CES")}
-                      </div>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openTestDialog(app, "CES")}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{app.principal_interview_by || "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openPrincipalInterviewerDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>
-                        {app.principal_interview_date
-                          ? formatDate(app.principal_interview_date)
-                          : "-"}
-                      </span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openPrincipalInterviewDateDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{app.principal_interview_result || "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openPrincipalInterviewResultDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{app.approved_as || "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openApprovedAsDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{app.status || "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openNotesDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{app.employment_offer || "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openEmploymentOfferDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span>{app.eo_acceptance || "-"}</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-xs"
-                        onClick={() => openEoAcceptanceDialog(app)}
-                      >
-                        Update
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-
-        {applications.length === 0 && (
-          <div className="p-12 text-center">
-            <p className="text-muted-foreground">No applications found</p>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {(() => {
-          const filtered = applications.filter(passesFilters);
-          const totalPages = Math.ceil(filtered.length / itemsPerPage);
-          const startIndex = (currentPage - 1) * itemsPerPage;
-          const endIndex = Math.min(startIndex + itemsPerPage, filtered.length);
-
-          if (filtered.length === 0) return null;
-
-          return (
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-muted-foreground">
-                Showing {startIndex + 1} to {endIndex} of {filtered.length} entries
-              </p>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                >
-                  &lt;
-                </Button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                  if (
-                    page === 1 ||
-                    page === totalPages ||
-                    (page >= currentPage - 1 && page <= currentPage + 1)
-                  ) {
-                    return (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  } else if (page === currentPage - 2 || page === currentPage + 2) {
-                    return <span key={page} className="px-2">...</span>;
-                  }
-                  return null;
-                })}
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  &gt;
-                </Button>
+                )}
+                <div>
+                  <div className="text-lg">{viewingCandidate?.candidate?.full_name || "-"}</div>
+                  <div className="text-sm font-normal text-muted-foreground">{viewingCandidate?.candidate?.email}</div>
+                </div>
               </div>
-            </div>
-          );
-        })()}
-      </Card>
-
-      {/* Experience Modal */}
-      <Dialog open={experienceModalOpen} onOpenChange={setExperienceModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Experience - {experienceModalCandidate?.candidate?.full_name}
             </DialogTitle>
             <DialogDescription>
-              Applied for: {experienceModalCandidate?.job?.title} ({experienceModalCandidate?.job?.department})
+              Application for: {viewingCandidate?.job?.title} at {viewingCandidate?.job?.company_name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            {loadingExperience ? (
-              <div className="flex justify-center items-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : experienceModalData.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No experience records</p>
-            ) : (
-              <>
-                {/* Filter badges */}
-                <div className="flex flex-col gap-4">
-                  <div className="flex gap-2">
-                    <Button
-                      variant={experienceFilter === 'ALL' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setExperienceFilter('ALL')}
-                    >
-                      All
-                    </Button>
-                    <Button
-                      variant={experienceFilter === 'HOTEL' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setExperienceFilter('HOTEL')}
-                    >
-                      Hotel
-                    </Button>
-                    <Button
-                      variant={experienceFilter === 'SHIP' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setExperienceFilter('SHIP')}
-                    >
-                      Ship
-                    </Button>
-                  </div>
 
-                  <div className="flex gap-2 flex-wrap text-sm text-muted-foreground">
-                    <span>Summary:</span>
-                    <span className="font-medium">
-                      Hotel: {experienceModalData.filter(e => (e.experience_type || 'Hotel').toLowerCase() === 'hotel').length}
-                    </span>
-                    <span className="font-medium">
-                      Ship: {experienceModalData.filter(e => (e.experience_type || 'Hotel').toLowerCase() === 'ship').length}
-                    </span>
-                  </div>
+          {loadingCandidateData ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Personal Information */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Personal Information</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Phone:</span> {viewingCandidate?.candidate?.phone || "-"}</div>
+                  <div><span className="text-muted-foreground">Gender:</span> {viewingCandidate?.candidate?.gender || "-"}</div>
+                  <div><span className="text-muted-foreground">DOB:</span> {formatDate(viewingCandidate?.candidate?.date_of_birth)}</div>
+                  <div><span className="text-muted-foreground">Height:</span> {viewingCandidate?.candidate?.height_cm ? `${viewingCandidate.candidate.height_cm} cm` : "-"}</div>
+                  <div><span className="text-muted-foreground">Weight:</span> {viewingCandidate?.candidate?.weight_kg ? `${viewingCandidate.candidate.weight_kg} kg` : "-"}</div>
+                  <div><span className="text-muted-foreground">Office:</span> {viewingCandidate?.candidate?.registration_city || "-"}</div>
+                  <div><span className="text-muted-foreground">Step:</span> Step {(viewingCandidate?.candidate as any)?.profile_step_unlocked || 1}</div>
+                  <div><span className="text-muted-foreground">Status:</span> {viewingCandidate?.remarks || viewingCandidate?.status || "-"}</div>
+                  <div><span className="text-muted-foreground">Crew Code:</span> {viewingCandidate?.crew_code || "-"}</div>
                 </div>
+              </div>
 
-                {/* Experience list */}
-                <div className="space-y-3">
-                  {experienceModalData
-                    .filter(exp => {
-                      if (experienceFilter === 'ALL') return true;
-                      const type = (exp.experience_type || 'Hotel').toUpperCase();
-                      return type === experienceFilter; // HOTEL or SHIP
-                    })
-                    .map((exp, idx) => (
-                      <div key={idx} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-semibold">{exp.position}</span>
-                          <Badge variant={(exp.experience_type || 'Hotel').toLowerCase() === 'hotel' ? 'default' : 'secondary'}>
-                            {exp.experience_type || 'Hotel'}
-                          </Badge>
+              {/* Application Details */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Application Details</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Position:</span> {viewingCandidate?.job?.title || "-"}</div>
+                  <div><span className="text-muted-foreground">Department:</span> {viewingCandidate?.job?.department || "-"}</div>
+                  <div><span className="text-muted-foreground">Company:</span> {viewingCandidate?.job?.company_name || "-"}</div>
+                  <div><span className="text-muted-foreground">Applied:</span> {formatDate(viewingCandidate?.applied_at || viewingCandidate?.date_of_entry)}</div>
+                  <div><span className="text-muted-foreground">Suitable:</span> {viewingCandidate?.suitable || "-"}</div>
+                  <div><span className="text-muted-foreground">Interview Result:</span> {viewingCandidate?.interview_result || "-"}</div>
+                </div>
+              </div>
+
+              {/* Ship Experience */}
+              {(() => {
+                const shipExperiences = candidateExperiences.filter(exp =>
+                  (exp.experience_type || '').toLowerCase() === 'ship'
+                );
+
+                return (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2 text-primary">
+                      Ship Experience ({shipExperiences.length})
+                      <span className="font-normal text-muted-foreground ml-2">
+                        ({candidateExperiences.length} total)
+                      </span>
+                    </h3>
+                    {shipExperiences.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No ship experience records
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {shipExperiences.slice(0, 3).map((exp, idx) => (
+                          <div key={idx} className="border rounded p-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{exp.position}</span>
+                              <Badge variant="outline" className="text-xs">Ship</Badge>
+                            </div>
+                            <div className="text-muted-foreground">{exp.vessel_name_type || exp.company || "-"}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {exp.start_date ? formatDate(exp.start_date) : ""} - {exp.end_date ? formatDate(exp.end_date) : "Present"}
+                            </div>
+                          </div>
+                        ))}
+                        {shipExperiences.length > 3 && (
+                          <p className="text-xs text-muted-foreground">+{shipExperiences.length - 3} more experiences</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Hotel Experience */}
+              {(() => {
+                const hotelExperiences = candidateExperiences.filter(exp =>
+                  (exp.experience_type || 'Hotel').toLowerCase() === 'hotel'
+                );
+
+                return (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2 text-primary">
+                      Hotel Experience ({hotelExperiences.length})
+                    </h3>
+                    {hotelExperiences.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No hotel experience records
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {hotelExperiences.slice(0, 3).map((exp, idx) => (
+                          <div key={idx} className="border rounded p-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{exp.position}</span>
+                              <Badge variant="outline" className="text-xs">Hotel</Badge>
+                            </div>
+                            <div className="text-muted-foreground">{exp.vessel_name_type || exp.company || "-"}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {exp.start_date ? formatDate(exp.start_date) : ""} - {exp.end_date ? formatDate(exp.end_date) : "Present"}
+                            </div>
+                          </div>
+                        ))}
+                        {hotelExperiences.length > 3 && (
+                          <p className="text-xs text-muted-foreground">+{hotelExperiences.length - 3} more experiences</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Education */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Education ({candidateEducation.length})</h3>
+                {candidateEducation.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No education records</p>
+                ) : (
+                  <div className="space-y-2">
+                    {candidateEducation.slice(0, 3).map((edu, idx) => (
+                      <div key={idx} className="border rounded p-2 text-sm">
+                        <div className="font-medium">{edu.degree}</div>
+                        <div className="text-muted-foreground">{edu.institution}</div>
+                        <div className="text-xs text-muted-foreground">{edu.field_of_study || ""}</div>
+                      </div>
+                    ))}
+                    {candidateEducation.length > 3 && (
+                      <p className="text-xs text-muted-foreground">+{candidateEducation.length - 3} more education records</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Certificates */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Certificates ({candidateCertificates.length})</h3>
+                {candidateCertificates.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No certificates</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {candidateCertificates.map((cert, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-xs">
+                        {cert.type_certificate}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Travel Documents */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">Travel Documents ({candidateTravelDocs.length})</h3>
+                {candidateTravelDocs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No travel documents</p>
+                ) : (
+                  <div className="space-y-2">
+                    {candidateTravelDocs.map((doc, idx) => (
+                      <div key={idx} className="border rounded p-2 text-sm flex justify-between">
+                        <div>
+                          <div className="font-medium">{doc.document_type}</div>
+                          <div className="text-xs text-muted-foreground">No: {doc.document_number || "-"}</div>
                         </div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <div>
-                            <span className="font-medium">Company/Vessel:</span> {exp.company || exp.vessel_name_type || '-'}
-                          </div>
-                          <div>
-                            <span className="font-medium">Period:</span> {exp.start_date ? formatDate(exp.start_date) : '-'} - {exp.is_current ? 'Present' : (exp.end_date ? formatDate(exp.end_date) : '-')}
-                          </div>
-                          {exp.gt_loa && (
-                            <div>
-                              <span className="font-medium">GT/LOA:</span> {exp.gt_loa}
-                            </div>
-                          )}
-                          {exp.reason && (
-                            <div>
-                              <span className="font-medium">Reason:</span> {exp.reason}
-                            </div>
-                          )}
-                          {exp.job_description && (
-                            <div>
-                              <span className="font-medium">Job Description:</span> {exp.job_description}
-                            </div>
-                          )}
+                        <div className="text-right">
+                          <div className="text-xs text-muted-foreground">Expires: {formatDate(doc.expiry_date)}</div>
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Emergency Contacts & Next of Kin */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 text-primary">Emergency Contacts ({candidateEmergencyContacts.length})</h3>
+                  {candidateEmergencyContacts.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No emergency contacts</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {candidateEmergencyContacts.map((contact, idx) => (
+                        <div key={idx} className="border rounded p-2 text-sm">
+                          <div className="font-medium">{contact.full_name}</div>
+                          <div className="text-muted-foreground">{contact.relationship}</div>
+                          <div className="text-xs text-muted-foreground">{contact.phone}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </>
-            )}
-          </div>
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 text-primary">Next of Kin ({candidateNextOfKin.length})</h3>
+                  {candidateNextOfKin.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No next of kin</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {candidateNextOfKin.map((nok, idx) => (
+                        <div key={idx} className="border rounded p-2 text-sm">
+                          <div className="font-medium">{nok.full_name}</div>
+                          <div className="text-muted-foreground">{nok.relationship}</div>
+                          <div className="text-xs text-muted-foreground">DOB: {formatDate(nok.date_of_birth)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* References */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-primary">References ({candidateReferences.length})</h3>
+                {candidateReferences.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No references</p>
+                ) : (
+                  <div className="space-y-2">
+                    {candidateReferences.map((ref, idx) => (
+                      <div key={idx} className="border rounded p-2 text-sm">
+                        <div className="font-medium">{ref.full_name}</div>
+                        <div className="text-muted-foreground">{ref.company} - {ref.position}</div>
+                        <div className="text-xs text-muted-foreground">{ref.phone}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setExperienceModalOpen(false)}>Close</Button>
+            <Button type="button" onClick={() => setCandidateViewDialogOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Emergency Contact Modal */}
-      <Dialog open={emergencyContactModalOpen} onOpenChange={setEmergencyContactModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <Dialog open={referenceDialogOpen} onOpenChange={setReferenceDialogOpen}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              Emergency Contacts - {emergencyContactModalCandidate?.candidate?.full_name}
-            </DialogTitle>
+            <DialogTitle>BMI Reference Chart</DialogTitle>
             <DialogDescription>
-              Applied for: {emergencyContactModalCandidate?.job?.title} ({emergencyContactModalCandidate?.job?.department})
+              Body Mass Index (BMI) Classification
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center">
+            <img
+              src={bmiReferenceImage}
+              alt="BMI Reference Chart"
+              className="max-w-full h-auto rounded-lg border"
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setReferenceDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={approvedPositionDialogOpen} onOpenChange={setApprovedPositionDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Choose Approved Position</DialogTitle>
+            <DialogDescription>
+              {activeApp
+                ? `Pilih posisi untuk department ${activeApp.job.department}`
+                : "Pilih posisi yang akan di-approve."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {loadingEmergencyContact ? (
-              <div className="flex justify-center items-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : emergencyContactModalData.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No emergency contact records</p>
+            {approvedPositionJobs.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Tidak ada job lain untuk department ini.</p>
             ) : (
-              <div className="space-y-3">
-                {emergencyContactModalData.map((contact, idx) => (
-                  <div key={idx} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold">{contact.full_name}</span>
-                      {contact.is_primary && (
-                        <Badge variant="default">Primary</Badge>
-                      )}
+              <div className="max-h-64 overflow-y-auto border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10"></TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Company</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {approvedPositionJobs.map((job) => (
+                      <TableRow key={job.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedApprovedJobId === job.id}
+                            onCheckedChange={() => setSelectedApprovedJobId(job.id)}
+                          />
+                        </TableCell>
+                        <TableCell>{job.title}</TableCell>
+                        <TableCell>{job.company_name}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setApprovedPositionDialogOpen(false);
+                setSelectedApprovedJobId("");
+                setActiveApp(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={saveApprovedPosition} disabled={!selectedApprovedJobId}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <div className="space-y-4">
+        {/* Search Filter Section */}
+        <Card className="p-4">
+          <Collapsible open={filterOpen} onOpenChange={setFilterOpen}>
+            <div className="flex items-center justify-between">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 p-0 hover:bg-transparent">
+                  <h2 className="text-lg font-semibold">Search Filter</h2>
+                  {filterOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <div className="flex items-center gap-2">
+                <Button onClick={exportToExcel} size="sm" className="bg-green-600 hover:bg-green-700">Export to Excel</Button>
+                <Button onClick={exportToCSV} size="sm" className="bg-blue-600 hover:bg-blue-700">Export to CSV</Button>
+              </div>
+            </div>
+
+            <CollapsibleContent className="mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Principal</label>
+                  <Input placeholder="Select Principal" value={principal} onChange={(e) => setPrincipal(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Department</label>
+                  <Input placeholder="Select Department" value={department} onChange={(e) => setDepartment(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Position</label>
+                  <Input placeholder="Select Position" value={position} onChange={(e) => setPosition(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Office {isPicUser && picCity ? `(${picCity})` : ""}</label>
+                  <Input placeholder="Select Office" value={office} onChange={(e) => !isPicUser && setOffice(e.target.value)} disabled={isPicUser} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Age Minimum</label>
+                  <Input type="number" value={ageMin} onChange={(e) => setAgeMin(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Age Maximum</label>
+                  <Input type="number" value={ageMax} onChange={(e) => setAgeMax(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Gender</label>
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Neha Score</label>
+                  <Input type="number" value={nehaScore} onChange={(e) => setNehaScore(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Marlin English Score Minimum</label>
+                  <Input type="number" value={marlinScoreMin} onChange={(e) => setMarlinScoreMin(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Marlin English Score Maximum</label>
+                  <Input type="number" value={marlinScoreMax} onChange={(e) => setMarlinScoreMax(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Information Source</label>
+                  <Input placeholder="Select information_source" value={infoSource} onChange={(e) => setInfoSource(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Education Background</label>
+                  <Input placeholder="Education Background" value={educationBackground} onChange={(e) => setEducationBackground(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Suitable</label>
+                  <Select value={suitableFilter} onValueChange={setSuitableFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="- Select -" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Yes">Yes</SelectItem>
+                      <SelectItem value="No">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Ship Experience</label>
+                  <Input placeholder="Ship Experience" value={shipExperience} onChange={(e) => setShipExperience(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Interview Result</label>
+                  <Select value={interviewResultFilter} onValueChange={setInterviewResultFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="- Select -" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Approved">Approved</SelectItem>
+                      <SelectItem value="Not Approved">Not Approved</SelectItem>
+                      <SelectItem value="Reclassed">Reclassed</SelectItem>
+                      <SelectItem value="Review">Review</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Interview By</label>
+                  <Input placeholder="Interview By" value={interviewByFilter} onChange={(e) => setInterviewByFilter(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Interview Date Minimum</label>
+                  <Input type="date" value={interviewDateMin} onChange={(e) => setInterviewDateMin(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Interview Date Maximum</label>
+                  <Input type="date" value={interviewDateMax} onChange={(e) => setInterviewDateMax(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">STWC 2010</label>
+                  <Select value={stwc2010} onValueChange={setStwc2010}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="- Select -" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Yes">Yes</SelectItem>
+                      <SelectItem value="No">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Approved As</label>
+                  <Input placeholder="Approved As" value={approvedAsFilter} onChange={(e) => setApprovedAsFilter(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Approved Position</label>
+                  <Input placeholder="Approved Position" value={approvedPositionFilter} onChange={(e) => setApprovedPositionFilter(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Principal Interview By</label>
+                  <Input placeholder="Principal Interview By" value={principalInterviewByFilter} onChange={(e) => setPrincipalInterviewByFilter(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Principal Interview Date Minimum</label>
+                  <Input type="date" value={principalInterviewDateMin} onChange={(e) => setPrincipalInterviewDateMin(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Principal Interview Date Maximum</label>
+                  <Input type="date" value={principalInterviewDateMax} onChange={(e) => setPrincipalInterviewDateMax(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Principal Interview Result</label>
+                  <Select value={principalInterviewResultFilter} onValueChange={setPrincipalInterviewResultFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="- Select -" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Approved">Approved</SelectItem>
+                      <SelectItem value="Not Approved">Not Approved</SelectItem>
+                      <SelectItem value="Reclassed">Reclassed</SelectItem>
+                      <SelectItem value="Review">Review</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Visa Status</label>
+                  <Select value={visaStatusFilter} onValueChange={setVisaStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="- Select -" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Valid">Valid</SelectItem>
+                      <SelectItem value="Expiring Soon">Expiring Soon</SelectItem>
+                      <SelectItem value="Expired">Expired</SelectItem>
+                      <SelectItem value="No Visa">No Visa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">BST/CC Status</label>
+                  <Select value={bstCcStatusFilter} onValueChange={setBstCcStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="- Select -" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Has BST">Has BST</SelectItem>
+                      <SelectItem value="Has CC">Has CC</SelectItem>
+                      <SelectItem value="No Certificates">No Certificates</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Start Date</label>
+                  <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">End Date</label>
+                  <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                </div>
+                <div className="flex items-end justify-end gap-2">
+                  <Button variant="secondary" onClick={clearFilters} className="w-full">Clear</Button>
+                </div>
+                <div className="flex items-end justify-end gap-2">
+                  <Button variant="secondary" onClick={clearFilters} className="w-full">Clear</Button>
+                </div>
+                <div className="flex items-end justify-end gap-2">
+                  <Button className="w-full">Filter</Button>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
+
+        {/* Selection Gap Pool List */}
+        <Card className="p-4">
+          <h2 className="text-lg font-semibold mb-4">Selection Gap Pool List</h2>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex gap-2">
+              <Button onClick={handleSelectAll} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                Select all
+              </Button>
+              <Button onClick={handleDeselectAll} size="sm" variant="secondary">
+                Deselect All
+              </Button>
+              <Button onClick={handleSetInterview} size="sm" className="bg-green-600 hover:bg-green-700">
+                Set Interview
+              </Button>
+              <Button onClick={handleBulkDelete} size="sm" variant="destructive">
+                Delete
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm">Search:</span>
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-64"
+              />
+            </div>
+          </div>
+
+          {/* Scrollable Table */}
+          <div className="table-responsive overflow-x-auto border rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[60px] min-w-[60px] sticky left-0 z-20 bg-background">
+                    <Checkbox
+                      checked={selectedIds.size === applications.length && applications.length > 0}
+                      onCheckedChange={(checked) => checked ? handleSelectAll() : handleDeselectAll()}
+                    />
+                  </TableHead>
+                  <TableHead className="min-w-[180px] sticky left-[60px] z-20 bg-background">Remarks/Record</TableHead>
+                  <TableHead className="min-w-[150px] sticky left-[240px] z-20 bg-background">Crew Code</TableHead>
+                  <TableHead className="min-w-[80px] sticky left-[390px] z-20 bg-background">Photo</TableHead>
+                  <TableHead className="min-w-[120px] sticky left-[470px] z-20 bg-background">First Name</TableHead>
+                  <TableHead className="min-w-[120px]">Last Name</TableHead>
+                  <TableHead className="min-w-[130px]">Office Registered</TableHead>
+                  <TableHead className="min-w-[120px]">Date of Entry</TableHead>
+                  <TableHead className="min-w-[100px]">Source</TableHead>
+                  <TableHead className="min-w-[120px]">Position</TableHead>
+                  <TableHead className="min-w-[120px]">Department</TableHead>
+                  <TableHead className="min-w-[130px]">Second Position</TableHead>
+                  <TableHead className="min-w-[80px]">Gender</TableHead>
+                  <TableHead className="min-w-[100px]">DOB</TableHead>
+                  <TableHead className="min-w-[60px]">Age</TableHead>
+                  <TableHead className="min-w-[110px]">Weight/Height</TableHead>
+                  <TableHead className="min-w-[100px]">Reference</TableHead>
+                  <TableHead className="min-w-[110px]">Has Exp</TableHead>
+                  <TableHead className="min-w-[150px]">Ship Experience</TableHead>
+                  <TableHead className="min-w-[150px]">Hotel Experience</TableHead>
+                  <TableHead className="min-w-[130px]">Visa Expiry Date</TableHead>
+                  <TableHead className="min-w-[160px]">Education Background</TableHead>
+                  <TableHead className="min-w-[120px]">Contact No</TableHead>
+                  <TableHead className="min-w-[180px]">Email</TableHead>
+                  <TableHead className="min-w-[150px]">Emergency Contact</TableHead>
+                  <TableHead className="min-w-[130px]">Next of Kin</TableHead>
+                  <TableHead className="min-w-[130px]">References</TableHead>
+                  <TableHead className="min-w-[80px]">CV</TableHead>
+                  <TableHead className="min-w-[140px]">
+                    <div className="flex items-center gap-1">
+                      <span>Form Letter</span>
+                      <a
+                        href="/templates/Form_Letter_Template.docx"
+                        download="Form_Letter_Template.docx"
+                        className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-muted"
+                        title="Download Template"
+                      >
+                        <Download className="h-3 w-3" />
+                      </a>
                     </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div>
-                        <span className="font-medium">Relationship:</span> {contact.relationship || '-'}
+                  </TableHead>
+                  <TableHead className="min-w-[140px]">Vaccin Covid Booster</TableHead>
+                  <TableHead className="min-w-[80px]">BST/CC</TableHead>
+                  <TableHead className="min-w-[100px]">Suitable</TableHead>
+                  <TableHead className="min-w-[120px]">Interview By</TableHead>
+                  <TableHead className="min-w-[130px]">Interview Date</TableHead>
+                  <TableHead className="min-w-[130px]">Interview Result</TableHead>
+                  <TableHead className="min-w-[170px]">Interview Result Notes</TableHead>
+                  <TableHead className="min-w-[140px]">Approved Position</TableHead>
+                  <TableHead className="min-w-[160px]">Marlin / English Score</TableHead>
+                  <TableHead className="min-w-[120px]">Neha Test</TableHead>
+                  <TableHead className="min-w-[110px]">CES Test</TableHead>
+                  <TableHead className="min-w-[170px]">Principal Interview By</TableHead>
+                  <TableHead className="min-w-[180px]">Principal Interview Date</TableHead>
+                  <TableHead className="min-w-[190px]">Principal Interview Result</TableHead>
+                  <TableHead className="min-w-[120px]">Approved As</TableHead>
+                  <TableHead className="min-w-[100px]">Notes</TableHead>
+                  <TableHead className="min-w-[140px]">Employment Offer</TableHead>
+                  <TableHead className="min-w-[130px]">EO Acceptance</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(() => {
+                  const filtered = applications.filter(passesFilters);
+                  const startIndex = (currentPage - 1) * itemsPerPage;
+                  const endIndex = startIndex + itemsPerPage;
+                  return filtered.slice(startIndex, endIndex);
+                })().map((app) => (
+                  <TableRow key={app.id}>
+                    <TableCell className="w-[60px] min-w-[60px] sticky left-0 z-10 bg-background">
+                      <Checkbox
+                        checked={selectedIds.has(app.id)}
+                        onCheckedChange={() => handleToggleSelect(app.id)}
+                      />
+                    </TableCell>
+                    <TableCell className="sticky left-[60px] z-10 bg-background">
+                      <div className="flex flex-col gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs gap-1"
+                          onClick={() => openCandidateViewDialog(app)}
+                        >
+                          <Eye className="w-3 h-3" />
+                          View
+                        </Button>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openRemarksDialog(app)}
+                        >
+                          Update
+                        </Button>
                       </div>
-                      <div>
-                        <span className="font-medium">Phone:</span> {contact.phone || '-'}
+                    </TableCell>
+                    <TableCell className="sticky left-[240px] z-10 bg-background">{app.crew_code || "-"}</TableCell>
+                    <TableCell className="sticky left-[390px] z-10 bg-background">
+                      {app.candidate?.avatar_url || app.photo_url ? (
+                        <img
+                          src={app.candidate?.avatar_url || app.photo_url}
+                          alt="Photo"
+                          className="w-10 h-10 rounded object-cover"
+                        />
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell className="font-medium sticky left-[470px] z-10 bg-background">{app.candidate.full_name.split(" ")[0]}</TableCell>
+                    <TableCell className="font-medium">{app.candidate.full_name.split(" ").slice(1).join(" ")}</TableCell>
+                    <TableCell>{app.candidate.registration_city || app.office_registered || "-"}</TableCell>
+                    <TableCell>{formatDate(app.applied_at || app.date_of_entry)}</TableCell>
+                    <TableCell>{app.candidate.how_found_us || app.source || "-"}</TableCell>
+                    <TableCell>{app.job.title}</TableCell>
+                    <TableCell>{app.job.department || "-"}</TableCell>
+                    <TableCell>{app.second_position || "-"}</TableCell>
+                    <TableCell>{app.candidate.gender || "-"}</TableCell>
+                    <TableCell>{formatDate(app.candidate.date_of_birth)}</TableCell>
+                    <TableCell>{calculateAge(app.candidate.date_of_birth)}</TableCell>
+                    <TableCell>
+                      {app.candidate.weight_kg && app.candidate.height_cm
+                        ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}`
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="outline" size="sm" onClick={() => openReferenceDialog(app)}>View Reference</Button>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getShipExperienceFlag(app.candidate_id, app.job?.department) === "Y" ? "default" : "secondary"}>
+                        {getShipExperienceFlag(app.candidate_id, app.job?.department)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setExperienceFilter('SHIP');
+                          openExperienceModal(app);
+                        }}
+                        className="text-xs"
+                      >
+                        View ({getExperienceCountByType(app.candidate_id, 'ship')}/{getExperienceCount(app.candidate_id).total})
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setExperienceFilter('HOTEL');
+                          openExperienceModal(app);
+                        }}
+                        className="text-xs"
+                      >
+                        View ({getExperienceCountByType(app.candidate_id, 'hotel')}/{getExperienceCount(app.candidate_id).total})
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      {getVisaCount(app.candidate_id) > 0 ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openVisaModal(app)}
+                          className={`text-xs ${getVisaButtonClass(getVisaExpiryStatus(app.c1d_expiry_date))}`}
+                        >
+                          {formatDate(app.c1d_expiry_date)} ({getVisaCount(app.candidate_id)})
+                        </Button>
+                      ) : (
+                        <span className="text-muted-foreground">{formatDate(app.c1d_expiry_date)}</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {getLatestEducationInstitution(app.candidate_id) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEducationModal(app)}
+                          className="text-xs"
+                        >
+                          {getLatestEducationInstitution(app.candidate_id)}
+                        </Button>
+                      ) : (app.education_background || "-")}
+                    </TableCell>
+                    <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
+                    <TableCell>{app.candidate.email}</TableCell>
+                    <TableCell>
+                      {getLatestEmergencyContactName(app.candidate_id) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEmergencyContactModal(app)}
+                          className="text-xs"
+                        >
+                          {getLatestEmergencyContactName(app.candidate_id)}
+                        </Button>
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {getLatestNextOfKinName(app.candidate_id) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openNextOfKinModal(app)}
+                          className="text-xs"
+                        >
+                          {getLatestNextOfKinName(app.candidate_id)}
+                        </Button>
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {getLatestReferenceName(app.candidate_id) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openReferencesModal(app)}
+                          className="text-xs"
+                        >
+                          {getLatestReferenceName(app.candidate_id)}
+                        </Button>
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const cvPath = app.cv_url || cvByCandidate[app.candidate_id || ""];
+                        if (cvPath) {
+                          return (
+                            <a
+                              href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/cvs/${cvPath}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline text-sm"
+                            >
+                              View CV
+                            </a>
+                          );
+                        }
+                        return "-";
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const flPath = app.letter_form_url || formLetterByCandidate[app.candidate_id || ""];
+                        if (flPath) {
+                          return (
+                            <a
+                              href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${flPath}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline text-sm"
+                            >
+                              View Form
+                            </a>
+                          );
+                        }
+                        return "-";
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      {app.candidate?.covid_vaccinated
+                        ? (app.candidate.covid_vaccinated.toLowerCase().includes("booster")
+                          ? "Yes"
+                          : app.candidate.covid_vaccinated)
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {getBstCcDisplay(app.candidate_id) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openBstCcModal(app)}
+                          className="text-xs"
+                        >
+                          {getBstCcDisplay(app.candidate_id)}
+                        </Button>
+                      ) : (app.bst_cc || "-")}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>
+                          {(() => {
+                            // Show "Yes" if profile_step_unlocked >= 2, else show the suitable value
+                            const step = (app.candidate as any)?.profile_step_unlocked || 1;
+                            if (step >= 2) return "Yes";
+                            return app.suitable || "-";
+                          })()}
+                        </span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openSuitableDialog(app)}
+                        >
+                          Update
+                        </Button>
                       </div>
-                      {contact.alternative_phone && (
-                        <div>
-                          <span className="font-medium">Alternative Phone:</span> {contact.alternative_phone}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.interview_by || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openInterviewerDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.interview_date ? formatDate(app.interview_date) : "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openInterviewDateDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.interview_result || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openInterviewResultDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span className="line-clamp-2 max-w-[200px]">{app.interview_result_notes || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openInterviewNotesDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.approved_position || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openApprovedPositionDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center">
+                          <span>{getTestScoreText(app, "Marlins")}</span>
+                          {renderTestDownloadButton(app, "Marlins")}
                         </div>
-                      )}
-                      {contact.email && (
-                        <div>
-                          <span className="font-medium">Email:</span> {contact.email}
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openTestDialog(app, "Marlins")}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center">
+                          <span>{getTestScoreText(app, "NEHA")}</span>
+                          {renderTestDownloadButton(app, "NEHA")}
                         </div>
-                      )}
-                      {contact.address && (
-                        <div>
-                          <span className="font-medium">Address:</span> {contact.address}
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openTestDialog(app, "NEHA")}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center">
+                          <span>{getTestScoreText(app, "CES")}</span>
+                          {renderTestDownloadButton(app, "CES")}
                         </div>
-                      )}
-                      {(contact.city || contact.country) && (
-                        <div>
-                          <span className="font-medium">Location:</span> {[contact.city, contact.country].filter(Boolean).join(', ')}
-                        </div>
-                      )}
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openTestDialog(app, "CES")}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.principal_interview_by || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openPrincipalInterviewerDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>
+                          {app.principal_interview_date
+                            ? formatDate(app.principal_interview_date)
+                            : "-"}
+                        </span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openPrincipalInterviewDateDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.principal_interview_result || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openPrincipalInterviewResultDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.approved_as || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openApprovedAsDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.status || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openNotesDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.employment_offer || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openEmploymentOfferDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{app.eo_acceptance || "-"}</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={() => openEoAcceptanceDialog(app)}
+                        >
+                          Update
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {applications.length === 0 && (
+            <div className="p-12 text-center">
+              <p className="text-muted-foreground">No applications found</p>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {(() => {
+            const filtered = applications.filter(passesFilters);
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filtered.length);
+
+            if (filtered.length === 0) return null;
+
+            return (
+              <div className="flex items-center justify-between mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1} to {endIndex} of {filtered.length} entries
+                </p>
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    &lt;
+                  </Button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </Button>
+                      );
+                    } else if (page === currentPage - 2 || page === currentPage + 2) {
+                      return <span key={page} className="px-2">...</span>;
+                    }
+                    return null;
+                  })}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    &gt;
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
+        </Card>
+
+        {/* Experience Modal */}
+        <Dialog open={experienceModalOpen} onOpenChange={setExperienceModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                Experience - {experienceModalCandidate?.candidate?.full_name}
+              </DialogTitle>
+              <DialogDescription>
+                Applied for: {experienceModalCandidate?.job?.title} ({experienceModalCandidate?.job?.department})
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {loadingExperience ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : experienceModalData.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No experience records</p>
+              ) : (
+                <>
+                  {/* Filter badges */}
+                  <div className="flex flex-col gap-4">
+                    <div className="flex gap-2">
+                      <Button
+                        variant={experienceFilter === 'ALL' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setExperienceFilter('ALL')}
+                      >
+                        All
+                      </Button>
+                      <Button
+                        variant={experienceFilter === 'HOTEL' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setExperienceFilter('HOTEL')}
+                      >
+                        Hotel
+                      </Button>
+                      <Button
+                        variant={experienceFilter === 'SHIP' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setExperienceFilter('SHIP')}
+                      >
+                        Ship
+                      </Button>
+                    </div>
+
+                    <div className="flex gap-2 flex-wrap text-sm text-muted-foreground">
+                      <span>Summary:</span>
+                      <span className="font-medium">
+                        Hotel: {experienceModalData.filter(e => (e.experience_type || 'Hotel').toLowerCase() === 'hotel').length}
+                      </span>
+                      <span className="font-medium">
+                        Ship: {experienceModalData.filter(e => (e.experience_type || 'Hotel').toLowerCase() === 'ship').length}
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEmergencyContactModalOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      {/* Education Modal */}
-      <Dialog open={educationModalOpen} onOpenChange={setEducationModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Education - {educationModalCandidate?.candidate?.full_name}
-            </DialogTitle>
-            <DialogDescription>
-              Applied for: {educationModalCandidate?.job?.title} ({educationModalCandidate?.job?.department})
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {loadingEducation ? (
-              <div className="flex justify-center items-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : educationModalData.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No education records</p>
-            ) : (
-              <div className="space-y-3">
-                {educationModalData.map((edu, idx) => (
-                  <div key={idx} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold">{edu.institution}</span>
-                      {edu.is_current && (
-                        <Badge variant="default">Current</Badge>
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div>
-                        <span className="font-medium">Degree:</span> {edu.degree || '-'}
-                      </div>
-                      {edu.field_of_study && (
-                        <div>
-                          <span className="font-medium">Field of Study:</span> {edu.field_of_study}
+                  {/* Experience list */}
+                  <div className="space-y-3">
+                    {experienceModalData
+                      .filter(exp => {
+                        if (experienceFilter === 'ALL') return true;
+                        const type = (exp.experience_type || 'Hotel').toUpperCase();
+                        return type === experienceFilter; // HOTEL or SHIP
+                      })
+                      .map((exp, idx) => (
+                        <div key={idx} className="border rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold">{exp.position}</span>
+                            <Badge variant={(exp.experience_type || 'Hotel').toLowerCase() === 'hotel' ? 'default' : 'secondary'}>
+                              {exp.experience_type || 'Hotel'}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <div>
+                              <span className="font-medium">Company/Vessel:</span> {exp.company || exp.vessel_name_type || '-'}
+                            </div>
+                            <div>
+                              <span className="font-medium">Period:</span> {exp.start_date ? formatDate(exp.start_date) : '-'} - {exp.is_current ? 'Present' : (exp.end_date ? formatDate(exp.end_date) : '-')}
+                            </div>
+                            {exp.gt_loa && (
+                              <div>
+                                <span className="font-medium">GT/LOA:</span> {exp.gt_loa}
+                              </div>
+                            )}
+                            {exp.reason && (
+                              <div>
+                                <span className="font-medium">Reason:</span> {exp.reason}
+                              </div>
+                            )}
+                            {exp.job_description && (
+                              <div>
+                                <span className="font-medium">Job Description:</span> {exp.job_description}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      <div>
-                        <span className="font-medium">Period:</span> {edu.start_date ? formatDate(edu.start_date) : '-'} - {edu.end_date ? formatDate(edu.end_date) : 'Present'}
-                      </div>
-                      {edu.description && (
-                        <div>
-                          <span className="font-medium">Description:</span> {edu.description}
-                        </div>
-                      )}
-                    </div>
+                      ))}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEducationModalOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                </>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setExperienceModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* Visa Documents Modal */}
-      <Dialog open={visaModalOpen} onOpenChange={setVisaModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Visa Documents - {visaModalCandidate?.candidate?.full_name}
-            </DialogTitle>
-            <DialogDescription>
-              Applied for: {visaModalCandidate?.job?.title} ({visaModalCandidate?.job?.department})
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {loadingVisa ? (
-              <div className="flex justify-center items-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : visaModalData.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No visa documents found</p>
-            ) : (
-              <div className="space-y-3">
-                {visaModalData.map((visa, idx) => {
-                  // Determine visa status: expired, expiring (within 6 months), or valid
-                  const now = new Date();
-                  const expiryDate = visa.expiry_date ? new Date(visa.expiry_date) : null;
-                  const sixMonthsFromNow = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
-                  
-                  let status: 'expired' | 'expiring' | 'valid' = 'valid';
-                  if (expiryDate && expiryDate < now) {
-                    status = 'expired';
-                  } else if (expiryDate && expiryDate < sixMonthsFromNow) {
-                    status = 'expiring';
-                  }
-                  
-                  const borderClass = status === 'expired' 
-                    ? 'border-destructive bg-destructive/5' 
-                    : status === 'expiring' 
-                      ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' 
-                      : '';
-                  
-                  return (
-                    <div key={idx} className={`border rounded-lg p-4 ${borderClass}`}>
+        {/* Emergency Contact Modal */}
+        <Dialog open={emergencyContactModalOpen} onOpenChange={setEmergencyContactModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                Emergency Contacts - {emergencyContactModalCandidate?.candidate?.full_name}
+              </DialogTitle>
+              <DialogDescription>
+                Applied for: {emergencyContactModalCandidate?.job?.title} ({emergencyContactModalCandidate?.job?.department})
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {loadingEmergencyContact ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : emergencyContactModalData.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No emergency contact records</p>
+              ) : (
+                <div className="space-y-3">
+                  {emergencyContactModalData.map((contact, idx) => (
+                    <div key={idx} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold">{visa.document_type}</span>
-                        {status === 'expired' ? (
-                          <Badge variant="destructive">Expired</Badge>
-                        ) : status === 'expiring' ? (
-                          <Badge className="bg-amber-500 hover:bg-amber-600 text-white">Expiring Soon</Badge>
-                        ) : (
-                          <Badge className="bg-green-600 hover:bg-green-700 text-white">Valid</Badge>
+                        <span className="font-semibold">{contact.full_name}</span>
+                        {contact.is_primary && (
+                          <Badge variant="default">Primary</Badge>
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground space-y-1">
                         <div>
-                          <span className="font-medium">Document Number:</span> {visa.document_number || '-'}
+                          <span className="font-medium">Relationship:</span> {contact.relationship || '-'}
                         </div>
                         <div>
-                          <span className="font-medium">Issue Date:</span> {visa.issue_date ? formatDate(visa.issue_date) : '-'}
+                          <span className="font-medium">Phone:</span> {contact.phone || '-'}
                         </div>
+                        {contact.alternative_phone && (
+                          <div>
+                            <span className="font-medium">Alternative Phone:</span> {contact.alternative_phone}
+                          </div>
+                        )}
+                        {contact.email && (
+                          <div>
+                            <span className="font-medium">Email:</span> {contact.email}
+                          </div>
+                        )}
+                        {contact.address && (
+                          <div>
+                            <span className="font-medium">Address:</span> {contact.address}
+                          </div>
+                        )}
+                        {(contact.city || contact.country) && (
+                          <div>
+                            <span className="font-medium">Location:</span> {[contact.city, contact.country].filter(Boolean).join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEmergencyContactModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Education Modal */}
+        <Dialog open={educationModalOpen} onOpenChange={setEducationModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                Education - {educationModalCandidate?.candidate?.full_name}
+              </DialogTitle>
+              <DialogDescription>
+                Applied for: {educationModalCandidate?.job?.title} ({educationModalCandidate?.job?.department})
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {loadingEducation ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : educationModalData.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No education records</p>
+              ) : (
+                <div className="space-y-3">
+                  {educationModalData.map((edu, idx) => (
+                    <div key={idx} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold">{edu.institution}</span>
+                        {edu.is_current && (
+                          <Badge variant="default">Current</Badge>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
                         <div>
-                          <span className="font-medium">Expiry Date:</span> {visa.expiry_date ? formatDate(visa.expiry_date) : '-'}
+                          <span className="font-medium">Degree:</span> {edu.degree || '-'}
                         </div>
-                        {visa.issuing_authority && (
+                        {edu.field_of_study && (
                           <div>
-                            <span className="font-medium">Issuing Authority:</span> {visa.issuing_authority}
+                            <span className="font-medium">Field of Study:</span> {edu.field_of_study}
                           </div>
                         )}
-                        {visa.issuing_country && (
+                        <div>
+                          <span className="font-medium">Period:</span> {edu.start_date ? formatDate(edu.start_date) : '-'} - {edu.end_date ? formatDate(edu.end_date) : 'Present'}
+                        </div>
+                        {edu.description && (
                           <div>
-                            <span className="font-medium">Country:</span> {visa.issuing_country}
+                            <span className="font-medium">Description:</span> {edu.description}
                           </div>
                         )}
-                        {visa.file_path && (
-                          <div className="pt-2">
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEducationModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Visa Documents Modal */}
+        <Dialog open={visaModalOpen} onOpenChange={setVisaModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                Visa Documents - {visaModalCandidate?.candidate?.full_name}
+              </DialogTitle>
+              <DialogDescription>
+                Applied for: {visaModalCandidate?.job?.title} ({visaModalCandidate?.job?.department})
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {loadingVisa ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : visaModalData.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No visa documents found</p>
+              ) : (
+                <div className="space-y-3">
+                  {visaModalData.map((visa, idx) => {
+                    // Determine visa status: expired, expiring (within 6 months), or valid
+                    const now = new Date();
+                    const expiryDate = visa.expiry_date ? new Date(visa.expiry_date) : null;
+                    const sixMonthsFromNow = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
+
+                    let status: 'expired' | 'expiring' | 'valid' = 'valid';
+                    if (expiryDate && expiryDate < now) {
+                      status = 'expired';
+                    } else if (expiryDate && expiryDate < sixMonthsFromNow) {
+                      status = 'expiring';
+                    }
+
+                    const borderClass = status === 'expired'
+                      ? 'border-destructive bg-destructive/5'
+                      : status === 'expiring'
+                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20'
+                        : '';
+
+                    return (
+                      <div key={idx} className={`border rounded-lg p-4 ${borderClass}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold">{visa.document_type}</span>
+                          {status === 'expired' ? (
+                            <Badge variant="destructive">Expired</Badge>
+                          ) : status === 'expiring' ? (
+                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white">Expiring Soon</Badge>
+                          ) : (
+                            <Badge className="bg-green-600 hover:bg-green-700 text-white">Valid</Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div>
+                            <span className="font-medium">Document Number:</span> {visa.document_number || '-'}
+                          </div>
+                          <div>
+                            <span className="font-medium">Issue Date:</span> {visa.issue_date ? formatDate(visa.issue_date) : '-'}
+                          </div>
+                          <div>
+                            <span className="font-medium">Expiry Date:</span> {visa.expiry_date ? formatDate(visa.expiry_date) : '-'}
+                          </div>
+                          {visa.issuing_authority && (
+                            <div>
+                              <span className="font-medium">Issuing Authority:</span> {visa.issuing_authority}
+                            </div>
+                          )}
+                          {visa.issuing_country && (
+                            <div>
+                              <span className="font-medium">Country:</span> {visa.issuing_country}
+                            </div>
+                          )}
+                          {visa.file_path && (
+                            <div className="pt-2">
+                              <a
+                                href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${visa.file_path}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline text-sm font-medium"
+                              >
+                                View Document
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setVisaModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* BST/CC Certificates Modal */}
+        <Dialog open={bstCcModalOpen} onOpenChange={setBstCcModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                BST/CC Certificates - {bstCcModalCandidate?.candidate?.full_name}
+              </DialogTitle>
+              <DialogDescription>
+                Applied for: {bstCcModalCandidate?.job?.title} ({bstCcModalCandidate?.job?.department})
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {(() => {
+                const candidateId = bstCcModalCandidate?.candidate_id;
+                const entry = candidateId ? bstCcByCandidate[candidateId] : null;
+
+                if (!entry || entry.certs.length === 0) {
+                  return <p className="text-muted-foreground text-center py-4">No BST/CC certificates found</p>;
+                }
+
+                return (
+                  <div className="space-y-3">
+                    {entry.certs.map((cert, idx) => (
+                      <div key={idx} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold">{cert.type}</span>
+                          {cert.file_path ? (
                             <a
-                              href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${visa.file_path}`}
+                              href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${cert.file_path}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-primary hover:underline text-sm font-medium"
                             >
                               View Document
                             </a>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">No file</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setBstCcModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Next of Kin Modal */}
+        <Dialog open={nextOfKinModalOpen} onOpenChange={setNextOfKinModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                Next of Kin - {nextOfKinModalCandidate?.candidate?.full_name}
+              </DialogTitle>
+              <DialogDescription>
+                Applied for: {nextOfKinModalCandidate?.job?.title} ({nextOfKinModalCandidate?.job?.department})
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {loadingNextOfKin ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nextOfKinModalData.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No next of kin records</p>
+              ) : (
+                <div className="space-y-3">
+                  {nextOfKinModalData.map((nok, idx) => (
+                    <div key={idx} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold">{nok.full_name}</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>
+                          <span className="font-medium">Relationship:</span> {nok.relationship || '-'}
+                        </div>
+                        {nok.date_of_birth && (
+                          <div>
+                            <span className="font-medium">Date of Birth:</span> {formatDate(nok.date_of_birth)}
                           </div>
                         )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setVisaModalOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* BST/CC Certificates Modal */}
-      <Dialog open={bstCcModalOpen} onOpenChange={setBstCcModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              BST/CC Certificates - {bstCcModalCandidate?.candidate?.full_name}
-            </DialogTitle>
-            <DialogDescription>
-              Applied for: {bstCcModalCandidate?.job?.title} ({bstCcModalCandidate?.job?.department})
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {(() => {
-              const candidateId = bstCcModalCandidate?.candidate_id;
-              const entry = candidateId ? bstCcByCandidate[candidateId] : null;
-              
-              if (!entry || entry.certs.length === 0) {
-                return <p className="text-muted-foreground text-center py-4">No BST/CC certificates found</p>;
-              }
-              
-              return (
-                <div className="space-y-3">
-                  {entry.certs.map((cert, idx) => (
-                    <div key={idx} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">{cert.type}</span>
-                        {cert.file_path ? (
-                          <a
-                            href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${cert.file_path}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline text-sm font-medium"
-                          >
-                            View Document
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">No file</span>
+                        {nok.place_of_birth && (
+                          <div>
+                            <span className="font-medium">Place of Birth:</span> {nok.place_of_birth}
+                          </div>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
-              );
-            })()}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBstCcModalOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setNextOfKinModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* Next of Kin Modal */}
-      <Dialog open={nextOfKinModalOpen} onOpenChange={setNextOfKinModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Next of Kin - {nextOfKinModalCandidate?.candidate?.full_name}
-            </DialogTitle>
-            <DialogDescription>
-              Applied for: {nextOfKinModalCandidate?.job?.title} ({nextOfKinModalCandidate?.job?.department})
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {loadingNextOfKin ? (
-              <div className="flex justify-center items-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : nextOfKinModalData.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No next of kin records</p>
-            ) : (
-              <div className="space-y-3">
-                {nextOfKinModalData.map((nok, idx) => (
-                  <div key={idx} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold">{nok.full_name}</span>
-                    </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div>
-                        <span className="font-medium">Relationship:</span> {nok.relationship || '-'}
+        {/* References Modal */}
+        <Dialog open={referencesModalOpen} onOpenChange={setReferencesModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                References - {referencesModalCandidate?.candidate?.full_name}
+              </DialogTitle>
+              <DialogDescription>
+                Applied for: {referencesModalCandidate?.job?.title} ({referencesModalCandidate?.job?.department})
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {loadingReferences ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : referencesModalData.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No reference records</p>
+              ) : (
+                <div className="space-y-3">
+                  {referencesModalData.map((ref, idx) => (
+                    <div key={idx} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold">{ref.full_name}</span>
                       </div>
-                      {nok.date_of_birth && (
-                        <div>
-                          <span className="font-medium">Date of Birth:</span> {formatDate(nok.date_of_birth)}
-                        </div>
-                      )}
-                      {nok.place_of_birth && (
-                        <div>
-                          <span className="font-medium">Place of Birth:</span> {nok.place_of_birth}
-                        </div>
-                      )}
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        {ref.relationship && (
+                          <div>
+                            <span className="font-medium">Relationship:</span> {ref.relationship}
+                          </div>
+                        )}
+                        {ref.company && (
+                          <div>
+                            <span className="font-medium">Company:</span> {ref.company}
+                          </div>
+                        )}
+                        {ref.position && (
+                          <div>
+                            <span className="font-medium">Position:</span> {ref.position}
+                          </div>
+                        )}
+                        {ref.phone && (
+                          <div>
+                            <span className="font-medium">Phone:</span> {ref.phone}
+                          </div>
+                        )}
+                        {ref.email && (
+                          <div>
+                            <span className="font-medium">Email:</span> {ref.email}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setNextOfKinModalOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* References Modal */}
-      <Dialog open={referencesModalOpen} onOpenChange={setReferencesModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              References - {referencesModalCandidate?.candidate?.full_name}
-            </DialogTitle>
-            <DialogDescription>
-              Applied for: {referencesModalCandidate?.job?.title} ({referencesModalCandidate?.job?.department})
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {loadingReferences ? (
-              <div className="flex justify-center items-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : referencesModalData.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No reference records</p>
-            ) : (
-              <div className="space-y-3">
-                {referencesModalData.map((ref, idx) => (
-                  <div key={idx} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold">{ref.full_name}</span>
-                    </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      {ref.relationship && (
-                        <div>
-                          <span className="font-medium">Relationship:</span> {ref.relationship}
-                        </div>
-                      )}
-                      {ref.company && (
-                        <div>
-                          <span className="font-medium">Company:</span> {ref.company}
-                        </div>
-                      )}
-                      {ref.position && (
-                        <div>
-                          <span className="font-medium">Position:</span> {ref.position}
-                        </div>
-                      )}
-                      {ref.phone && (
-                        <div>
-                          <span className="font-medium">Phone:</span> {ref.phone}
-                        </div>
-                      )}
-                      {ref.email && (
-                        <div>
-                          <span className="font-medium">Email:</span> {ref.email}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReferencesModalOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  </AdminLayout>
-);
+                  ))}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setReferencesModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </>
+  );
 };
 
 

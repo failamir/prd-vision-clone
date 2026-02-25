@@ -52,6 +52,8 @@ const PICDashboard = React.lazy(() => import("./pages/pic/Dashboard"));
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/admin/AdminRoute";
 import ScrollToTop from "./components/ScrollToTop";
+import { DashboardLayout } from "./components/dashboard/DashboardLayout";
+import { AdminLayout } from "./components/admin/AdminLayout";
 
 const queryClient = new QueryClient();
 
@@ -83,35 +85,41 @@ const App = () => (
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/candidate/dashboard" element={<ProtectedRoute><CandidateDashboard /></ProtectedRoute>} />
-                <Route path="/candidate/profile" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
+                {/* Candidate Routes with Persistent Layout */}
+                <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                  <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
+                  <Route path="/candidate/profile" element={<CandidateProfile />} />
+                  <Route path="/candidate/applications" element={<CandidateApplications />} />
+                  <Route path="/candidate/saved-jobs" element={<CandidateSavedJobs />} />
+                  <Route path="/candidate/interview-schedule" element={<CandidateInterviewSchedule />} />
+                  <Route path="/candidate/departure-schedule" element={<CandidateDepartureSchedule />} />
+                  <Route path="/candidate/messages" element={<CandidateMessages />} />
+                  <Route path="/candidate/testimonials" element={<CandidateTestimonials />} />
+                  <Route path="/candidate/change-password" element={<CandidateChangePassword />} />
+                </Route>
                 <Route path="/candidate/cvs" element={<Navigate to="/candidate/profile" replace />} />
-                <Route path="/candidate/applications" element={<ProtectedRoute><CandidateApplications /></ProtectedRoute>} />
-                <Route path="/candidate/saved-jobs" element={<ProtectedRoute><CandidateSavedJobs /></ProtectedRoute>} />
-                <Route path="/candidate/interview-schedule" element={<ProtectedRoute><CandidateInterviewSchedule /></ProtectedRoute>} />
-                <Route path="/candidate/departure-schedule" element={<ProtectedRoute><CandidateDepartureSchedule /></ProtectedRoute>} />
-                <Route path="/candidate/messages" element={<ProtectedRoute><CandidateMessages /></ProtectedRoute>} />
-                <Route path="/candidate/testimonials" element={<ProtectedRoute><CandidateTestimonials /></ProtectedRoute>} />
-                <Route path="/candidate/change-password" element={<ProtectedRoute><CandidateChangePassword /></ProtectedRoute>} />
 
-                {/* Admin Routes */}
+                {/* Admin Routes with Persistent Layout */}
+                <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/users" element={<AdminUsers />} />
+                  <Route path="/admin/jobs" element={<AdminJobs />} />
+                  <Route path="/admin/applications" element={<AdminApplications />} />
+                  <Route path="/admin/interviews" element={<AdminInterviews />} />
+                  <Route path="/admin/departures" element={<AdminDepartures />} />
+                  <Route path="/admin/messages" element={<AdminMessages />} />
+                  <Route path="/admin/testimonials" element={<AdminTestimonials />} />
+                  <Route path="/admin/role-permissions" element={<AdminRolePermissions />} />
+                  <Route path="/admin/contact-submissions" element={<AdminContactSubmissions />} />
+                  <Route path="/admin/message-center" element={<AdminMessageCenter />} />
+                  <Route path="/admin/users/:userId/edit" element={<AdminEditProfile />} />
+
+                  {/* Role-specific Dashboards that also use AdminLayout */}
+                  <Route path="/hrd" element={<HRDDashboard />} />
+                  <Route path="/pic" element={<PICDashboard />} />
+                </Route>
+
                 <Route path="/admin/setup" element={<AdminSetup />} />
-                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-                <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
-                <Route path="/admin/jobs" element={<AdminRoute><AdminJobs /></AdminRoute>} />
-                <Route path="/admin/applications" element={<AdminRoute><AdminApplications /></AdminRoute>} />
-                <Route path="/admin/interviews" element={<AdminRoute><AdminInterviews /></AdminRoute>} />
-                <Route path="/admin/departures" element={<AdminRoute><AdminDepartures /></AdminRoute>} />
-                <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
-                <Route path="/admin/testimonials" element={<AdminRoute><AdminTestimonials /></AdminRoute>} />
-                <Route path="/admin/role-permissions" element={<AdminRoute><AdminRolePermissions /></AdminRoute>} />
-                <Route path="/admin/contact-submissions" element={<AdminRoute><AdminContactSubmissions /></AdminRoute>} />
-                <Route path="/admin/message-center" element={<AdminRoute><AdminMessageCenter /></AdminRoute>} />
-                <Route path="/admin/users/:userId/edit" element={<AdminRoute><AdminEditProfile /></AdminRoute>} />
-
-                {/* Role-specific Dashboards */}
-                <Route path="/hrd" element={<AdminRoute><HRDDashboard /></AdminRoute>} />
-                <Route path="/pic" element={<AdminRoute><PICDashboard /></AdminRoute>} />
 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

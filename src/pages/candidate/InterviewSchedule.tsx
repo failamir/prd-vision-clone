@@ -83,7 +83,7 @@ export default function InterviewSchedule() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Interview Schedule</h1>
@@ -134,7 +134,7 @@ export default function InterviewSchedule() {
                         <Video className="w-5 h-5 text-primary mt-0.5" />
                         <div className="flex-1">
                           <p className="text-sm text-muted-foreground">Link Meeting</p>
-                          <a 
+                          <a
                             href={schedule.meeting_link}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -152,6 +152,6 @@ export default function InterviewSchedule() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

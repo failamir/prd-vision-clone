@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
   User,
@@ -23,7 +23,7 @@ import { useDatabase } from "@/contexts/DatabaseContext";
 import logo from "@/assets/logo-dark.png";
 
 interface DashboardLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 const navigation = [
@@ -38,7 +38,7 @@ const navigation = [
   { name: "Change password", href: "/candidate/change-password", icon: Key },
 ];
 
-export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+export const DashboardLayout = ({ children = null }: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -184,7 +184,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </header>
 
         {/* Page Content */}
-        <main className="p-6">{children}</main>
+        <main className="p-6">
+          {children || <Outlet />}
+        </main>
       </div>
     </div>
   );
