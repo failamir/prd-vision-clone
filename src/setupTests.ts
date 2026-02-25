@@ -8,7 +8,7 @@ class ResizeObserver {
     unobserve() { }
     disconnect() { }
 }
-(global as any).ResizeObserver = ResizeObserver;
+(globalThis as any).ResizeObserver = ResizeObserver;
 
 // Runs a cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {
