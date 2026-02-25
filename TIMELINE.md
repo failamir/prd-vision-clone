@@ -1,4 +1,4 @@
-# Project Timeline - PRD Vision Clone (12 Weeks)
+# Project Timeline - CIPTAWIRATIRTA (12 Weeks)
 
 Based on the [Product Requirement Document (PRD)](./PRD.md) and the current state of the codebase, the following 3-month (12-week) timeline outlines the development, testing, and deployment phases.
 
@@ -28,7 +28,7 @@ Based on the [Product Requirement Document (PRD)](./PRD.md) and the current stat
 -   [x] **Feature:** Admin Dashboard (Stats Overview).
 -   [x] **Feature:** User List & Management (Create/Edit/Deactivate Users).
 -   [x] **Refactor:** Implement `useDashboardData` hook for optimized data fetching.
--   [ ] **Refactor:** Standardize API/Supabase calls across Admin pages.
+-   [x] **Refactor:** Standardize API/Supabase calls across Admin pages.
 
 ---
 
@@ -40,7 +40,7 @@ Based on the [Product Requirement Document (PRD)](./PRD.md) and the current stat
 -   [x] **Feature:** Job Posting (Create/Edit/Delete) with rich text descriptions.
 -   [x] **Feature:** Job Search & Filters (Public View).
 -   [x] **Feature:** Job Details Page (Public & Admin View).
--   [ ] **Improvement:** Implement "Offices" dynamic configuration.
+-   [x] **Improvement:** Implement "Offices" dynamic configuration.
 
 ### Week 6: Application Flow
 -   [x] **Feature:** User Application Submission Process.
@@ -48,7 +48,7 @@ Based on the [Product Requirement Document (PRD)](./PRD.md) and the current stat
 -   [x] **Feature:** Real-time Notifications for Status Changes (Email/In-App).
 
 ### Week 7: Role-Specific Dashboards (Refactoring & Implementation)
--   [ ] **Refactor:** Extract common components (`StatsCard`, `DashboardCharts`) from HRD/PIC dashboards.
+-   [x] **Refactor:** Extract common components (`StatsCard`, `DashboardCharts`) from HRD/PIC dashboards.
 -   [x] **Feature:** HRD Dashboard (Advanced Metrics & Recruitment Focus).
 -   [x] **Feature:** PIC Dashboard (Office-specific Data & Operational Focus).
 
@@ -76,14 +76,14 @@ Based on the [Product Requirement Document (PRD)](./PRD.md) and the current stat
 -   [x] **Content:** Finalize static pages (About, Safety, Services).
 
 ### Week 11: Testing & Optimization
--   [ ] **Testing:** End-to-End (E2E) Testing of critical flows (Apply -> Hire).
--   [ ] **Testing:** Security Audit (RLS Policy check, Input Validation).
--   [ ] **Optimization:** Code splitting, Image optimization, Query performance tuning.
--   [ ] **Mobile Responsiveness:** Polish UI for mobile devices.
+-   [x] **Testing:** End-to-End (E2E) Testing of critical flows (Apply -> Hire).
+-   [x] **Testing:** Security Audit (RLS Policy check, Input Validation).
+-   [x] **Optimization:** Code splitting, Image optimization, Query performance tuning.
+-   [x] **Mobile Responsiveness:** Polish UI for mobile devices.
 
 ### Week 12: Deployment & Handover
--   [ ] **Deployment:** Staging Environment Release & User Acceptance Testing (UAT).
+-   [x] **Deployment:** Staging Environment Release & User Acceptance Testing (UAT).
 -   [ ] **Fixes:** Address UAT feedback and bugs.
--   [ ] **Deployment:** Production Release.
+-   [x] **Deployment:** Production Release.
 -   [ ] **Documentation:** User Manuals (Admin/HRD) & Technical Documentation.
 -   [ ] **Handover:** Final Project Handover to Client.
