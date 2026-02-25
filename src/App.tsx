@@ -13,6 +13,8 @@ const Jobs = React.lazy(() => import("./pages/Jobs"));
 const JobDetail = React.lazy(() => import("./pages/JobDetail"));
 const Login = React.lazy(() => import("./pages/Login"));
 const Register = React.lazy(() => import("./pages/Register"));
+const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
 const CandidateDashboard = React.lazy(() => import("./pages/candidate/Dashboard"));
 const CandidateProfile = React.lazy(() => import("./pages/candidate/Profile"));
 const CandidateApplications = React.lazy(() => import("./pages/candidate/Applications"));
@@ -79,6 +81,8 @@ const App = () => (
                 <Route path="/redirect.php" element={<RecruitmentProcedurePage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/candidate/dashboard" element={<ProtectedRoute><CandidateDashboard /></ProtectedRoute>} />
                 <Route path="/candidate/profile" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
                 <Route path="/candidate/cvs" element={<Navigate to="/candidate/profile" replace />} />
