@@ -90,6 +90,7 @@ const AdminUsers = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPicUser, setIsPicUser] = useState(false);
   const [picCity, setPicCity] = useState<string | null>(null);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
 
   // Detect PIC role and auto-set city filter
   useEffect(() => {
@@ -298,6 +299,7 @@ const AdminUsers = () => {
 
   const openDeleteUser = (user: User) => {
     setSelectedUser(user);
+    setDeleteConfirmEmail("");
     setDeleteDialogOpen(true);
   };
 
@@ -868,7 +870,7 @@ const AdminUsers = () => {
           </DialogContent>
         </Dialog>
 
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setDeleteConfirmEmail(""); }}>
           <AlertDialogContent className="bg-background">
             <AlertDialogHeader>
               <AlertDialogTitle>
@@ -876,17 +878,30 @@ const AdminUsers = () => {
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {selectedUser?.is_archived
-                  ? "Tindakan ini akan menghapus profil dan semua role user tersebut SECARA PERMANEN. Aksi ini tidak dapat dibatalkan."
+                  ? "Tindakan ini akan menghapus profil, akun auth, dan semua data user tersebut SECARA PERMANEN. Aksi ini tidak dapat dibatalkan."
                   : "User akan dipindahkan ke arsip. Untuk menghapus permanen, hapus dari halaman Archived."
                 }
               </AlertDialogDescription>
             </AlertDialogHeader>
+            {selectedUser?.is_archived && (
+              <div className="space-y-2 py-2">
+                <Label htmlFor="confirm-email" className="text-sm text-muted-foreground">
+                  Ketik email <span className="font-semibold text-foreground">{selectedUser?.email}</span> untuk konfirmasi:
+                </Label>
+                <Input
+                  id="confirm-email"
+                  value={deleteConfirmEmail}
+                  onChange={(e) => setDeleteConfirmEmail(e.target.value)}
+                  placeholder="Ketik email user di sini"
+                />
+              </div>
+            )}
             <AlertDialogFooter>
               <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeleteUser}
-                disabled={deleting}
-                className={selectedUser?.is_archived ? "bg-red-600 hover:bg-red-700" : ""}
+                disabled={deleting || (selectedUser?.is_archived && deleteConfirmEmail !== selectedUser?.email)}
+                className={selectedUser?.is_archived ? "bg-destructive hover:bg-destructive/90" : ""}
               >
                 {deleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {selectedUser?.is_archived ? "Hapus Permanen" : "Arsipkan"}
