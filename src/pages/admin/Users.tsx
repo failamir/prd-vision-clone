@@ -399,33 +399,22 @@ const AdminUsers = () => {
 
     setDeleting(true);
     try {
-      // If user is already archived, delete permanently
+      // If user is already archived, delete permanently (including auth account)
       if (selectedUser.is_archived) {
-        // Get candidate profile id first
-        const { data: profileData } = await supabase
-          .from("candidate_profiles")
-          .select("id")
-          .eq("user_id", selectedUser.id)
-          .single();
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) throw new Error("Anda harus login sebagai admin");
 
-        if (profileData) {
-          // Delete job applications first
-          await supabase
-            .from("job_applications")
-            .delete()
-            .eq("candidate_id", profileData.id);
-        }
-
-        await supabase.from("user_roles").delete().eq("user_id", selectedUser.id);
-
-        const { error } = await supabase
-          .from("candidate_profiles")
-          .delete()
-          .eq("user_id", selectedUser.id);
+        const { data, error } = await supabase.functions.invoke("delete-user", {
+          body: { user_id: selectedUser.id },
+          headers: {
+            Authorization: `Bearer ${sessionData.session.access_token}`,
+          },
+        });
 
         if (error) throw error;
+        if (data?.error) throw new Error(data.error);
 
-        toast({ title: "User dan semua aplikasinya berhasil dihapus permanen" });
+        toast({ title: "User dan akun auth berhasil dihapus permanen" });
       } else {
         // If user is active, move to archive instead of deleting
         const { error } = await supabase
