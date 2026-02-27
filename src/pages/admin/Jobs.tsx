@@ -422,7 +422,7 @@ const AdminJobs = () => {
                       <p className="font-medium text-foreground">{job.title}</p>
                       <div className="flex gap-2 mt-1">
                         {job.is_featured && (
-                          <Badge className="bg-purple-100 text-purple-800">Featured</Badge>
+                          <Badge className="bg-accent text-accent-foreground">Featured</Badge>
                         )}
                         {job.is_urgent && (
                           <Badge className="bg-gold text-ocean-deep">Urgent</Badge>
@@ -455,7 +455,7 @@ const AdminJobs = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={job.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+                    <Badge className={job.is_active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}>
                       {job.is_active ? "Active" : "Inactive"}
                     </Badge>
                   </TableCell>
