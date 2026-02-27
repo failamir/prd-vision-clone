@@ -179,11 +179,11 @@ const AdminUsers = () => {
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "admin":
-        return "bg-red-100 text-red-800";
+        return "bg-destructive/10 text-destructive";
       case "employer":
-        return "bg-blue-100 text-blue-800";
+        return "bg-primary/10 text-primary";
       default:
-        return "bg-green-100 text-green-800";
+        return "bg-accent text-accent-foreground";
     }
   };
 
@@ -703,7 +703,7 @@ const AdminUsers = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={user.is_archived ? "bg-gray-100 text-gray-800" : "bg-green-100 text-green-800"}>
+                    <Badge className={user.is_archived ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}>
                       {user.is_archived ? "Archived" : "Active"}
                     </Badge>
                   </TableCell>
@@ -743,7 +743,7 @@ const AdminUsers = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-green-600 border-green-200 hover:bg-green-50"
+                          className="text-primary border-primary/20 hover:bg-primary/5"
                           onClick={() => openArchiveUser(user)}
                         >
                           <ArchiveRestore className="w-4 h-4 mr-2" />
@@ -753,7 +753,7 @@ const AdminUsers = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        className="text-destructive border-destructive/20 hover:bg-destructive/5"
                         onClick={() => openDeleteUser(user)}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
