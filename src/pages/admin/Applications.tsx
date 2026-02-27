@@ -1578,9 +1578,9 @@ const AdminApplications = () => {
       case 'expired':
         return 'border-destructive text-destructive bg-destructive/10';
       case 'expiring':
-        return 'border-amber-500 text-amber-600 bg-amber-50 dark:bg-amber-900/20';
+        return 'border-destructive/50 text-destructive bg-destructive/5';
       case 'valid':
-        return 'border-green-500 text-green-600 bg-green-50 dark:bg-green-900/20';
+        return 'border-primary/50 text-primary bg-primary/5';
       default:
         return '';
     }
@@ -3323,8 +3323,8 @@ const AdminApplications = () => {
                 </Button>
               </CollapsibleTrigger>
               <div className="flex items-center gap-2">
-                <Button onClick={exportToExcel} size="sm" className="bg-green-600 hover:bg-green-700">Export to Excel</Button>
-                <Button onClick={exportToCSV} size="sm" className="bg-blue-600 hover:bg-blue-700">Export to CSV</Button>
+                <Button onClick={exportToExcel} size="sm" variant="secondary">Export to Excel</Button>
+                <Button onClick={exportToCSV} size="sm" variant="outline">Export to CSV</Button>
               </div>
             </div>
 
@@ -3530,13 +3530,13 @@ const AdminApplications = () => {
           {/* Action Buttons */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex gap-2">
-              <Button onClick={handleSelectAll} size="sm" className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleSelectAll} size="sm" variant="default">
                 Select all
               </Button>
               <Button onClick={handleDeselectAll} size="sm" variant="secondary">
                 Deselect All
               </Button>
-              <Button onClick={handleSetInterview} size="sm" className="bg-green-600 hover:bg-green-700">
+              <Button onClick={handleSetInterview} size="sm" variant="outline">
                 Set Interview
               </Button>
               <Button onClick={handleBulkDelete} size="sm" variant="destructive">
@@ -4407,7 +4407,7 @@ const AdminApplications = () => {
                     const borderClass = status === 'expired'
                       ? 'border-destructive bg-destructive/5'
                       : status === 'expiring'
-                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20'
+                        ? 'border-destructive/50 bg-destructive/5'
                         : '';
 
                     return (
@@ -4417,9 +4417,9 @@ const AdminApplications = () => {
                           {status === 'expired' ? (
                             <Badge variant="destructive">Expired</Badge>
                           ) : status === 'expiring' ? (
-                            <Badge className="bg-amber-500 hover:bg-amber-600 text-white">Expiring Soon</Badge>
+                            <Badge className="bg-destructive/10 text-destructive border-destructive/30">Expiring Soon</Badge>
                           ) : (
-                            <Badge className="bg-green-600 hover:bg-green-700 text-white">Valid</Badge>
+                            <Badge className="bg-primary/10 text-primary border-primary/30">Valid</Badge>
                           )}
                         </div>
                         <div className="text-sm text-muted-foreground space-y-1">

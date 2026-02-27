@@ -90,6 +90,7 @@ const AdminUsers = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPicUser, setIsPicUser] = useState(false);
   const [picCity, setPicCity] = useState<string | null>(null);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
 
   // Detect PIC role and auto-set city filter
   useEffect(() => {
@@ -178,11 +179,11 @@ const AdminUsers = () => {
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "admin":
-        return "bg-red-100 text-red-800";
+        return "bg-destructive/10 text-destructive";
       case "employer":
-        return "bg-blue-100 text-blue-800";
+        return "bg-primary/10 text-primary";
       default:
-        return "bg-green-100 text-green-800";
+        return "bg-accent text-accent-foreground";
     }
   };
 
@@ -298,6 +299,7 @@ const AdminUsers = () => {
 
   const openDeleteUser = (user: User) => {
     setSelectedUser(user);
+    setDeleteConfirmEmail("");
     setDeleteDialogOpen(true);
   };
 
@@ -399,33 +401,22 @@ const AdminUsers = () => {
 
     setDeleting(true);
     try {
-      // If user is already archived, delete permanently
+      // If user is already archived, delete permanently (including auth account)
       if (selectedUser.is_archived) {
-        // Get candidate profile id first
-        const { data: profileData } = await supabase
-          .from("candidate_profiles")
-          .select("id")
-          .eq("user_id", selectedUser.id)
-          .single();
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!sessionData.session) throw new Error("Anda harus login sebagai admin");
 
-        if (profileData) {
-          // Delete job applications first
-          await supabase
-            .from("job_applications")
-            .delete()
-            .eq("candidate_id", profileData.id);
-        }
-
-        await supabase.from("user_roles").delete().eq("user_id", selectedUser.id);
-
-        const { error } = await supabase
-          .from("candidate_profiles")
-          .delete()
-          .eq("user_id", selectedUser.id);
+        const { data, error } = await supabase.functions.invoke("delete-user", {
+          body: { user_id: selectedUser.id },
+          headers: {
+            Authorization: `Bearer ${sessionData.session.access_token}`,
+          },
+        });
 
         if (error) throw error;
+        if (data?.error) throw new Error(data.error);
 
-        toast({ title: "User dan semua aplikasinya berhasil dihapus permanen" });
+        toast({ title: "User dan akun auth berhasil dihapus permanen" });
       } else {
         // If user is active, move to archive instead of deleting
         const { error } = await supabase
@@ -712,7 +703,7 @@ const AdminUsers = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={user.is_archived ? "bg-gray-100 text-gray-800" : "bg-green-100 text-green-800"}>
+                    <Badge className={user.is_archived ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"}>
                       {user.is_archived ? "Archived" : "Active"}
                     </Badge>
                   </TableCell>
@@ -752,7 +743,7 @@ const AdminUsers = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-green-600 border-green-200 hover:bg-green-50"
+                          className="text-primary border-primary/20 hover:bg-primary/5"
                           onClick={() => openArchiveUser(user)}
                         >
                           <ArchiveRestore className="w-4 h-4 mr-2" />
@@ -762,7 +753,7 @@ const AdminUsers = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        className="text-destructive border-destructive/20 hover:bg-destructive/5"
                         onClick={() => openDeleteUser(user)}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
@@ -879,7 +870,7 @@ const AdminUsers = () => {
           </DialogContent>
         </Dialog>
 
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setDeleteConfirmEmail(""); }}>
           <AlertDialogContent className="bg-background">
             <AlertDialogHeader>
               <AlertDialogTitle>
@@ -887,17 +878,30 @@ const AdminUsers = () => {
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {selectedUser?.is_archived
-                  ? "Tindakan ini akan menghapus profil dan semua role user tersebut SECARA PERMANEN. Aksi ini tidak dapat dibatalkan."
+                  ? "Tindakan ini akan menghapus profil, akun auth, dan semua data user tersebut SECARA PERMANEN. Aksi ini tidak dapat dibatalkan."
                   : "User akan dipindahkan ke arsip. Untuk menghapus permanen, hapus dari halaman Archived."
                 }
               </AlertDialogDescription>
             </AlertDialogHeader>
+            {selectedUser?.is_archived && (
+              <div className="space-y-2 py-2">
+                <Label htmlFor="confirm-email" className="text-sm text-muted-foreground">
+                  Ketik email <span className="font-semibold text-foreground">{selectedUser?.email}</span> untuk konfirmasi:
+                </Label>
+                <Input
+                  id="confirm-email"
+                  value={deleteConfirmEmail}
+                  onChange={(e) => setDeleteConfirmEmail(e.target.value)}
+                  placeholder="Ketik email user di sini"
+                />
+              </div>
+            )}
             <AlertDialogFooter>
               <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeleteUser}
-                disabled={deleting}
-                className={selectedUser?.is_archived ? "bg-red-600 hover:bg-red-700" : ""}
+                disabled={deleting || (selectedUser?.is_archived && deleteConfirmEmail !== selectedUser?.email)}
+                className={selectedUser?.is_archived ? "bg-destructive hover:bg-destructive/90" : ""}
               >
                 {deleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {selectedUser?.is_archived ? "Hapus Permanen" : "Arsipkan"}
