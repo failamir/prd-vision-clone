@@ -1938,11 +1938,11 @@ const Profile = () => {
 
             {/* CV & Form Letter Section */}
             <div className="mt-8 pt-6 border-t">
-              <h3 className="text-xl font-semibold text-foreground mb-6">CV & Form Letter <span className="text-destructive">*</span></h3>
+              <h3 className="text-xl font-semibold text-foreground mb-6">CV / Resume <span className="text-destructive">*</span></h3>
               <Tabs value={documentsTab} onValueChange={setDocumentsTab}>
                 <TabsList className="mb-6">
                   <TabsTrigger value="cv">CV / Resume <span className="text-destructive ml-1">*</span></TabsTrigger>
-                  <TabsTrigger value="form_letter">Form Letter <span className="text-destructive ml-1">*</span></TabsTrigger>
+                  {/* <TabsTrigger value="form_letter">Form Letter <span className="text-destructive ml-1">*</span></TabsTrigger> */}
                 </TabsList>
 
                 <TabsContent value="cv">
@@ -2010,7 +2010,7 @@ const Profile = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="form_letter">
+                {/* <TabsContent value="form_letter">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <p className="text-muted-foreground">Upload your Form Letter documents (PDF, DOC, DOCX - Max 5MB)</p>
@@ -2081,7 +2081,7 @@ const Profile = () => {
                       </div>
                     )}
                   </div>
-                </TabsContent>
+                </TabsContent> */}
               </Tabs>
             </div>
           </Card>

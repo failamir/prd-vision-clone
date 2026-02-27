@@ -42,6 +42,7 @@ export const AdminLayout = ({ children = null }: AdminLayoutProps) => {
   const location = useLocation();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user, profile } = useUser();
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [userRoles, setUserRoles] = useState<string[]>([]);
@@ -218,31 +219,42 @@ export const AdminLayout = ({ children = null }: AdminLayoutProps) => {
             {/* Right side - User info */}
             <div className="ml-auto flex items-center gap-2">
               <NotificationBell />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 h-auto py-1.5 px-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || user?.email} />
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                        {profile?.full_name
-                          ? profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-                          : user?.email?.charAt(0).toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="hidden sm:flex flex-col items-start text-left">
-                      <span className="text-sm font-medium leading-none">
-                        {profile?.full_name || user?.email?.split('@')[0] || 'User'}
-                      </span>
-                      <span className="text-xs text-muted-foreground leading-tight mt-0.5">
-                        {userRoles.length > 0
-                          ? userRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')
-                          : 'No role'}
-                      </span>
-                    </div>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
+                <div
+                  onMouseEnter={() => setProfileMenuOpen(true)}
+                  onMouseLeave={() => setProfileMenuOpen(false)}
+                  className="flex items-center"
+                >
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2 h-auto py-1.5 px-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || user?.email} />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          {profile?.full_name
+                            ? profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+                            : user?.email?.charAt(0).toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="hidden sm:flex flex-col items-start text-left">
+                        <span className="text-sm font-medium leading-none">
+                          {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+                        </span>
+                        <span className="text-xs text-muted-foreground leading-tight mt-0.5">
+                          {userRoles.length > 0
+                            ? userRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')
+                            : 'No role'}
+                        </span>
+                      </div>
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground hidden sm:block transition-transform duration-200", profileMenuOpen && "rotate-180")} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </div>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56"
+                  onMouseEnter={() => setProfileMenuOpen(true)}
+                  onMouseLeave={() => setProfileMenuOpen(false)}
+                >
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium">{profile?.full_name || 'User'}</p>

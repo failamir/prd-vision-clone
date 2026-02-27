@@ -17,10 +17,18 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import logo from "@/assets/logo-dark.png";
+import { ChevronDown } from "lucide-react";
 
 interface DashboardLayoutProps {
   children?: ReactNode;
@@ -43,6 +51,7 @@ export const DashboardLayout = ({ children = null }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { supabase } = useDatabase();
   const [profile, setProfile] = useState<{ full_name: string | null, avatar_url: string | null, email: string | null } | null>(null);
 
@@ -166,18 +175,58 @@ export const DashboardLayout = ({ children = null }: DashboardLayoutProps) => {
               </Link>
 
               {profile && (
-                <Link to="/candidate/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                  <div className="text-right hidden md:block">
-                    <p className="text-sm font-medium leading-none">{profile.full_name || "User"}</p>
-                    <p className="text-xs text-muted-foreground">{profile.email || "Candidate"}</p>
+                <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+                  <div
+                    onMouseEnter={() => setMenuOpen(true)}
+                    onMouseLeave={() => setMenuOpen(false)}
+                    className="flex items-center"
+                  >
+                    <DropdownMenuTrigger asChild>
+                      <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity p-1 rounded-md">
+                        <div className="text-right hidden md:block">
+                          <p className="text-sm font-medium leading-none">{profile.full_name || "User"}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{profile.email || "Candidate"}</p>
+                        </div>
+                        <Avatar className="h-9 w-9 border border-border">
+                          <AvatarImage src={profile.avatar_url || ""} />
+                          <AvatarFallback className="bg-primary text-primary-foreground">
+                            {profile.full_name?.charAt(0).toUpperCase() || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", menuOpen && "rotate-180")} />
+                      </div>
+                    </DropdownMenuTrigger>
                   </div>
-                  <Avatar>
-                    <AvatarImage src={profile.avatar_url || ""} />
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {profile.full_name?.charAt(0).toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </Link>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-56"
+                    onMouseEnter={() => setMenuOpen(true)}
+                    onMouseLeave={() => setMenuOpen(false)}
+                  >
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/candidate/profile" className="flex items-center cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/candidate/change-password" className="flex items-center cursor-pointer">
+                        <Key className="mr-2 h-4 w-4" />
+                        <span>Change Password</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-destructive focus:text-destructive cursor-pointer"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>

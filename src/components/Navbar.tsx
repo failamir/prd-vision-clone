@@ -5,11 +5,23 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo-dark.png";
 import { useUser } from "@/contexts/UserContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LayoutDashboard, User, LogOut, ChevronDown } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const location = useLocation();
-  const { user } = useUser();
+  const { user, profile } = useUser();
 
   const isLoggedIn = !!user;
 
@@ -113,11 +125,58 @@ export const Navbar = () => {
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {isLoggedIn ? (
-              <Link to="/candidate/dashboard">
-                <Button variant="ghost" className="text-foreground">
-                  Dashboard
-                </Button>
-              </Link>
+              <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
+                <div
+                  onMouseEnter={() => setProfileMenuOpen(true)}
+                  onMouseLeave={() => setProfileMenuOpen(false)}
+                  className="flex items-center"
+                >
+                  <DropdownMenuTrigger asChild>
+                    <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity p-1 rounded-md">
+                      <div className="text-right flex flex-col items-end">
+                        <span className="text-sm font-medium leading-none">{profile?.full_name || user?.email?.split('@')[0]}</span>
+                        <span className="text-[10px] text-muted-foreground mt-0.5">Candidate</span>
+                      </div>
+                      <Avatar className="h-8 w-8 border border-border">
+                        <AvatarImage src={profile?.avatar_url || ""} />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          {profile?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <ChevronDown className={cn("h-3 w-3 text-muted-foreground transition-transform duration-200", profileMenuOpen && "rotate-180")} />
+                    </div>
+                  </DropdownMenuTrigger>
+                </div>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-56"
+                  onMouseEnter={() => setProfileMenuOpen(true)}
+                  onMouseLeave={() => setProfileMenuOpen(false)}
+                >
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/candidate/dashboard" className="flex items-center cursor-pointer">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/candidate/profile" className="flex items-center cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>My Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => supabase.auth.signOut()}
+                    className="text-destructive focus:text-destructive cursor-pointer"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <Link to="/login">

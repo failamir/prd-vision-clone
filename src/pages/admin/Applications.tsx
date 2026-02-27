@@ -3592,7 +3592,7 @@ const AdminApplications = () => {
                   <TableHead className="min-w-[130px]">Next of Kin</TableHead>
                   <TableHead className="min-w-[130px]">References</TableHead>
                   <TableHead className="min-w-[80px]">CV</TableHead>
-                  <TableHead className="min-w-[140px]">
+                  {/* <TableHead className="min-w-[140px]">
                     <div className="flex items-center gap-1">
                       <span>Form Letter</span>
                       <a
@@ -3604,7 +3604,7 @@ const AdminApplications = () => {
                         <Download className="h-3 w-3" />
                       </a>
                     </div>
-                  </TableHead>
+                  </TableHead> */}
                   <TableHead className="min-w-[140px]">Vaccin Covid Booster</TableHead>
                   <TableHead className="min-w-[80px]">BST/CC</TableHead>
                   <TableHead className="min-w-[100px]">Suitable</TableHead>
@@ -3802,7 +3802,7 @@ const AdminApplications = () => {
                         return "-";
                       })()}
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       {(() => {
                         const flPath = app.letter_form_url || formLetterByCandidate[app.candidate_id || ""];
                         if (flPath) {
@@ -3819,7 +3819,7 @@ const AdminApplications = () => {
                         }
                         return "-";
                       })()}
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell>
                       {app.candidate?.covid_vaccinated
                         ? (app.candidate.covid_vaccinated.toLowerCase().includes("booster")
