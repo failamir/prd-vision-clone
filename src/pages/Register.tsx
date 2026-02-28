@@ -162,14 +162,14 @@ const Register = () => {
     setSendingOTP(true);
 
     try {
-      // Check if email already exists
+      // Check if email already exists on active account
       const { data: existingEmail } = await supabase
         .from('candidate_profiles')
-        .select('email')
+        .select('email, is_archived')
         .eq('email', email)
         .maybeSingle();
 
-      if (existingEmail) {
+      if (existingEmail && !existingEmail.is_archived) {
         setErrors({ email: 'This email is already registered. Please login instead.' });
         toast({
           title: "Email Already Registered",
@@ -180,14 +180,15 @@ const Register = () => {
         return;
       }
 
-      // Check if phone already exists
+      // Check if phone already exists on active account
+      const normalizedPhone = phone.replace(/\s/g, '');
       const { data: existingPhone } = await supabase
         .from('candidate_profiles')
-        .select('phone')
-        .eq('phone', phone.replace(/\s/g, ''))
+        .select('phone, is_archived')
+        .eq('phone', normalizedPhone)
         .maybeSingle();
 
-      if (existingPhone) {
+      if (existingPhone && !existingPhone.is_archived) {
         setErrors({ phone: 'This phone number is already registered.' });
         toast({
           title: "Phone Number Already Registered",
