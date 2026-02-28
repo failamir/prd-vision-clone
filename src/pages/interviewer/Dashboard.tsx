@@ -169,8 +169,8 @@ const InterviewerDashboard = () => {
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                       interview.interview_result 
-                        ? 'bg-green-100 text-green-600' 
-                        : 'bg-blue-100 text-blue-600'
+                        ? 'bg-primary/10 text-primary' 
+                        : 'bg-secondary text-secondary-foreground'
                     }`}>
                       {interview.interview_result ? (
                         <CheckCircle className="w-5 h-5" />
@@ -195,8 +195,8 @@ const InterviewerDashboard = () => {
                     </p>
                     <p className={`text-sm ${
                       interview.interview_result 
-                        ? 'text-green-600' 
-                        : 'text-orange-600'
+                        ? 'text-primary' 
+                        : 'text-accent-foreground'
                     }`}>
                       {interview.interview_result || "Belum ada hasil"}
                     </p>

@@ -277,7 +277,7 @@ const PICDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              <Clock className="h-4 w-4 text-yellow-500" />
+              <Clock className="h-4 w-4 text-accent-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.pendingApplications}</div>
@@ -288,7 +288,7 @@ const PICDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Interview</CardTitle>
-              <Calendar className="h-4 w-4 text-blue-500" />
+              <Calendar className="h-4 w-4 text-secondary-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.scheduledInterviews}</div>
@@ -299,7 +299,7 @@ const PICDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Approved</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.approvedCandidates}</div>
@@ -531,25 +531,25 @@ const PICDashboard = () => {
                     type="monotone"
                     dataKey="approved"
                     name="Approved"
-                    stroke="#22c55e"
+                    stroke="hsl(var(--primary))"
                     strokeWidth={2}
-                    dot={{ fill: '#22c55e' }}
+                    dot={{ fill: 'hsl(var(--primary))' }}
                   />
                   <Line
                     type="monotone"
                     dataKey="interview"
                     name="Interview"
-                    stroke="#3b82f6"
+                    stroke="hsl(var(--secondary))"
                     strokeWidth={2}
-                    dot={{ fill: '#3b82f6' }}
+                    dot={{ fill: 'hsl(var(--secondary))' }}
                   />
                   <Line
                     type="monotone"
                     dataKey="pending"
                     name="Pending"
-                    stroke="#eab308"
+                    stroke="hsl(var(--accent))"
                     strokeWidth={2}
-                    dot={{ fill: '#eab308' }}
+                    dot={{ fill: 'hsl(var(--accent))' }}
                   />
                 </LineChart>
               </ResponsiveContainer>
