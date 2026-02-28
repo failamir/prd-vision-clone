@@ -91,6 +91,7 @@ const AdminUsers = () => {
   const [isPicUser, setIsPicUser] = useState(false);
   const [picCity, setPicCity] = useState<string | null>(null);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
+  const [showPermanentDelete, setShowPermanentDelete] = useState(false);
 
   // Detect PIC role and auto-set city filter
   useEffect(() => {
@@ -300,6 +301,7 @@ const AdminUsers = () => {
   const openDeleteUser = (user: User) => {
     setSelectedUser(user);
     setDeleteConfirmEmail("");
+    setShowPermanentDelete(false);
     setDeleteDialogOpen(true);
   };
 
@@ -396,13 +398,13 @@ const AdminUsers = () => {
     }
   };
 
-  const handleDeleteUser = async () => {
+  const handleDeleteUser = async (permanent: boolean = false) => {
     if (!selectedUser) return;
 
     setDeleting(true);
     try {
-      // If user is already archived, delete permanently (including auth account)
-      if (selectedUser.is_archived) {
+      if (selectedUser.is_archived || permanent) {
+        // Permanent delete
         const { data: sessionData } = await supabase.auth.getSession();
         if (!sessionData.session) throw new Error("Anda harus login sebagai admin");
 
@@ -418,7 +420,7 @@ const AdminUsers = () => {
 
         toast({ title: "User dan akun auth berhasil dihapus permanen" });
       } else {
-        // If user is active, move to archive instead of deleting
+        // Archive
         const { error } = await supabase
           .from("candidate_profiles")
           .update({
@@ -434,6 +436,7 @@ const AdminUsers = () => {
 
       setDeleteDialogOpen(false);
       setSelectedUser(null);
+      setShowPermanentDelete(false);
       await fetchUsers();
     } catch (error: any) {
       console.error("Error deleting user:", error);
@@ -870,20 +873,24 @@ const AdminUsers = () => {
           </DialogContent>
         </Dialog>
 
-        <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) setDeleteConfirmEmail(""); }}>
+        <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => { setDeleteDialogOpen(open); if (!open) { setDeleteConfirmEmail(""); setShowPermanentDelete(false); } }}>
           <AlertDialogContent className="bg-background">
             <AlertDialogHeader>
               <AlertDialogTitle>
-                {selectedUser?.is_archived ? "Hapus Permanen?" : "Arsipkan User?"}
+                {selectedUser?.is_archived
+                  ? "Hapus Permanen?"
+                  : showPermanentDelete
+                    ? "Hapus Permanen?"
+                    : "Arsipkan User?"}
               </AlertDialogTitle>
               <AlertDialogDescription>
-                {selectedUser?.is_archived
+                {selectedUser?.is_archived || showPermanentDelete
                   ? "Tindakan ini akan menghapus profil, akun auth, dan semua data user tersebut SECARA PERMANEN. Aksi ini tidak dapat dibatalkan."
                   : "User akan dipindahkan ke arsip. Untuk menghapus permanen, hapus dari halaman Archived."
                 }
               </AlertDialogDescription>
             </AlertDialogHeader>
-            {selectedUser?.is_archived && (
+            {(selectedUser?.is_archived || showPermanentDelete) && (
               <div className="space-y-2 py-2">
                 <Label htmlFor="confirm-email" className="text-sm text-muted-foreground">
                   Ketik email <span className="font-semibold text-foreground">{selectedUser?.email}</span> untuk konfirmasi:
@@ -898,13 +905,22 @@ const AdminUsers = () => {
             )}
             <AlertDialogFooter>
               <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+              {!selectedUser?.is_archived && !showPermanentDelete && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowPermanentDelete(true)}
+                >
+                  Hapus Permanen
+                </Button>
+              )}
               <AlertDialogAction
-                onClick={handleDeleteUser}
-                disabled={deleting || (selectedUser?.is_archived && deleteConfirmEmail !== selectedUser?.email)}
-                className={selectedUser?.is_archived ? "bg-destructive hover:bg-destructive/90" : ""}
+                onClick={() => handleDeleteUser(selectedUser?.is_archived || showPermanentDelete)}
+                disabled={deleting || ((selectedUser?.is_archived || showPermanentDelete) && deleteConfirmEmail !== selectedUser?.email)}
+                className={(selectedUser?.is_archived || showPermanentDelete) ? "bg-destructive hover:bg-destructive/90" : ""}
               >
                 {deleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {selectedUser?.is_archived ? "Hapus Permanen" : "Arsipkan"}
+                {(selectedUser?.is_archived || showPermanentDelete) ? "Hapus Permanen" : "Arsipkan"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
