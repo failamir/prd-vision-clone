@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, Suspense } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -234,7 +234,13 @@ export const DashboardLayout = ({ children = null }: DashboardLayoutProps) => {
 
         {/* Page Content */}
         <main className="p-6">
-          {children || <Outlet />}
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-64">
+              <div className="w-8 h-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          }>
+            {children || <Outlet />}
+          </Suspense>
         </main>
       </div>
     </div>
