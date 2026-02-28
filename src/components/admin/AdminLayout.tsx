@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import { Link, useNavigate, useLocation, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -181,7 +182,7 @@ export const AdminLayout = ({ children = null }: AdminLayoutProps) => {
                         <item.icon className="w-5 h-5 flex-shrink-0" />
                         <span className="text-sm font-medium">{item.name}</span>
                         {item.href === "/admin/message-center" && unreadCount > 0 && (
-                          <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center">
+                          <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-semibold flex items-center justify-center">
                             {unreadCount}
                           </span>
                         )}

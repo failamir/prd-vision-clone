@@ -24,14 +24,14 @@ import { OFFICES } from "@/lib/constants";
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "pending":
-      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+      return <Badge variant="outline" className="bg-accent text-accent-foreground"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
     case "approved":
     case "hired":
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
+      return <Badge variant="outline" className="bg-primary/10 text-primary"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
     case "rejected":
-      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+      return <Badge variant="outline" className="bg-destructive/10 text-destructive"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
     case "interview":
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><Calendar className="w-3 h-3 mr-1" />Interview</Badge>;
+      return <Badge variant="outline" className="bg-secondary text-secondary-foreground"><Calendar className="w-3 h-3 mr-1" />Interview</Badge>;
     default:
       return <Badge variant="outline">{status}</Badge>;
   }
@@ -102,10 +102,10 @@ export default function HRDDashboard() {
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              <Clock className="h-4 w-4 text-yellow-500" />
+              <Clock className="h-4 w-4 text-accent-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.pendingApplications}</div>
+              <div className="text-2xl font-bold text-accent-foreground">{stats.pendingApplications}</div>
               <p className="text-xs text-muted-foreground">Menunggu review</p>
             </CardContent>
           </Card>
@@ -113,10 +113,10 @@ export default function HRDDashboard() {
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Interview</CardTitle>
-              <Calendar className="h-4 w-4 text-blue-500" />
+              <Calendar className="h-4 w-4 text-secondary-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.scheduledInterviews}</div>
+              <div className="text-2xl font-bold text-secondary-foreground">{stats.scheduledInterviews}</div>
               <p className="text-xs text-muted-foreground">Dijadwalkan</p>
             </CardContent>
           </Card>
@@ -124,10 +124,10 @@ export default function HRDDashboard() {
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Approved</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.approvedApplications}</div>
+              <div className="text-2xl font-bold text-primary">{stats.approvedApplications}</div>
               <p className="text-xs text-muted-foreground">Diterima</p>
             </CardContent>
           </Card>
@@ -135,10 +135,10 @@ export default function HRDDashboard() {
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Rejected</CardTitle>
-              <XCircle className="h-4 w-4 text-red-500" />
+              <XCircle className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.rejectedApplications}</div>
+              <div className="text-2xl font-bold text-destructive">{stats.rejectedApplications}</div>
               <p className="text-xs text-muted-foreground">Ditolak</p>
             </CardContent>
           </Card>
