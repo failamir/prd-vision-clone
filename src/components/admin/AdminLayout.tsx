@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useNavigate, useLocation, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -281,7 +281,13 @@ export const AdminLayout = ({ children = null }: AdminLayoutProps) => {
         </header>
 
         <div className="p-8">
-          {children || <Outlet />}
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-64">
+              <div className="w-8 h-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          }>
+            {children || <Outlet />}
+          </Suspense>
         </div>
       </main>
 
