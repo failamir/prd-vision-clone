@@ -169,15 +169,23 @@ const Register = () => {
         .eq('email', email)
         .maybeSingle();
 
-      if (existingEmail && !existingEmail.is_archived) {
-        setErrors({ email: 'This email is already registered. Please login instead.' });
-        toast({
-          title: "Email Already Registered",
-          description: "Please login with your existing account.",
-          variant: "destructive",
-        });
-        setSendingOTP(false);
-        return;
+      if (existingEmail) {
+        if (!existingEmail.is_archived) {
+          setErrors({ email: 'This email is already registered. Please login instead.' });
+          toast({
+            title: "Email Already Registered",
+            description: "Please login with your existing account.",
+            variant: "destructive",
+          });
+          setSendingOTP(false);
+          return;
+        } else {
+          // Archived account found — inform but allow to proceed
+          toast({
+            title: "Akun Sebelumnya Ditemukan",
+            description: "Email ini pernah terdaftar pada akun yang sudah dihapus/diarsipkan. Anda dapat melanjutkan pendaftaran baru.",
+          });
+        }
       }
 
       // Check if phone already exists on active account
@@ -188,15 +196,22 @@ const Register = () => {
         .eq('phone', normalizedPhone)
         .maybeSingle();
 
-      if (existingPhone && !existingPhone.is_archived) {
-        setErrors({ phone: 'This phone number is already registered.' });
-        toast({
-          title: "Phone Number Already Registered",
-          description: "Please use a different phone number or login with your existing account.",
-          variant: "destructive",
-        });
-        setSendingOTP(false);
-        return;
+      if (existingPhone) {
+        if (!existingPhone.is_archived) {
+          setErrors({ phone: 'This phone number is already registered.' });
+          toast({
+            title: "Phone Number Already Registered",
+            description: "Please use a different phone number or login with your existing account.",
+            variant: "destructive",
+          });
+          setSendingOTP(false);
+          return;
+        } else {
+          toast({
+            title: "Akun Sebelumnya Ditemukan",
+            description: "Nomor HP ini pernah terdaftar pada akun yang sudah dihapus/diarsipkan. Anda dapat melanjutkan pendaftaran baru.",
+          });
+        }
       }
 
       // Send OTP to email
