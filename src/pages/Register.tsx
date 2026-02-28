@@ -165,7 +165,7 @@ const Register = () => {
       // Check if email already exists on active account
       const { data: existingEmail } = await supabase
         .from('candidate_profiles')
-        .select('email, is_archived')
+        .select('email, is_archived, full_name')
         .eq('email', email)
         .maybeSingle();
 
@@ -173,14 +173,13 @@ const Register = () => {
         if (!existingEmail.is_archived) {
           setErrors({ email: 'This email is already registered. Please login instead.' });
           toast({
-            title: "Email Already Registered",
-            description: "Please login with your existing account.",
+            title: "Email Sudah Terdaftar",
+            description: `Email ini sudah digunakan oleh akun atas nama "${existingEmail.full_name}". Silakan login atau gunakan email lain.`,
             variant: "destructive",
           });
           setSendingOTP(false);
           return;
         } else {
-          // Archived account found — inform but allow to proceed
           toast({
             title: "Akun Sebelumnya Ditemukan",
             description: "Email ini pernah terdaftar pada akun yang sudah dihapus/diarsipkan. Anda dapat melanjutkan pendaftaran baru.",
@@ -189,19 +188,25 @@ const Register = () => {
       }
 
       // Check if phone already exists on active account
-      const normalizedPhone = phone.replace(/\s/g, '');
-      const { data: existingPhone } = await supabase
+      // Normalize: remove all non-digit chars except +
+      const normalizedPhone = phone.replace(/[^+\d]/g, '');
+      const { data: existingPhones } = await supabase
         .from('candidate_profiles')
-        .select('phone, is_archived')
-        .eq('phone', normalizedPhone)
-        .maybeSingle();
+        .select('phone, is_archived, full_name')
+        .not('phone', 'is', null);
 
-      if (existingPhone) {
-        if (!existingPhone.is_archived) {
-          setErrors({ phone: 'This phone number is already registered.' });
+      // Compare normalized phone numbers to handle format differences
+      const matchedPhone = (existingPhones || []).find(p => {
+        const storedNormalized = (p.phone || '').replace(/[^+\d]/g, '');
+        return storedNormalized === normalizedPhone;
+      });
+
+      if (matchedPhone) {
+        if (!matchedPhone.is_archived) {
+          setErrors({ phone: 'Nomor HP ini sudah terdaftar.' });
           toast({
-            title: "Phone Number Already Registered",
-            description: "Please use a different phone number or login with your existing account.",
+            title: "Nomor HP Sudah Terdaftar",
+            description: `Nomor ini sudah digunakan oleh akun atas nama "${matchedPhone.full_name}". Jika akun tersebut seharusnya sudah dihapus, hubungi admin untuk menghapus permanen.`,
             variant: "destructive",
           });
           setSendingOTP(false);
