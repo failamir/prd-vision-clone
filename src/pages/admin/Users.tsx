@@ -55,6 +55,7 @@ interface User {
   id: string;
   full_name: string;
   email: string;
+  phone: string | null;
   created_at: string;
   roles: string[];
   is_archived: boolean;
@@ -148,6 +149,7 @@ const AdminUsers = () => {
             id: profile.user_id,
             full_name: profile.full_name,
             email: profile.email,
+            phone: profile.phone || null,
             created_at: profile.created_at,
             roles: roles?.map(r => r.role) || ["candidate"],
             is_archived: profile.is_archived || false,
@@ -484,9 +486,14 @@ const AdminUsers = () => {
   };
 
   const filteredUsers = users.filter((user) => {
+    const normalizedSearch = search.replace(/[^+\d]/g, '');
     const matchesSearch =
       user.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      user.email.toLowerCase().includes(search.toLowerCase());
+      user.email.toLowerCase().includes(search.toLowerCase()) ||
+      (user.phone && (
+        user.phone.includes(search) ||
+        (normalizedSearch.length >= 4 && user.phone.replace(/[^+\d]/g, '').includes(normalizedSearch))
+      ));
 
     const matchesRole =
       roleFilter === "all" || user.roles.some((role) => role === roleFilter);
@@ -569,7 +576,7 @@ const AdminUsers = () => {
           <div className="flex flex-col gap-3 p-4 border-b border-border md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-2 flex-1">
               <Input
-                placeholder="Search by name or email"
+                placeholder="Search by name, email, or phone"
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -670,6 +677,7 @@ const AdminUsers = () => {
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
                 <TableHead>Roles</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Registered</TableHead>
@@ -694,6 +702,11 @@ const AdminUsers = () => {
                       <Mail className="w-4 h-4 mr-2" />
                       {user.email}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {user.phone || '-'}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
