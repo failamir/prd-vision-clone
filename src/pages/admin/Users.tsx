@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter, Download, Upload, Archive, ArchiveRestore, KeyRound, Eye } from "lucide-react";
-import { RoleManagementDialog } from "@/components/admin/RoleManagementDialog";
+import { Loader2, Mail, Calendar, Shield, UserCog, Plus, Trash2, Edit3, Filter, Download, Upload, Archive, ArchiveRestore, KeyRound, Eye, Phone } from "lucide-react";
+
 import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
 import * as XLSX from "xlsx";
 import {
@@ -17,6 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -81,6 +83,7 @@ const AdminUsers = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editFullName, setEditFullName] = useState("");
   const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [archiving, setArchiving] = useState(false);
@@ -190,10 +193,6 @@ const AdminUsers = () => {
     }
   };
 
-  const handleManageRoles = (user: User) => {
-    setSelectedUser(user);
-    setDialogOpen(true);
-  };
 
   const handleRoleUpdated = () => {
     fetchUsers();
@@ -297,6 +296,7 @@ const AdminUsers = () => {
     setEditingUser(user);
     setEditFullName(user.full_name);
     setEditEmail(user.email);
+    setEditPhone(user.phone || "");
     setEditDialogOpen(true);
   };
 
@@ -362,7 +362,7 @@ const AdminUsers = () => {
       if (editingUser) {
         const { error } = await supabase
           .from("candidate_profiles")
-          .update({ full_name: editFullName, email: editEmail })
+          .update({ full_name: editFullName, email: editEmail, phone: editPhone || null })
           .eq("user_id", editingUser.id);
 
         if (error) throw error;
@@ -742,14 +742,6 @@ const AdminUsers = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleManageRoles(user)}
-                      >
-                        <UserCog className="w-4 h-4 mr-2" />
-                        Manage Roles
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
                         onClick={() => openEditUser(user)}
                       >
                         <Edit3 className="w-4 h-4 mr-2" />
@@ -822,16 +814,6 @@ const AdminUsers = () => {
           )}
         </Card>
 
-        {selectedUser && (
-          <RoleManagementDialog
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-            userId={selectedUser.id}
-            userName={selectedUser.full_name}
-            currentRoles={selectedUser.roles}
-            onRoleUpdated={handleRoleUpdated}
-          />
-        )}
 
         <CreateUserDialog
           open={createDialogOpen}
@@ -840,49 +822,184 @@ const AdminUsers = () => {
         />
 
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className="bg-background">
+          <DialogContent className="bg-background max-w-2xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingUser ? "Edit User" : "Add User"}</DialogTitle>
               <DialogDescription>
                 {editingUser
-                  ? "Update informasi user yang sudah terdaftar"
+                  ? "Update informasi, status, dan role user"
                   : "Tambahkan user baru ke sistem"}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
-                <Input
-                  id="full_name"
-                  value={editFullName}
-                  onChange={(e) => setEditFullName(e.target.value)}
-                  placeholder="Nama lengkap"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                  placeholder="email@example.com"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setEditDialogOpen(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleSaveUser} disabled={saving}>
-                  {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Save
-                </Button>
-              </div>
-            </div>
+            <Tabs defaultValue="info" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="info">Informasi</TabsTrigger>
+                <TabsTrigger value="roles" disabled={!editingUser}>Roles</TabsTrigger>
+                <TabsTrigger value="status" disabled={!editingUser}>Status</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="info" className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="full_name">Full Name</Label>
+                  <Input
+                    id="full_name"
+                    value={editFullName}
+                    onChange={(e) => setEditFullName(e.target.value)}
+                    placeholder="Nama lengkap"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    placeholder="email@example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    placeholder="+6281234567890"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditDialogOpen(false)}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveUser} disabled={saving}>
+                    {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Save
+                  </Button>
+                </div>
+              </TabsContent>
+
+              {editingUser && (
+                <TabsContent value="roles" className="space-y-4 pt-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground mb-3">Current Roles</h3>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {editingUser.roles.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No roles assigned</p>
+                      ) : (
+                        editingUser.roles.map((role) => (
+                          <Badge key={role} className={getRoleBadgeColor(role)}>
+                            <Shield className="w-3 h-3 mr-1" />
+                            {role}
+                          </Badge>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {["admin", "superadmin", "employer", "candidate", "manajer", "manager", "staff", "interviewer", "interviewer_principal", "hrd", "pic", "direktur"].map((role) => {
+                      const hasRole = editingUser.roles.includes(role);
+                      return (
+                        <div
+                          key={role}
+                          className="flex items-center justify-between p-3 rounded-lg border border-border"
+                        >
+                          <Badge className={getRoleBadgeColor(role)}>{role}</Badge>
+                          {hasRole ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-destructive"
+                              onClick={async () => {
+                                const { error } = await supabase
+                                  .from("user_roles")
+                                  .delete()
+                                  .eq("user_id", editingUser.id)
+                                  .eq("role", role as any);
+                                if (error) {
+                                  toast({ title: "Error", description: error.message, variant: "destructive" });
+                                } else {
+                                  toast({ title: `Role ${role} dihapus` });
+                                  setEditingUser({ ...editingUser, roles: editingUser.roles.filter(r => r !== role) });
+                                  await fetchUsers();
+                                }
+                              }}
+                            >
+                              Remove
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={async () => {
+                                const { error } = await supabase
+                                  .from("user_roles")
+                                  .insert({ user_id: editingUser.id, role: role as any });
+                                if (error) {
+                                  toast({ title: "Error", description: error.message, variant: "destructive" });
+                                } else {
+                                  toast({ title: `Role ${role} ditambahkan` });
+                                  setEditingUser({ ...editingUser, roles: [...editingUser.roles, role] });
+                                  await fetchUsers();
+                                }
+                              }}
+                            >
+                              Assign
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+              )}
+
+              {editingUser && (
+                <TabsContent value="status" className="space-y-4 pt-4">
+                  <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+                    <div>
+                      <p className="font-medium text-foreground">Status Arsip</p>
+                      <p className="text-sm text-muted-foreground">
+                        {editingUser.is_archived
+                          ? "User ini sedang diarsipkan"
+                          : "User ini aktif"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {editingUser.is_archived ? "Archived" : "Active"}
+                      </span>
+                      <Switch
+                        checked={editingUser.is_archived}
+                        onCheckedChange={async (checked) => {
+                          const { error } = await supabase
+                            .from("candidate_profiles")
+                            .update({
+                              is_archived: checked,
+                              archived_at: checked ? new Date().toISOString() : null,
+                            })
+                            .eq("user_id", editingUser.id);
+                          if (error) {
+                            toast({ title: "Gagal mengubah status", description: error.message, variant: "destructive" });
+                          } else {
+                            toast({ title: checked ? "User diarsipkan" : "User dipulihkan dari arsip" });
+                            setEditingUser({ ...editingUser, is_archived: checked, archived_at: checked ? new Date().toISOString() : null });
+                            await fetchUsers();
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {editingUser.archived_at && (
+                    <p className="text-xs text-muted-foreground">
+                      Diarsipkan pada: {formatDate(editingUser.archived_at)}
+                    </p>
+                  )}
+                </TabsContent>
+              )}
+            </Tabs>
           </DialogContent>
         </Dialog>
 
