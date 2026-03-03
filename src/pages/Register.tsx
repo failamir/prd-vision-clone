@@ -40,9 +40,14 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [sendingOTP, setSendingOTP] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+  const [showDirectAccessDialog, setShowDirectAccessDialog] = useState(false);
 
-  // Direct access is now allowed - no job parameter required
+  // Check if user accessed register page directly (without job parameter)
+  useEffect(() => {
+    if (!jobId) {
+      setShowDirectAccessDialog(true);
+    }
+  }, [jobId]);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -505,7 +510,29 @@ const Register = () => {
           </>
         )}
       </Card>
-
+      {/* Direct Access Dialog - recommendation only */}
+      <AlertDialog open={showDirectAccessDialog} onOpenChange={setShowDirectAccessDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-full">
+              <Briefcase className="w-6 h-6 text-primary" />
+            </div>
+            <AlertDialogTitle className="text-center">Apply for a Job First</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              We recommend browsing our available job positions and applying for a position that matches your qualifications. 
+              You can also continue to register directly.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-center gap-2">
+            <AlertDialogAction onClick={() => navigate("/jobs")} className="w-full sm:w-auto">
+              Browse Jobs
+            </AlertDialogAction>
+            <AlertDialogAction onClick={() => setShowDirectAccessDialog(false)} variant="outline" className="w-full sm:w-auto bg-transparent border border-input hover:bg-accent">
+              Continue to Register
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
