@@ -527,7 +527,7 @@ const Register = () => {
             <AlertDialogAction onClick={() => navigate("/jobs")} className="w-full sm:w-auto">
               Browse Jobs
             </AlertDialogAction>
-            <AlertDialogAction onClick={() => setShowDirectAccessDialog(false)} variant="outline" className="w-full sm:w-auto bg-transparent border border-input hover:bg-accent">
+            <AlertDialogAction onClick={() => setShowDirectAccessDialog(false)} className="w-full sm:w-auto bg-transparent border border-input hover:bg-accent text-foreground">
               Continue to Register
             </AlertDialogAction>
           </AlertDialogFooter>
