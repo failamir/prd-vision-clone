@@ -1,6 +1,4 @@
 import React from 'react';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
 import { FadeIn } from '@/components/FadeIn';
 import anniversary25thImg from '@/assets/25th-anniversary.jpg';
 import baliTeamImg from '@/assets/bali-team.jpeg';
@@ -28,8 +26,7 @@ const AboutPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
+    <div className="bg-white">
 
       {/* Hero Section - Apple Style Clean */}
       <section className="relative pt-32 pb-10 bg-white overflow-hidden">
@@ -96,7 +93,7 @@ const AboutPage: React.FC = () => {
           </div>
         </div>
       </section>
-      <Footer />
+      
     </div >
   );
 };
