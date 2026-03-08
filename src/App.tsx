@@ -55,7 +55,16 @@ import ScrollToTop from "./components/ScrollToTop";
 import { DashboardLayout } from "./components/dashboard/DashboardLayout";
 import { AdminLayout } from "./components/admin/AdminLayout";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 menit - data dianggap fresh
+      gcTime: 30 * 60 * 1000, // 30 menit - cache disimpan di memory
+      refetchOnWindowFocus: false, // tidak refetch saat tab aktif kembali
+      retry: 1, // hanya retry 1x jika gagal
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
