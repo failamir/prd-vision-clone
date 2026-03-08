@@ -95,12 +95,10 @@ const App = () => (
                 </Route>
 
                 {/* Auth Routes (no persistent layout) */}
-                <Suspense fallback={<div className="flex h-screen w-full items-center justify-center p-8 text-muted-foreground">Loading...</div>}>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                </Suspense>
+                <Route path="/login" element={<Suspense fallback={<div className="flex h-screen w-full items-center justify-center p-8 text-muted-foreground">Loading...</div>}><Login /></Suspense>} />
+                <Route path="/register" element={<Suspense fallback={<div className="flex h-screen w-full items-center justify-center p-8 text-muted-foreground">Loading...</div>}><Register /></Suspense>} />
+                <Route path="/forgot-password" element={<Suspense fallback={<div className="flex h-screen w-full items-center justify-center p-8 text-muted-foreground">Loading...</div>}><ForgotPassword /></Suspense>} />
+                <Route path="/reset-password" element={<Suspense fallback={<div className="flex h-screen w-full items-center justify-center p-8 text-muted-foreground">Loading...</div>}><ResetPassword /></Suspense>} />
                 {/* Candidate Routes with Persistent Layout */}
                 <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                   <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
