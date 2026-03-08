@@ -262,19 +262,62 @@ const Register = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Registration successful!",
-        description: jobId 
-          ? "Your account has been created. Redirecting to apply..." 
-          : "Your account has been created. Redirecting...",
-      });
+      // If registering from a job, auto-apply
+      if (jobId && data.user) {
+        try {
+          // Wait briefly for profile trigger to create candidate_profiles row
+          await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // If there's a pending job application, redirect to that job with apply flag
-      if (jobId) {
-        navigate(`/jobs/${jobId}?apply=true`);
+          const { data: profileData } = await supabase
+            .from("candidate_profiles")
+            .select("id, phone, registration_city")
+            .eq("user_id", data.user.id)
+            .maybeSingle();
+
+          if (profileData) {
+            // Check if not already applied
+            const { data: existingApp } = await supabase
+              .from("job_applications")
+              .select("id")
+              .eq("candidate_id", profileData.id)
+              .eq("job_id", jobId)
+              .maybeSingle();
+
+            if (!existingApp) {
+              await supabase.from("job_applications").insert({
+                candidate_id: profileData.id,
+                job_id: jobId,
+                status: "pending",
+                office_registered: profileData.registration_city || null,
+                contact_no: profileData.phone || null,
+              });
+            }
+
+            toast({
+              title: "Registrasi & Lamaran Berhasil!",
+              description: "Akun Anda telah dibuat dan lamaran pekerjaan telah dikirim.",
+            });
+          } else {
+            toast({
+              title: "Registration successful!",
+              description: "Your account has been created. Please apply for the job from your dashboard.",
+            });
+          }
+        } catch (applyError) {
+          console.error("Auto-apply error:", applyError);
+          toast({
+            title: "Registration successful!",
+            description: "Your account has been created but auto-apply failed. Please apply manually.",
+          });
+        }
       } else {
-        navigate("/candidate/dashboard");
+        toast({
+          title: "Registration successful!",
+          description: "Your account has been created. Redirecting...",
+        });
       }
+
+      navigate("/candidate/dashboard");
     } catch (error: any) {
       toast({
         title: "Registration failed",
