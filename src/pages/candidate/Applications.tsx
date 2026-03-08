@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { Briefcase, Calendar, Loader2, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ApplicationStatusDialog } from "@/components/candidate/ApplicationStatusDialog";
+import { useQuery } from "@tanstack/react-query";
 
 export interface Application {
   id: string;
@@ -32,59 +32,45 @@ const statusColors: Record<string, string> = {
   withdrawn: "bg-gray-100 text-gray-800",
 };
 
+const fetchApplications = async (): Promise<Application[]> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: profile } = await supabase
+    .from("candidate_profiles")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!profile) return [];
+
+  const { data, error } = await supabase
+    .from("job_applications")
+    .select(`
+      *,
+      job:jobs(id, title, company_name, location, job_type)
+    `)
+    .eq("candidate_id", profile.id)
+    .order("applied_at", { ascending: false });
+
+  if (error) throw error;
+  return (data as any) || [];
+};
+
 const Applications = () => {
-  const { toast } = useToast();
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchApplications();
-  }, []);
+  const { data: applications = [], isLoading } = useQuery({
+    queryKey: ["candidate-applications"],
+    queryFn: fetchApplications,
+  });
 
-  const fetchApplications = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from("candidate_profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!profile) return;
-
-      const { data, error } = await supabase
-        .from("job_applications")
-        .select(`
-          *,
-          job:jobs(id, title, company_name, location, job_type)
-        `)
-        .eq("candidate_id", profile.id)
-        .order("applied_at", { ascending: false });
-
-      if (error) throw error;
-      setApplications(data as any || []);
-    } catch (error) {
-      console.error("Error fetching applications:", error);
-      toast({
-        title: "Error loading applications",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </>
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
     );
   }
 
@@ -144,15 +130,6 @@ const Applications = () => {
                       View Job
                     </Button>
                   </Link>
-                  {/* <Button
-                    size="sm"
-                    onClick={() => {
-                      setSelectedApplication(application);
-                      setIsDialogOpen(true);
-                    }}
-                  >
-                    Track Status
-                  </Button> */}
                 </div>
 
                 {application.cover_letter && (
