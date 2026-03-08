@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -232,8 +230,7 @@ const Jobs = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
+    <div>
 
       {/* Header */}
       <section className="pt-24 pb-12 bg-gradient-to-r from-ocean-deep to-ocean-blue text-white">
@@ -466,7 +463,7 @@ const Jobs = () => {
         </div>
       </section>
 
-      <Footer />
+      
     </div>
   );
 };

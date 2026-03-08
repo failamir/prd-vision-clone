@@ -1,13 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
 import RPImage from '@/assets/RP.png';
 
 const RecruitmentProcedurePage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
+    <div className="bg-white">
 
       {/* Page Title */}
       <section className="page-title mt-16">
@@ -58,7 +55,7 @@ const RecruitmentProcedurePage: React.FC = () => {
         </div>
       </section>
 
-      <Footer />
+      
     </div>
   );
 };

@@ -1,5 +1,3 @@
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { FadeIn } from "@/components/FadeIn";
 import { ChevronRight, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -8,8 +6,7 @@ const TermsAndConditions = () => {
     const lastUpdated = "December 9, 2024";
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            <Navbar />
+        <div className="bg-slate-50">
 
             <main className="pt-24 pb-20">
                 {/* Header */}
@@ -198,7 +195,7 @@ const TermsAndConditions = () => {
                 </div>
             </main>
 
-            <Footer />
+            
         </div>
     );
 };

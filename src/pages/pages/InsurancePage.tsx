@@ -1,14 +1,11 @@
 import React from 'react';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
 import { FadeIn } from '@/components/FadeIn';
 import bgNewCrop from '@/assets/bg-new-crop.png';
 import { Shield, Heart, Anchor } from 'lucide-react';
 
 const InsurancePage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
+    <div className="bg-white">
 
       {/* Hero Section */}
       <section className="relative py-24 bg-gray-50 overflow-hidden">
@@ -93,7 +90,7 @@ const InsurancePage: React.FC = () => {
           </div>
         </div>
       </section>
-      <Footer />
+      
     </div>
   );
 };

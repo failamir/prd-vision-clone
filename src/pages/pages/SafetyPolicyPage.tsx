@@ -1,11 +1,8 @@
 import React from 'react';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
 
 const SafetyPolicyPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
+    <div className="bg-white">
       {/* Safety & Quality Policy Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -58,7 +55,7 @@ const SafetyPolicyPage: React.FC = () => {
           </div>
         </div>
       </section>
-      <Footer />
+      
     </div>
   );
 };

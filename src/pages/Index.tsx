@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MapPin, Clock, Ship, Calendar, X, ArrowRight } from "lucide-react";
 import heroCruise1 from "@/assets/hero-cruise-1.jpg";
@@ -216,8 +214,7 @@ const Index = () => {
   const extendedPartners = [...partners, ...partners];
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
+    <div className="bg-white">
 
       {/* Hero Carousel */}
       <section className="relative h-[85vh] min-h-[600px] overflow-hidden">
@@ -367,7 +364,7 @@ const Index = () => {
         </div>
       </section>
 
-      <Footer />
+      
 
       {/* Urgent Jobs Modal */}
       <UrgentJobsModal

@@ -1,13 +1,10 @@
 import React from 'react';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
 import manningImg1 from '@/assets/Manning Services-1.jpg';
 import manningImg2 from '@/assets/Manning Services-2.png';
 
 const ManningServicesPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <div className="bg-gray-50">
       {/* Manning Services Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,7 +47,7 @@ const ManningServicesPage: React.FC = () => {
           </div>
         </div>
       </section>
-      <Footer />
+      
     </div>
   );
 };

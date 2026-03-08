@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Mail, Phone, Monitor, Plus, Minus, MapPin, Send, Loader2, AlertCircle } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
 import { FadeIn } from '@/components/FadeIn';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -150,8 +148,7 @@ const ContactPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
+    <div className="bg-white">
 
       {/* Hero Section */}
       <section className="relative pt-24 pb-10 bg-gray-50 overflow-hidden">
@@ -391,7 +388,7 @@ const ContactPage: React.FC = () => {
           </div>
         </div>
       </section>
-      <Footer />
+      
     </div>
   );
 };
