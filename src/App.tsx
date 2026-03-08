@@ -7,6 +7,7 @@ import { DatabaseProvider } from "@/contexts/DatabaseContext";
 import { UserProvider } from "@/contexts/UserContext";
 import React, { Suspense } from "react";
 import Index from "./pages/Index";
+import PublicLayout from "./components/PublicLayout";
 
 // Code Split route components
 const Jobs = React.lazy(() => import("./pages/Jobs"));
@@ -75,25 +76,31 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            <Suspense fallback={<div className="flex h-screen w-full items-center justify-center p-8 text-muted-foreground">Loading...</div>}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/safety" element={<SafetyPolicyPage />} />
-                <Route path="/services" element={<ManningServicesPage />} />
-                <Route path="/insurance" element={<InsurancePage />} />
-                <Route path="/terms" element={<TermsAndConditions />} />
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/manning-services" element={<ManningServicesPage />} />
-                <Route path="/jobs" element={<Jobs />} />
-                <Route path="/jobs/:id" element={<JobDetail />} />
-                <Route path="/recruitment-procedure" element={<RecruitmentProcedurePage />} />
-                <Route path="/redirect.php" element={<RecruitmentProcedurePage />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
+            <Routes>
+                {/* Public Routes with Persistent Navbar/Footer */}
+                <Route element={<PublicLayout />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/safety" element={<SafetyPolicyPage />} />
+                  <Route path="/services" element={<ManningServicesPage />} />
+                  <Route path="/insurance" element={<InsurancePage />} />
+                  <Route path="/terms" element={<TermsAndConditions />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/manning-services" element={<ManningServicesPage />} />
+                  <Route path="/jobs" element={<Jobs />} />
+                  <Route path="/jobs/:id" element={<JobDetail />} />
+                  <Route path="/recruitment-procedure" element={<RecruitmentProcedurePage />} />
+                  <Route path="/redirect.php" element={<RecruitmentProcedurePage />} />
+                </Route>
+
+                {/* Auth Routes (no persistent layout) */}
+                <Suspense fallback={<div className="flex h-screen w-full items-center justify-center p-8 text-muted-foreground">Loading...</div>}>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                </Suspense>
                 {/* Candidate Routes with Persistent Layout */}
                 <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                   <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
@@ -131,9 +138,8 @@ const App = () => (
                 <Route path="/admin/setup" element={<AdminSetup />} />
 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
+                <Route path="*" element={<Suspense fallback={<div className="flex h-screen w-full items-center justify-center p-8 text-muted-foreground">Loading...</div>}><NotFound /></Suspense>} />
               </Routes>
-            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </UserProvider>
