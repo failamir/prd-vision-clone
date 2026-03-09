@@ -138,6 +138,7 @@ const Profile = () => {
     email: "",
     address: "",
   });
+  const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [profile, setProfile] = useState({
     full_name: "",
     email: "",
@@ -437,6 +438,7 @@ const Profile = () => {
 
   const getStep1MissingFields = () => {
     const missing: string[] = [];
+    const errorKeys = new Set<string>();
 
     const validGenders = new Set(["male", "female"]);
     const validRegistrationCities = new Set(["Jakarta", "Bandung", "Bali", "Surabaya", "Yogyakarta"]);
@@ -454,22 +456,23 @@ const Profile = () => {
       "Company Website",
     ]);
 
-    if (!profile.full_name?.trim()) missing.push("Full Name");
-    if (!profile.phone?.trim()) missing.push("Contact No");
-    if (!profile.address?.trim()) missing.push("Address");
-    if (!profile.city?.trim()) missing.push("City");
-    if (!profile.country?.trim()) missing.push("Nationality");
-    if (!profile.place_of_birth?.trim()) missing.push("Place of Birth");
-    if (!profile.date_of_birth) missing.push("Date of Birth");
+    if (!profile.full_name?.trim()) { missing.push("Full Name"); errorKeys.add("full_name"); }
+    if (!profile.phone?.trim()) { missing.push("Contact No"); errorKeys.add("phone"); }
+    if (!profile.address?.trim()) { missing.push("Address"); errorKeys.add("address"); }
+    if (!profile.city?.trim()) { missing.push("City"); errorKeys.add("city"); }
+    if (!profile.country?.trim()) { missing.push("Nationality"); errorKeys.add("country"); }
+    if (!profile.place_of_birth?.trim()) { missing.push("Place of Birth"); errorKeys.add("place_of_birth"); }
+    if (!profile.date_of_birth) { missing.push("Date of Birth"); errorKeys.add("date_of_birth"); }
 
-    if (!validGenders.has(profile.gender)) missing.push("Gender");
-    if (!validRegistrationCities.has(profile.registration_city)) missing.push("Registration City");
-    if (!validVaccinationStatuses.has(profile.covid_vaccinated)) missing.push("COVID-19 Vaccination Status");
-    if (!validHowFoundUs.has(profile.how_found_us)) missing.push("How did you find us?");
+    if (!validGenders.has(profile.gender)) { missing.push("Gender"); errorKeys.add("gender"); }
+    if (!validRegistrationCities.has(profile.registration_city)) { missing.push("Registration City"); errorKeys.add("registration_city"); }
+    if (!validVaccinationStatuses.has(profile.covid_vaccinated)) { missing.push("COVID-19 Vaccination Status"); errorKeys.add("covid_vaccinated"); }
+    if (!validHowFoundUs.has(profile.how_found_us)) { missing.push("How did you find us?"); errorKeys.add("how_found_us"); }
 
-    if (profile.how_found_us === "Referral" && !profile.referral_name?.trim()) missing.push("Referral Name");
-    if (cvs.length === 0) missing.push("CV / Resume");
+    if (profile.how_found_us === "Referral" && !profile.referral_name?.trim()) { missing.push("Referral Name"); errorKeys.add("referral_name"); }
+    if (cvs.length === 0) { missing.push("CV / Resume"); errorKeys.add("cv"); }
 
+    setValidationErrors(errorKeys);
     return missing;
   };
 
@@ -1788,8 +1791,9 @@ const Profile = () => {
                 <Input
                   id="full_name"
                   value={profile.full_name}
-                  onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, full_name: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("full_name"); return n; }); }}
                   required
+                  className={validationErrors.has("full_name") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
@@ -1839,8 +1843,8 @@ const Profile = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="gender">Gender *</Label>
-                <Select value={profile.gender} onValueChange={(value) => setProfile({ ...profile, gender: value })}>
-                  <SelectTrigger>
+                <Select value={profile.gender} onValueChange={(value) => { setProfile({ ...profile, gender: value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("gender"); return n; }); }}>
+                  <SelectTrigger className={validationErrors.has("gender") ? "border-destructive ring-destructive" : ""}>
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1855,8 +1859,9 @@ const Profile = () => {
                 <Input
                   id="country"
                   value={profile.country}
-                  onChange={(e) => setProfile({ ...profile, country: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, country: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("country"); return n; }); }}
                   placeholder="e.g., Indonesia"
+                  className={validationErrors.has("country") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
@@ -1866,7 +1871,8 @@ const Profile = () => {
                   id="phone"
                   type="tel"
                   value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, phone: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("phone"); return n; }); }}
+                  className={validationErrors.has("phone") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
@@ -1880,7 +1886,8 @@ const Profile = () => {
                 <Input
                   id="address"
                   value={profile.address}
-                  onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, address: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("address"); return n; }); }}
+                  className={validationErrors.has("address") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
@@ -1889,7 +1896,8 @@ const Profile = () => {
                 <Input
                   id="city"
                   value={profile.city}
-                  onChange={(e) => setProfile({ ...profile, city: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, city: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("city"); return n; }); }}
+                  className={validationErrors.has("city") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
@@ -1898,7 +1906,8 @@ const Profile = () => {
                 <Input
                   id="place_of_birth"
                   value={profile.place_of_birth}
-                  onChange={(e) => setProfile({ ...profile, place_of_birth: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, place_of_birth: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("place_of_birth"); return n; }); }}
+                  className={validationErrors.has("place_of_birth") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
@@ -1908,7 +1917,8 @@ const Profile = () => {
                   id="date_of_birth"
                   type="date"
                   value={profile.date_of_birth}
-                  onChange={(e) => setProfile({ ...profile, date_of_birth: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, date_of_birth: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("date_of_birth"); return n; }); }}
+                  className={validationErrors.has("date_of_birth") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
@@ -1916,9 +1926,9 @@ const Profile = () => {
                 <Label htmlFor="registration_city">In which city do you register? *</Label>
                 <Select
                   value={profile.registration_city}
-                  onValueChange={(value) => setProfile({ ...profile, registration_city: value })}
+                  onValueChange={(value) => { setProfile({ ...profile, registration_city: value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("registration_city"); return n; }); }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={validationErrors.has("registration_city") ? "border-destructive ring-destructive" : ""}>
                     <SelectValue placeholder="Please select" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
@@ -1935,9 +1945,9 @@ const Profile = () => {
                 <Label htmlFor="covid_vaccinated">COVID-19 Vaccination Status *</Label>
                 <Select
                   value={profile.covid_vaccinated}
-                  onValueChange={(value) => setProfile({ ...profile, covid_vaccinated: value })}
+                  onValueChange={(value) => { setProfile({ ...profile, covid_vaccinated: value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("covid_vaccinated"); return n; }); }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={validationErrors.has("covid_vaccinated") ? "border-destructive ring-destructive" : ""}>
                     <SelectValue placeholder="Please select" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
@@ -1955,13 +1965,13 @@ const Profile = () => {
                   value={profile.how_found_us}
                   onValueChange={(value) => {
                     setProfile({ ...profile, how_found_us: value });
-                    // Clear referral name if not selecting "Referral"
+                    setValidationErrors(prev => { const n = new Set(prev); n.delete("how_found_us"); return n; });
                     if (value !== "Referral") {
                       setProfile(prev => ({ ...prev, referral_name: "" }));
                     }
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={validationErrors.has("how_found_us") ? "border-destructive ring-destructive" : ""}>
                     <SelectValue placeholder="Please select" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
@@ -1980,15 +1990,16 @@ const Profile = () => {
                   <Input
                     id="referral_name"
                     value={profile.referral_name}
-                    onChange={(e) => setProfile({ ...profile, referral_name: e.target.value })}
+                    onChange={(e) => { setProfile({ ...profile, referral_name: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("referral_name"); return n; }); }}
                     placeholder="Who referred you?"
+                    className={validationErrors.has("referral_name") ? "border-destructive ring-destructive" : ""}
                   />
                 </div>
               )}
             </div>
 
             {/* CV & Form Letter Section */}
-            <div className="mt-8 pt-6 border-t">
+            <div className={`mt-8 pt-6 border-t ${validationErrors.has("cv") ? "rounded-lg border-2 border-destructive p-4" : ""}`}>
               <h3 className="text-xl font-semibold text-foreground mb-6">CV / Resume <span className="text-destructive">*</span></h3>
               <Tabs value={documentsTab} onValueChange={setDocumentsTab}>
                 <TabsList className="mb-6">
