@@ -1917,7 +1917,8 @@ const Profile = () => {
                   id="date_of_birth"
                   type="date"
                   value={profile.date_of_birth}
-                  onChange={(e) => setProfile({ ...profile, date_of_birth: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, date_of_birth: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("date_of_birth"); return n; }); }}
+                  className={validationErrors.has("date_of_birth") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
