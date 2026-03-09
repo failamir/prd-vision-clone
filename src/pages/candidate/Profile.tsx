@@ -438,6 +438,7 @@ const Profile = () => {
 
   const getStep1MissingFields = () => {
     const missing: string[] = [];
+    const errorKeys = new Set<string>();
 
     const validGenders = new Set(["male", "female"]);
     const validRegistrationCities = new Set(["Jakarta", "Bandung", "Bali", "Surabaya", "Yogyakarta"]);
@@ -455,22 +456,23 @@ const Profile = () => {
       "Company Website",
     ]);
 
-    if (!profile.full_name?.trim()) missing.push("Full Name");
-    if (!profile.phone?.trim()) missing.push("Contact No");
-    if (!profile.address?.trim()) missing.push("Address");
-    if (!profile.city?.trim()) missing.push("City");
-    if (!profile.country?.trim()) missing.push("Nationality");
-    if (!profile.place_of_birth?.trim()) missing.push("Place of Birth");
-    if (!profile.date_of_birth) missing.push("Date of Birth");
+    if (!profile.full_name?.trim()) { missing.push("Full Name"); errorKeys.add("full_name"); }
+    if (!profile.phone?.trim()) { missing.push("Contact No"); errorKeys.add("phone"); }
+    if (!profile.address?.trim()) { missing.push("Address"); errorKeys.add("address"); }
+    if (!profile.city?.trim()) { missing.push("City"); errorKeys.add("city"); }
+    if (!profile.country?.trim()) { missing.push("Nationality"); errorKeys.add("country"); }
+    if (!profile.place_of_birth?.trim()) { missing.push("Place of Birth"); errorKeys.add("place_of_birth"); }
+    if (!profile.date_of_birth) { missing.push("Date of Birth"); errorKeys.add("date_of_birth"); }
 
-    if (!validGenders.has(profile.gender)) missing.push("Gender");
-    if (!validRegistrationCities.has(profile.registration_city)) missing.push("Registration City");
-    if (!validVaccinationStatuses.has(profile.covid_vaccinated)) missing.push("COVID-19 Vaccination Status");
-    if (!validHowFoundUs.has(profile.how_found_us)) missing.push("How did you find us?");
+    if (!validGenders.has(profile.gender)) { missing.push("Gender"); errorKeys.add("gender"); }
+    if (!validRegistrationCities.has(profile.registration_city)) { missing.push("Registration City"); errorKeys.add("registration_city"); }
+    if (!validVaccinationStatuses.has(profile.covid_vaccinated)) { missing.push("COVID-19 Vaccination Status"); errorKeys.add("covid_vaccinated"); }
+    if (!validHowFoundUs.has(profile.how_found_us)) { missing.push("How did you find us?"); errorKeys.add("how_found_us"); }
 
-    if (profile.how_found_us === "Referral" && !profile.referral_name?.trim()) missing.push("Referral Name");
-    if (cvs.length === 0) missing.push("CV / Resume");
+    if (profile.how_found_us === "Referral" && !profile.referral_name?.trim()) { missing.push("Referral Name"); errorKeys.add("referral_name"); }
+    if (cvs.length === 0) { missing.push("CV / Resume"); errorKeys.add("cv"); }
 
+    setValidationErrors(errorKeys);
     return missing;
   };
 
