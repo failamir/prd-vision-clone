@@ -1945,9 +1945,9 @@ const Profile = () => {
                 <Label htmlFor="covid_vaccinated">COVID-19 Vaccination Status *</Label>
                 <Select
                   value={profile.covid_vaccinated}
-                  onValueChange={(value) => setProfile({ ...profile, covid_vaccinated: value })}
+                  onValueChange={(value) => { setProfile({ ...profile, covid_vaccinated: value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("covid_vaccinated"); return n; }); }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={validationErrors.has("covid_vaccinated") ? "border-destructive ring-destructive" : ""}>
                     <SelectValue placeholder="Please select" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
