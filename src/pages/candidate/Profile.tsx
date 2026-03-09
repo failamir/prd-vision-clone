@@ -1871,7 +1871,8 @@ const Profile = () => {
                   id="phone"
                   type="tel"
                   value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, phone: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("phone"); return n; }); }}
+                  className={validationErrors.has("phone") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
