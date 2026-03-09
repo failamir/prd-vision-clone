@@ -138,6 +138,7 @@ const Profile = () => {
     email: "",
     address: "",
   });
+  const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [profile, setProfile] = useState({
     full_name: "",
     email: "",
