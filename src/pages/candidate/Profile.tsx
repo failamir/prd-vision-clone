@@ -1990,8 +1990,9 @@ const Profile = () => {
                   <Input
                     id="referral_name"
                     value={profile.referral_name}
-                    onChange={(e) => setProfile({ ...profile, referral_name: e.target.value })}
+                    onChange={(e) => { setProfile({ ...profile, referral_name: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("referral_name"); return n; }); }}
                     placeholder="Who referred you?"
+                    className={validationErrors.has("referral_name") ? "border-destructive ring-destructive" : ""}
                   />
                 </div>
               )}
