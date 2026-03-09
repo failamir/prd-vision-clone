@@ -1999,7 +1999,7 @@ const Profile = () => {
             </div>
 
             {/* CV & Form Letter Section */}
-            <div className="mt-8 pt-6 border-t">
+            <div className={`mt-8 pt-6 border-t ${validationErrors.has("cv") ? "rounded-lg border-2 border-destructive p-4" : ""}`}>
               <h3 className="text-xl font-semibold text-foreground mb-6">CV / Resume <span className="text-destructive">*</span></h3>
               <Tabs value={documentsTab} onValueChange={setDocumentsTab}>
                 <TabsList className="mb-6">
