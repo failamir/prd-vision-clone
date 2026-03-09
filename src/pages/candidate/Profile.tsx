@@ -438,16 +438,35 @@ const Profile = () => {
   const getStep1MissingFields = () => {
     const missing: string[] = [];
 
+    const validGenders = new Set(["male", "female"]);
+    const validRegistrationCities = new Set(["Jakarta", "Bandung", "Bali", "Surabaya", "Yogyakarta"]);
+    const validVaccinationStatuses = new Set([
+      "Not Vaccinated",
+      "Partially Vaccinated",
+      "Fully Vaccinated",
+      "Fully Vaccinated with Booster",
+    ]);
+    const validHowFoundUs = new Set([
+      "Online Search",
+      "Social Media",
+      "Referral",
+      "Job Fair",
+      "Company Website",
+    ]);
+
     if (!profile.full_name?.trim()) missing.push("Full Name");
     if (!profile.phone?.trim()) missing.push("Contact No");
-    if (!profile.date_of_birth) missing.push("Date of Birth");
-    if (!profile.gender) missing.push("Gender");
     if (!profile.address?.trim()) missing.push("Address");
     if (!profile.city?.trim()) missing.push("City");
     if (!profile.country?.trim()) missing.push("Nationality");
-    if (!profile.registration_city) missing.push("Registration City");
-    if (!profile.covid_vaccinated) missing.push("COVID-19 Vaccination Status");
-    if (!profile.how_found_us) missing.push("How did you find us?");
+    if (!profile.place_of_birth?.trim()) missing.push("Place of Birth");
+    if (!profile.date_of_birth) missing.push("Date of Birth");
+
+    if (!validGenders.has(profile.gender)) missing.push("Gender");
+    if (!validRegistrationCities.has(profile.registration_city)) missing.push("Registration City");
+    if (!validVaccinationStatuses.has(profile.covid_vaccinated)) missing.push("COVID-19 Vaccination Status");
+    if (!validHowFoundUs.has(profile.how_found_us)) missing.push("How did you find us?");
+
     if (profile.how_found_us === "Referral" && !profile.referral_name?.trim()) missing.push("Referral Name");
     if (cvs.length === 0) missing.push("CV / Resume");
 
