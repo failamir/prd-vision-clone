@@ -1843,8 +1843,8 @@ const Profile = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="gender">Gender *</Label>
-                <Select value={profile.gender} onValueChange={(value) => setProfile({ ...profile, gender: value })}>
-                  <SelectTrigger>
+                <Select value={profile.gender} onValueChange={(value) => { setProfile({ ...profile, gender: value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("gender"); return n; }); }}>
+                  <SelectTrigger className={validationErrors.has("gender") ? "border-destructive ring-destructive" : ""}>
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
