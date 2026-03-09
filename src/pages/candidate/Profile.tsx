@@ -1965,13 +1965,13 @@ const Profile = () => {
                   value={profile.how_found_us}
                   onValueChange={(value) => {
                     setProfile({ ...profile, how_found_us: value });
-                    // Clear referral name if not selecting "Referral"
+                    setValidationErrors(prev => { const n = new Set(prev); n.delete("how_found_us"); return n; });
                     if (value !== "Referral") {
                       setProfile(prev => ({ ...prev, referral_name: "" }));
                     }
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={validationErrors.has("how_found_us") ? "border-destructive ring-destructive" : ""}>
                     <SelectValue placeholder="Please select" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
