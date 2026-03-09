@@ -3513,16 +3513,7 @@ const Profile = () => {
             ) : (
               <Button
                 type="submit"
-                disabled={saving || (currentStep === 1 && (
-                  !profile.full_name ||
-                  !profile.phone ||
-                  !profile.date_of_birth ||
-                  !profile.gender ||
-                  !profile.address ||
-                  !profile.city ||
-                  !profile.country ||
-                  cvs.length === 0
-                ))}
+                disabled={saving}
               >
                 {saving ? (
                   <>
