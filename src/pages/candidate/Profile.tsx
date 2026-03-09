@@ -3489,8 +3489,7 @@ const Profile = () => {
                   !profile.address ||
                   !profile.city ||
                   !profile.country ||
-                  cvs.length === 0 ||
-                  formLetters.length === 0
+                  cvs.length === 0
                 ))}
               >
                 {saving ? (
