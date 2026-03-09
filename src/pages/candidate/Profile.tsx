@@ -1926,9 +1926,9 @@ const Profile = () => {
                 <Label htmlFor="registration_city">In which city do you register? *</Label>
                 <Select
                   value={profile.registration_city}
-                  onValueChange={(value) => setProfile({ ...profile, registration_city: value })}
+                  onValueChange={(value) => { setProfile({ ...profile, registration_city: value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("registration_city"); return n; }); }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={validationErrors.has("registration_city") ? "border-destructive ring-destructive" : ""}>
                     <SelectValue placeholder="Please select" />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
