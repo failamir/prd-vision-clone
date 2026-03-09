@@ -1906,7 +1906,8 @@ const Profile = () => {
                 <Input
                   id="place_of_birth"
                   value={profile.place_of_birth}
-                  onChange={(e) => setProfile({ ...profile, place_of_birth: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, place_of_birth: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("place_of_birth"); return n; }); }}
+                  className={validationErrors.has("place_of_birth") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
