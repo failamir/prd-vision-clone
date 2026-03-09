@@ -1859,8 +1859,9 @@ const Profile = () => {
                 <Input
                   id="country"
                   value={profile.country}
-                  onChange={(e) => setProfile({ ...profile, country: e.target.value })}
+                  onChange={(e) => { setProfile({ ...profile, country: e.target.value }); setValidationErrors(prev => { const n = new Set(prev); n.delete("country"); return n; }); }}
                   placeholder="e.g., Indonesia"
+                  className={validationErrors.has("country") ? "border-destructive ring-destructive" : ""}
                 />
               </div>
 
