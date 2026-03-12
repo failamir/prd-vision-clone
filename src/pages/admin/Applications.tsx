@@ -920,54 +920,175 @@ const AdminApplications = () => {
       if (candidateIds.length > 0) {
         const uniqueCandidateIds = Array.from(new Set(candidateIds)) as string[];
 
-        // Fetch travel documents that contain C1D or VISA in document_type
-        const { data: travelDocs, error: travelError } = await supabase
-          .from("candidate_travel_documents" as any)
-          .select("candidate_id, expiry_date, document_type")
-          .in("candidate_id", uniqueCandidateIds)
-          .order("expiry_date", { ascending: false });
+        // Run ALL sub-queries in parallel instead of sequentially
+        const [travelDocsResult, medicalResult, bstCcResult, expResult, eduResult, emergResult, nokResult, refResult, docsResult] = await Promise.all([
+          // Travel documents
+          supabase
+            .from("candidate_travel_documents" as any)
+            .select("candidate_id, expiry_date, document_type")
+            .in("candidate_id", uniqueCandidateIds)
+            .order("expiry_date", { ascending: false }),
+          // Medical tests
+          supabase
+            .from("candidate_medical_tests" as any)
+            .select("id, candidate_id, test_name, score, file_path, file_name, created_at")
+            .in("candidate_id", uniqueCandidateIds)
+            .order("created_at", { ascending: false }),
+          // Certificates (BST/CC)
+          supabase
+            .from("candidate_certificates")
+            .select("candidate_id, type_certificate, file_path")
+            .in("candidate_id", uniqueCandidateIds),
+          // Experiences
+          supabase
+            .from("candidate_experience" as any)
+            .select("candidate_id, company, position, vessel_name_type, start_date, end_date, is_current, created_at, experience_type")
+            .in("candidate_id", uniqueCandidateIds)
+            .order("created_at", { ascending: false }),
+          // Education
+          supabase
+            .from("candidate_education" as any)
+            .select("candidate_id, institution, degree, start_date, end_date, created_at")
+            .in("candidate_id", uniqueCandidateIds)
+            .order("created_at", { ascending: false }),
+          // Emergency contacts
+          supabase
+            .from("candidate_emergency_contacts")
+            .select("candidate_id, full_name, relationship, phone, email, created_at")
+            .in("candidate_id", uniqueCandidateIds)
+            .order("created_at", { ascending: false }),
+          // Next of kin
+          supabase
+            .from("candidate_next_of_kin")
+            .select("candidate_id, full_name, relationship, date_of_birth, place_of_birth, created_at")
+            .in("candidate_id", uniqueCandidateIds)
+            .order("created_at", { ascending: false }),
+          // References
+          supabase
+            .from("candidate_references")
+            .select("candidate_id, full_name, relationship, company, position, phone, email, created_at")
+            .in("candidate_id", uniqueCandidateIds)
+            .order("created_at", { ascending: false }),
+          // CVs and Form Letters
+          Promise.all([
+            supabase
+              .from("candidate_cvs")
+              .select("candidate_id, file_path, is_default")
+              .in("candidate_id", uniqueCandidateIds)
+              .eq("is_default", true),
+            supabase
+              .from("candidate_form_letters")
+              .select("candidate_id, file_path, is_default")
+              .in("candidate_id", uniqueCandidateIds)
+              .eq("is_default", true),
+          ]),
+        ]);
 
-        if (travelError) throw travelError;
-
+        // Process travel documents
+        const travelDocs = travelDocsResult.data || [];
         const latestVisaByCandidate: Record<string, string | null> = {};
         const allVisasByCandidate: Record<string, any[]> = {};
-        (travelDocs || []).forEach((row: any) => {
+        travelDocs.forEach((row: any) => {
           const docType = (row.document_type || "").toUpperCase();
-          // Match C1D or VISA document types
           if (docType.includes("C1D") || docType.includes("VISA")) {
             if (latestVisaByCandidate[row.candidate_id] === undefined) {
               latestVisaByCandidate[row.candidate_id] = row.expiry_date;
             }
-            // Store all visa documents for modal
             if (!allVisasByCandidate[row.candidate_id]) {
               allVisasByCandidate[row.candidate_id] = [];
             }
             allVisasByCandidate[row.candidate_id].push(row);
           }
         });
-
         setVisaDocsByCandidate(allVisasByCandidate);
 
         const merged = apps.map((a: any) => ({
           ...a,
           c1d_expiry_date: latestVisaByCandidate[a.candidate_id] ?? a.c1d_expiry_date ?? null,
         }));
-
         setApplications(merged);
-        await fetchMedicalTests(uniqueCandidateIds);
-        await fetchBstCcCertificates(uniqueCandidateIds);
+
+        // Process medical tests inline
+        const medicalMap: Record<string, Record<string, any>> = {};
+        (medicalResult.data || []).forEach((row: any) => {
+          const cid = row.candidate_id;
+          const rawName = (row.test_name || "").toString();
+          if (!cid || !rawName) return;
+          const normalized = rawName.toUpperCase().replace(/\s+/g, "");
+          let key: "Marlins" | "NEHA" | "CES" | null = null;
+          if (normalized.includes("MARLIN")) key = "Marlins";
+          else if (normalized.includes("NEHA")) key = "NEHA";
+          else if (normalized.includes("CES")) key = "CES";
+          if (!key) return;
+          if (!medicalMap[cid]) medicalMap[cid] = {};
+          if (!medicalMap[cid][key]) medicalMap[cid][key] = row;
+        });
+        setMedicalTestsByCandidate(medicalMap);
+
+        // Process BST/CC certificates inline
+        processBstCcData(bstCcResult.data || []);
+
+        // Process experiences
+        const latestExpMap: Record<string, any> = {};
+        const allExpMap: Record<string, any[]> = {};
+        (expResult.data || []).forEach((row: any) => {
+          if (!latestExpMap[row.candidate_id]) latestExpMap[row.candidate_id] = row;
+          if (!allExpMap[row.candidate_id]) allExpMap[row.candidate_id] = [];
+          allExpMap[row.candidate_id].push(row);
+        });
+        setLatestExperienceByCandidate(latestExpMap);
+        setAllExperiencesByCandidate(allExpMap);
+
+        // Process education
+        const eduMap: Record<string, any> = {};
+        (eduResult.data || []).forEach((row: any) => {
+          if (!eduMap[row.candidate_id]) eduMap[row.candidate_id] = row;
+        });
+        setLatestEducationByCandidate(eduMap);
+
+        // Process emergency contacts
+        const emergMap: Record<string, any> = {};
+        (emergResult.data || []).forEach((row: any) => {
+          if (!emergMap[row.candidate_id]) emergMap[row.candidate_id] = row;
+        });
+        setLatestEmergencyContactByCandidate(emergMap);
+
+        // Process next of kin
+        const nokMap: Record<string, any> = {};
+        (nokResult.data || []).forEach((row: any) => {
+          if (!nokMap[row.candidate_id]) nokMap[row.candidate_id] = row;
+        });
+        setLatestNextOfKinByCandidate(nokMap);
+
+        // Process references
+        const refMap: Record<string, any> = {};
+        (refResult.data || []).forEach((row: any) => {
+          if (!refMap[row.candidate_id]) refMap[row.candidate_id] = row;
+        });
+        setLatestReferenceByCandidate(refMap);
+
+        // Process CVs and Form Letters
+        const [cvResult, flResult] = docsResult;
+        const cvMap: Record<string, string | null> = {};
+        (cvResult.data || []).forEach((row: any) => {
+          if (row.candidate_id && row.file_path) cvMap[row.candidate_id] = row.file_path;
+        });
+        setCvByCandidate(cvMap);
+
+        const flMap: Record<string, string | null> = {};
+        (flResult.data || []).forEach((row: any) => {
+          if (row.candidate_id && row.file_path) flMap[row.candidate_id] = row.file_path;
+        });
+        setFormLetterByCandidate(flMap);
       } else {
         setApplications(apps);
       }
-      await fetchLatestExperiences(candidateIds as string[]);
-      await fetchLatestEducations(candidateIds as string[]);
-      await fetchLatestEmergencyContacts(candidateIds as string[]);
-      await fetchLatestNextOfKin(candidateIds as string[]);
-      await fetchLatestReferences(candidateIds as string[]);
-      await fetchCandidateDocuments(candidateIds as string[]);
 
-      // Generate crew codes for applications without them
-      await generateCrewCodes();
+      // Generate crew codes only for apps missing them (don't re-fetch)
+      const appsWithoutCodes = apps.filter((app: any) => !app.crew_code);
+      if (appsWithoutCodes.length > 0) {
+        await generateCrewCodes();
+      }
     } catch (error) {
       console.error("Error fetching applications:", error);
       toast({
@@ -977,6 +1098,25 @@ const AdminApplications = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const processBstCcData = (data: any[]) => {
+    const map: Record<string, { label: string; certs: { type: string; file_path: string | null }[] }> = {};
+    data.forEach((row: any) => {
+      const cid = row.candidate_id;
+      const certType = (row.type_certificate || "").toUpperCase();
+      const hasBst = certType.includes("BST") || certType.includes("BASIC SAFETY");
+      const hasCc = certType.includes("CCM") || certType.includes("COC") || certType.includes("CC");
+      if (hasBst || hasCc) {
+        if (!map[cid]) map[cid] = { label: "", certs: [] };
+        const certAbbrev = hasBst ? "BST" : (certType.includes("CCM") ? "CCM" : certType.includes("COC") ? "COC" : "CC");
+        if (!map[cid].label.includes(certAbbrev)) {
+          map[cid].label = map[cid].label ? `${map[cid].label}, ${certAbbrev}` : certAbbrev;
+        }
+        map[cid].certs.push({ type: row.type_certificate, file_path: row.file_path });
+      }
+    });
+    setBstCcByCandidate(map);
   };
 
   const fetchLatestExperiences = async (candidateIds: string[]) => {
