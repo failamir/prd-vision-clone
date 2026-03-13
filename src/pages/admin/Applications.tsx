@@ -3781,12 +3781,7 @@ const AdminApplications = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(() => {
-                  const filtered = applications.filter(passesFilters);
-                  const startIndex = (currentPage - 1) * itemsPerPage;
-                  const endIndex = startIndex + itemsPerPage;
-                  return filtered.slice(startIndex, endIndex);
-                })().map((app) => (
+                {applications.filter(passesFilters).map((app) => (
                   <TableRow key={app.id}>
                     <TableCell className="w-[60px] min-w-[60px] sticky left-0 z-10 bg-background">
                       <Checkbox
