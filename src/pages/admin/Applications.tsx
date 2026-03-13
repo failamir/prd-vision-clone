@@ -889,8 +889,19 @@ const AdminApplications = () => {
     }
   };
 
-  const fetchApplications = async () => {
+  const fetchApplications = async (page = 1, pageSize = 20) => {
     try {
+      setLoading(true);
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      // Get total count
+      const { count, error: countError } = await supabase
+        .from("job_applications")
+        .select("*", { count: "exact", head: true });
+      if (countError) throw countError;
+      setTotalCount(count || 0);
+
       const { data, error } = await supabase
         .from("job_applications")
         .select(`
@@ -912,7 +923,8 @@ const AdminApplications = () => {
           ),
           job:jobs(title, company_name, department)
         `)
-        .order("applied_at", { ascending: false });
+        .order("applied_at", { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
       const apps = (data as any) || [];
