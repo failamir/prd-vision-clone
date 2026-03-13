@@ -889,10 +889,13 @@ const AdminApplications = () => {
     }
   };
 
-  const fetchApplications = async (page = 1, pageSize = 20) => {
+  const fetchApplications = async (page?: number, pageSize?: number) => {
     try {
+      const p = page ?? currentPage;
+      const ps = pageSize ?? itemsPerPage;
       setLoading(true);
-      const from = (page - 1) * pageSize;
+      const from = (p - 1) * ps;
+      const to = from + ps - 1;
       const to = from + pageSize - 1;
 
       // Get total count
