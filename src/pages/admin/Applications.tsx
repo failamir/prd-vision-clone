@@ -896,7 +896,6 @@ const AdminApplications = () => {
       setLoading(true);
       const from = (p - 1) * ps;
       const to = from + ps - 1;
-      const to = from + pageSize - 1;
 
       // Get total count
       const { count, error: countError } = await supabase
