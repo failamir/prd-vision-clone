@@ -798,8 +798,8 @@ const AdminApplications = () => {
   }, []);
 
   useEffect(() => {
-    fetchApplications();
-  }, []);
+    fetchApplications(currentPage, itemsPerPage);
+  }, [currentPage, itemsPerPage]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
