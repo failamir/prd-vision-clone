@@ -4231,18 +4231,32 @@ const AdminApplications = () => {
 
           {/* Pagination */}
           {(() => {
-            const filtered = applications.filter(passesFilters);
-            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            const totalPages = Math.ceil(totalCount / itemsPerPage);
             const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, filtered.length);
+            const endIndex = Math.min(startIndex + itemsPerPage, totalCount);
 
-            if (filtered.length === 0) return null;
+            if (totalCount === 0) return null;
 
             return (
-              <div className="flex items-center justify-between mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Showing {startIndex + 1} to {endIndex} of {filtered.length} entries
-                </p>
+              <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                <div className="flex items-center gap-4">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {startIndex + 1} to {endIndex} of {totalCount} entries
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Per page:</span>
+                    <Select value={String(itemsPerPage)} onValueChange={(v) => { setItemsPerPage(Number(v)); setCurrentPage(1); }}>
+                      <SelectTrigger className="w-[70px] h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[10, 20, 50, 100].map(n => (
+                          <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="flex gap-1">
                   <Button
                     variant="outline"
