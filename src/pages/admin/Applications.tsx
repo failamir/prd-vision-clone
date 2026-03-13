@@ -275,7 +275,8 @@ const AdminApplications = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Helpers: filters and utilities
   const clearFilters = () => {
@@ -797,8 +798,8 @@ const AdminApplications = () => {
   }, []);
 
   useEffect(() => {
-    fetchApplications();
-  }, []);
+    fetchApplications(currentPage, itemsPerPage);
+  }, [currentPage, itemsPerPage]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -888,8 +889,21 @@ const AdminApplications = () => {
     }
   };
 
-  const fetchApplications = async () => {
+  const fetchApplications = async (page?: number, pageSize?: number) => {
     try {
+      const p = page ?? currentPage;
+      const ps = pageSize ?? itemsPerPage;
+      setLoading(true);
+      const from = (p - 1) * ps;
+      const to = from + ps - 1;
+
+      // Get total count
+      const { count, error: countError } = await supabase
+        .from("job_applications")
+        .select("*", { count: "exact", head: true });
+      if (countError) throw countError;
+      setTotalCount(count || 0);
+
       const { data, error } = await supabase
         .from("job_applications")
         .select(`
@@ -911,7 +925,8 @@ const AdminApplications = () => {
           ),
           job:jobs(title, company_name, department)
         `)
-        .order("applied_at", { ascending: false });
+        .order("applied_at", { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
       const apps = (data as any) || [];
@@ -3766,12 +3781,7 @@ const AdminApplications = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(() => {
-                  const filtered = applications.filter(passesFilters);
-                  const startIndex = (currentPage - 1) * itemsPerPage;
-                  const endIndex = startIndex + itemsPerPage;
-                  return filtered.slice(startIndex, endIndex);
-                })().map((app) => (
+                {applications.filter(passesFilters).map((app) => (
                   <TableRow key={app.id}>
                     <TableCell className="w-[60px] min-w-[60px] sticky left-0 z-10 bg-background">
                       <Checkbox
@@ -4221,18 +4231,32 @@ const AdminApplications = () => {
 
           {/* Pagination */}
           {(() => {
-            const filtered = applications.filter(passesFilters);
-            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            const totalPages = Math.ceil(totalCount / itemsPerPage);
             const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, filtered.length);
+            const endIndex = Math.min(startIndex + itemsPerPage, totalCount);
 
-            if (filtered.length === 0) return null;
+            if (totalCount === 0) return null;
 
             return (
-              <div className="flex items-center justify-between mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Showing {startIndex + 1} to {endIndex} of {filtered.length} entries
-                </p>
+              <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                <div className="flex items-center gap-4">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {startIndex + 1} to {endIndex} of {totalCount} entries
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Per page:</span>
+                    <Select value={String(itemsPerPage)} onValueChange={(v) => { setItemsPerPage(Number(v)); setCurrentPage(1); }}>
+                      <SelectTrigger className="w-[70px] h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[10, 20, 50, 100].map(n => (
+                          <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="flex gap-1">
                   <Button
                     variant="outline"
