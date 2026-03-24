@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Users, Briefcase, FileText, TrendingUp } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
+import DatabaseBackup from "@/components/admin/DatabaseBackup";
 
 const AdminDashboard = () => {
   const { stats, loading } = useDashboardData();
