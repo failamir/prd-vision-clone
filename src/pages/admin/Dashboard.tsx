@@ -10,7 +10,7 @@ const AdminDashboard = () => {
 
   const statCards = [
     {
-      title: "Total Users",
+      title: "Kandidat Aktif",
       value: stats.totalCandidates,
       icon: Users,
       color: "from-blue-500 to-blue-600",

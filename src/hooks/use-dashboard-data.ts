@@ -42,7 +42,8 @@ const DEFAULT_STATS: DashboardStats = {
 async function fetchStats(officeFilter: string): Promise<DashboardStats> {
   let candidatesQuery = supabase
     .from("candidate_profiles")
-    .select("id", { count: "exact", head: true });
+    .select("id", { count: "exact", head: true })
+    .eq("is_archived", false);
   if (officeFilter !== "all") {
     candidatesQuery = candidatesQuery.eq("registration_city", officeFilter);
   }
