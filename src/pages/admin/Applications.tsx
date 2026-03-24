@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ChevronDown, ChevronUp, Download, Eye } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
