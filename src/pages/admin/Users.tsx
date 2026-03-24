@@ -98,6 +98,8 @@ const AdminUsers = () => {
   const [showPermanentDelete, setShowPermanentDelete] = useState(false);
   const [archiveAllDialogOpen, setArchiveAllDialogOpen] = useState(false);
   const [archivingAll, setArchivingAll] = useState(false);
+  const [restoreAllDialogOpen, setRestoreAllDialogOpen] = useState(false);
+  const [restoringAll, setRestoringAll] = useState(false);
 
   // Detect PIC role and auto-set city filter
   useEffect(() => {
