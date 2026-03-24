@@ -540,6 +540,7 @@ const AdminUsers = () => {
     }
   };
 
+  const filteredUsers = users.filter((user) => {
     const normalizedSearch = search.replace(/[^+\d]/g, '');
     const matchesSearch =
       user.full_name.toLowerCase().includes(search.toLowerCase()) ||
