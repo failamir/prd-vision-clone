@@ -3,6 +3,7 @@ import { Users, Briefcase, FileText, TrendingUp } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import DatabaseBackup from "@/components/admin/DatabaseBackup";
+import DatabaseImport from "@/components/admin/DatabaseImport";
 
 const AdminDashboard = () => {
   const { stats, loading } = useDashboardData();
@@ -100,8 +101,11 @@ const AdminDashboard = () => {
           </div>
         </Card>
 
-        {/* Database Backup */}
-        <DatabaseBackup />
+        {/* Database Backup & Import */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <DatabaseBackup />
+          <DatabaseImport />
+        </div>
       </div>
     </>
   );
