@@ -1162,6 +1162,25 @@ const AdminUsers = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <AlertDialog open={archiveAllDialogOpen} onOpenChange={setArchiveAllDialogOpen}>
+          <AlertDialogContent className="bg-background">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Arsipkan Semua Candidate?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Semua user dengan role candidate akan diarsipkan (is_archived = true). 
+                Data tidak dihapus dan bisa di-restore kapan saja. Lanjutkan?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={archivingAll}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleArchiveAllCandidates} disabled={archivingAll}>
+                {archivingAll && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Arsipkan Semua
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </>
   );
