@@ -101,8 +101,11 @@ const AdminDashboard = () => {
           </div>
         </Card>
 
-        {/* Database Backup */}
-        <DatabaseBackup />
+        {/* Database Backup & Import */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <DatabaseBackup />
+          <DatabaseImport />
+        </div>
       </div>
     </>
   );
