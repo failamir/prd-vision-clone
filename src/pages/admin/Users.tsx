@@ -686,6 +686,16 @@ const AdminUsers = () => {
                 Archive All Candidates
               </Button>
             )}
+            {!isPicUser && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRestoreAllDialogOpen(true)}
+              >
+                <ArchiveRestore className="w-4 h-4 mr-2" />
+                Restore All Candidates
+              </Button>
+            )}
           </div>
         </div>
 
