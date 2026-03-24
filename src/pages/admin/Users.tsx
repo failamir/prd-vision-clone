@@ -624,6 +624,16 @@ const AdminUsers = () => {
                 Reset Staff Passwords
               </Button>
             )}
+            {!isPicUser && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setArchiveAllDialogOpen(true)}
+              >
+                <Archive className="w-4 h-4 mr-2" />
+                Archive All Candidates
+              </Button>
+            )}
           </div>
         </div>
 
