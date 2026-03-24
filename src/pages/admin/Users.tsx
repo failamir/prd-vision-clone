@@ -487,7 +487,59 @@ const AdminUsers = () => {
     }
   };
 
-  const filteredUsers = users.filter((user) => {
+  const handleArchiveAllCandidates = async () => {
+    setArchivingAll(true);
+    try {
+      // Get all candidate user_ids
+      const { data: candidateRoles, error: rolesErr } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "candidate");
+
+      if (rolesErr) throw rolesErr;
+      if (!candidateRoles || candidateRoles.length === 0) {
+        toast({ title: "Tidak ada candidate", description: "Tidak ditemukan user dengan role candidate" });
+        setArchiveAllDialogOpen(false);
+        return;
+      }
+
+      const candidateUserIds = candidateRoles.map(r => r.user_id);
+      
+      // Archive in batches of 50
+      let archivedCount = 0;
+      for (let i = 0; i < candidateUserIds.length; i += 50) {
+        const batch = candidateUserIds.slice(i, i + 50);
+        const { error } = await supabase
+          .from("candidate_profiles")
+          .update({ is_archived: true, archived_at: new Date().toISOString() })
+          .in("user_id", batch)
+          .eq("is_archived", false);
+        
+        if (error) {
+          console.error("Batch archive error:", error);
+        } else {
+          archivedCount += batch.length;
+        }
+      }
+
+      toast({
+        title: "Arsip berhasil",
+        description: `${archivedCount} candidate telah diarsipkan`,
+      });
+      setArchiveAllDialogOpen(false);
+      fetchUsers();
+    } catch (error: any) {
+      console.error("Archive all error:", error);
+      toast({
+        title: "Gagal mengarsipkan",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setArchivingAll(false);
+    }
+  };
+
     const normalizedSearch = search.replace(/[^+\d]/g, '');
     const matchesSearch =
       user.full_name.toLowerCase().includes(search.toLowerCase()) ||
