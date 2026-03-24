@@ -1,8 +1,28 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { connect } from "https://deno.land/x/redis@v0.32.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+const CACHE_KEY = 'users:all';
+const CACHE_TTL = 300; // 5 minutes
+
+async function getRedisClient() {
+  try {
+    const redis = await connect({
+      hostname: Deno.env.get('REDIS_HOST') ?? '127.0.0.1',
+      port: parseInt(Deno.env.get('REDIS_PORT') ?? '6379', 10),
+      password: Deno.env.get('REDIS_PASSWORD') ?? undefined,
+      maxRetryCount: 2,
+      tls: false,
+    });
+    return redis;
+  } catch (err) {
+    console.error('Redis connection failed:', err);
+    return null;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -55,40 +75,52 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Get all auth users
-    const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers({
-      perPage: 1000
-    })
+    // Check for cache-busting param
+    const url = new URL(req.url);
+    const noCache = url.searchParams.get('nocache') === '1';
 
-    if (authError) {
-      throw authError
+    // Try Redis cache first
+    let redis = null;
+    if (!noCache) {
+      redis = await getRedisClient();
+      if (redis) {
+        try {
+          const cached = await redis.get(CACHE_KEY);
+          if (cached) {
+            console.log('✅ Serving users from Redis cache');
+            redis.close();
+            return new Response(cached, {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Cache': 'HIT' }
+            });
+          }
+        } catch (e) {
+          console.error('Redis get error:', e);
+        }
+      }
     }
 
-    // Get all user roles
-    const { data: allRoles } = await supabaseAdmin
-      .from('user_roles')
-      .select('user_id, role')
+    // Fetch fresh data
+    const [authUsersResult, allRolesResult, profilesResult] = await Promise.all([
+      supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
+      supabaseAdmin.from('user_roles').select('user_id, role'),
+      supabaseAdmin.from('candidate_profiles').select('user_id, full_name, email, created_at, is_archived, archived_at'),
+    ]);
 
-    // Get all candidate profiles
-    const { data: profiles } = await supabaseAdmin
-      .from('candidate_profiles')
-      .select('user_id, full_name, email, created_at, is_archived, archived_at')
+    if (authUsersResult.error) throw authUsersResult.error;
 
-    // Create maps for quick lookup
     const rolesMap = new Map<string, string[]>()
-    allRoles?.forEach(r => {
+    allRolesResult.data?.forEach(r => {
       const existing = rolesMap.get(r.user_id) || []
       existing.push(r.role)
       rolesMap.set(r.user_id, existing)
     })
 
     const profilesMap = new Map<string, any>()
-    profiles?.forEach(p => {
+    profilesResult.data?.forEach(p => {
       profilesMap.set(p.user_id, p)
     })
 
-    // Build complete user list from auth.users
-    const users = authUsers.users.map(authUser => {
+    const users = authUsersResult.data.users.map(authUser => {
       const profile = profilesMap.get(authUser.id)
       const userRoles = rolesMap.get(authUser.id) || []
       
@@ -104,13 +136,26 @@ Deno.serve(async (req) => {
       }
     })
 
-    // Sort by created_at descending
     users.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
-    return new Response(
-      JSON.stringify({ users }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    const responseBody = JSON.stringify({ users });
+
+    // Store in Redis cache
+    if (!redis) redis = await getRedisClient();
+    if (redis) {
+      try {
+        await redis.setex(CACHE_KEY, CACHE_TTL, responseBody);
+        console.log('✅ Users cached in Redis (TTL: 5 min)');
+        redis.close();
+      } catch (e) {
+        console.error('Redis set error:', e);
+        try { redis.close(); } catch (_) {}
+      }
+    }
+
+    return new Response(responseBody, {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Cache': 'MISS' }
+    })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     console.error('Error:', message)
