@@ -99,6 +99,9 @@ const AdminDashboard = () => {
             </a>
           </div>
         </Card>
+
+        {/* Database Backup */}
+        <DatabaseBackup />
       </div>
     </>
   );
