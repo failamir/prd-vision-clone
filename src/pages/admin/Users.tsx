@@ -1243,6 +1243,24 @@ const AdminUsers = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <AlertDialog open={restoreAllDialogOpen} onOpenChange={setRestoreAllDialogOpen}>
+          <AlertDialogContent className="bg-background">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Restore Semua Candidate?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Semua candidate yang diarsipkan akan dikembalikan ke status aktif. Lanjutkan?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={restoringAll}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleRestoreAllCandidates} disabled={restoringAll}>
+                {restoringAll && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Restore Semua
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </>
   );
