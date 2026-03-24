@@ -98,6 +98,8 @@ const AdminUsers = () => {
   const [showPermanentDelete, setShowPermanentDelete] = useState(false);
   const [archiveAllDialogOpen, setArchiveAllDialogOpen] = useState(false);
   const [archivingAll, setArchivingAll] = useState(false);
+  const [restoreAllDialogOpen, setRestoreAllDialogOpen] = useState(false);
+  const [restoringAll, setRestoringAll] = useState(false);
 
   // Detect PIC role and auto-set city filter
   useEffect(() => {
@@ -195,6 +197,56 @@ const AdminUsers = () => {
     }
   };
 
+  const handleRestoreAllCandidates = async () => {
+    setRestoringAll(true);
+    try {
+      const { data: candidateRoles, error: rolesErr } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "candidate");
+
+      if (rolesErr) throw rolesErr;
+      if (!candidateRoles || candidateRoles.length === 0) {
+        toast({ title: "Tidak ada candidate", description: "Tidak ditemukan user dengan role candidate" });
+        setRestoreAllDialogOpen(false);
+        return;
+      }
+
+      const candidateUserIds = candidateRoles.map(r => r.user_id);
+      let restoredCount = 0;
+
+      for (let i = 0; i < candidateUserIds.length; i += 50) {
+        const batch = candidateUserIds.slice(i, i + 50);
+        const { error } = await supabase
+          .from("candidate_profiles")
+          .update({ is_archived: false, archived_at: null })
+          .in("user_id", batch)
+          .eq("is_archived", true);
+
+        if (error) {
+          console.error("Batch restore error:", error);
+        } else {
+          restoredCount += batch.length;
+        }
+      }
+
+      toast({
+        title: "Restore berhasil",
+        description: `${restoredCount} candidate telah di-restore`,
+      });
+      setRestoreAllDialogOpen(false);
+      fetchUsers();
+    } catch (error: any) {
+      console.error("Restore all error:", error);
+      toast({
+        title: "Gagal restore",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setRestoringAll(false);
+    }
+  };
 
   const handleRoleUpdated = () => {
     fetchUsers();
@@ -632,6 +684,16 @@ const AdminUsers = () => {
               >
                 <Archive className="w-4 h-4 mr-2" />
                 Archive All Candidates
+              </Button>
+            )}
+            {!isPicUser && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRestoreAllDialogOpen(true)}
+              >
+                <ArchiveRestore className="w-4 h-4 mr-2" />
+                Restore All Candidates
               </Button>
             )}
           </div>
@@ -1177,6 +1239,24 @@ const AdminUsers = () => {
               <AlertDialogAction onClick={handleArchiveAllCandidates} disabled={archivingAll}>
                 {archivingAll && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Arsipkan Semua
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={restoreAllDialogOpen} onOpenChange={setRestoreAllDialogOpen}>
+          <AlertDialogContent className="bg-background">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Restore Semua Candidate?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Semua candidate yang diarsipkan akan dikembalikan ke status aktif. Lanjutkan?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={restoringAll}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleRestoreAllCandidates} disabled={restoringAll}>
+                {restoringAll && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Restore Semua
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
