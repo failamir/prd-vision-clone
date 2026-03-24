@@ -96,6 +96,8 @@ const AdminUsers = () => {
   const [picCity, setPicCity] = useState<string | null>(null);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
   const [showPermanentDelete, setShowPermanentDelete] = useState(false);
+  const [archiveAllDialogOpen, setArchiveAllDialogOpen] = useState(false);
+  const [archivingAll, setArchivingAll] = useState(false);
 
   // Detect PIC role and auto-set city filter
   useEffect(() => {
@@ -485,6 +487,59 @@ const AdminUsers = () => {
     }
   };
 
+  const handleArchiveAllCandidates = async () => {
+    setArchivingAll(true);
+    try {
+      // Get all candidate user_ids
+      const { data: candidateRoles, error: rolesErr } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "candidate");
+
+      if (rolesErr) throw rolesErr;
+      if (!candidateRoles || candidateRoles.length === 0) {
+        toast({ title: "Tidak ada candidate", description: "Tidak ditemukan user dengan role candidate" });
+        setArchiveAllDialogOpen(false);
+        return;
+      }
+
+      const candidateUserIds = candidateRoles.map(r => r.user_id);
+      
+      // Archive in batches of 50
+      let archivedCount = 0;
+      for (let i = 0; i < candidateUserIds.length; i += 50) {
+        const batch = candidateUserIds.slice(i, i + 50);
+        const { error } = await supabase
+          .from("candidate_profiles")
+          .update({ is_archived: true, archived_at: new Date().toISOString() })
+          .in("user_id", batch)
+          .eq("is_archived", false);
+        
+        if (error) {
+          console.error("Batch archive error:", error);
+        } else {
+          archivedCount += batch.length;
+        }
+      }
+
+      toast({
+        title: "Arsip berhasil",
+        description: `${archivedCount} candidate telah diarsipkan`,
+      });
+      setArchiveAllDialogOpen(false);
+      fetchUsers();
+    } catch (error: any) {
+      console.error("Archive all error:", error);
+      toast({
+        title: "Gagal mengarsipkan",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setArchivingAll(false);
+    }
+  };
+
   const filteredUsers = users.filter((user) => {
     const normalizedSearch = search.replace(/[^+\d]/g, '');
     const matchesSearch =
@@ -567,6 +622,16 @@ const AdminUsers = () => {
               >
                 <KeyRound className="w-4 h-4 mr-2" />
                 Reset Staff Passwords
+              </Button>
+            )}
+            {!isPicUser && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setArchiveAllDialogOpen(true)}
+              >
+                <Archive className="w-4 h-4 mr-2" />
+                Archive All Candidates
               </Button>
             )}
           </div>
@@ -1093,6 +1158,25 @@ const AdminUsers = () => {
               <AlertDialogAction onClick={handleResetStaffPasswords} disabled={resettingPasswords}>
                 {resettingPasswords && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Reset Passwords
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={archiveAllDialogOpen} onOpenChange={setArchiveAllDialogOpen}>
+          <AlertDialogContent className="bg-background">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Arsipkan Semua Candidate?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Semua user dengan role candidate akan diarsipkan (is_archived = true). 
+                Data tidak dihapus dan bisa di-restore kapan saja. Lanjutkan?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={archivingAll}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleArchiveAllCandidates} disabled={archivingAll}>
+                {archivingAll && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Arsipkan Semua
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
