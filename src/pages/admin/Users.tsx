@@ -197,6 +197,56 @@ const AdminUsers = () => {
     }
   };
 
+  const handleRestoreAllCandidates = async () => {
+    setRestoringAll(true);
+    try {
+      const { data: candidateRoles, error: rolesErr } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "candidate");
+
+      if (rolesErr) throw rolesErr;
+      if (!candidateRoles || candidateRoles.length === 0) {
+        toast({ title: "Tidak ada candidate", description: "Tidak ditemukan user dengan role candidate" });
+        setRestoreAllDialogOpen(false);
+        return;
+      }
+
+      const candidateUserIds = candidateRoles.map(r => r.user_id);
+      let restoredCount = 0;
+
+      for (let i = 0; i < candidateUserIds.length; i += 50) {
+        const batch = candidateUserIds.slice(i, i + 50);
+        const { error } = await supabase
+          .from("candidate_profiles")
+          .update({ is_archived: false, archived_at: null })
+          .in("user_id", batch)
+          .eq("is_archived", true);
+
+        if (error) {
+          console.error("Batch restore error:", error);
+        } else {
+          restoredCount += batch.length;
+        }
+      }
+
+      toast({
+        title: "Restore berhasil",
+        description: `${restoredCount} candidate telah di-restore`,
+      });
+      setRestoreAllDialogOpen(false);
+      fetchUsers();
+    } catch (error: any) {
+      console.error("Restore all error:", error);
+      toast({
+        title: "Gagal restore",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setRestoringAll(false);
+    }
+  };
 
   const handleRoleUpdated = () => {
     fetchUsers();
