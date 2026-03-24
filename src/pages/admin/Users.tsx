@@ -96,6 +96,8 @@ const AdminUsers = () => {
   const [picCity, setPicCity] = useState<string | null>(null);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
   const [showPermanentDelete, setShowPermanentDelete] = useState(false);
+  const [archiveAllDialogOpen, setArchiveAllDialogOpen] = useState(false);
+  const [archivingAll, setArchivingAll] = useState(false);
 
   // Detect PIC role and auto-set city filter
   useEffect(() => {
