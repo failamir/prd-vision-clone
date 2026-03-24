@@ -128,43 +128,44 @@ const AdminUsers = () => {
     fetchUsers();
   }, [isPicUser, picCity]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (bustCache = false) => {
     try {
+      // Fetch profiles and all roles in parallel (no N+1)
       let profilesQuery = supabase
         .from("candidate_profiles")
         .select("*")
         .order("created_at", { ascending: false });
 
-      // PIC users only see candidates from their city
       if (isPicUser && picCity) {
         profilesQuery = profilesQuery.eq("registration_city", picCity);
       }
 
-      const { data: profiles, error: profilesError } = await profilesQuery;
+      const [profilesResult, rolesResult] = await Promise.all([
+        profilesQuery,
+        supabase.from("user_roles").select("user_id, role"),
+      ]);
 
-      if (profilesError) throw profilesError;
+      if (profilesResult.error) throw profilesResult.error;
 
-      // Fetch roles for each user
-      const usersWithRoles = await Promise.all(
-        (profiles || []).map(async (profile) => {
-          const { data: roles } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", profile.user_id);
+      // Build roles map for O(1) lookup
+      const rolesMap = new Map<string, string[]>();
+      rolesResult.data?.forEach(r => {
+        const existing = rolesMap.get(r.user_id) || [];
+        existing.push(r.role);
+        rolesMap.set(r.user_id, existing);
+      });
 
-          return {
-            id: profile.user_id,
-            full_name: profile.full_name,
-            email: profile.email,
-            phone: profile.phone || null,
-            created_at: profile.created_at,
-            roles: roles?.map(r => r.role) || ["candidate"],
-            is_archived: profile.is_archived || false,
-            archived_at: profile.archived_at,
-            registration_city: profile.registration_city || null,
-          };
-        })
-      );
+      const usersWithRoles = (profilesResult.data || []).map((profile) => ({
+        id: profile.user_id,
+        full_name: profile.full_name,
+        email: profile.email,
+        phone: profile.phone || null,
+        created_at: profile.created_at,
+        roles: rolesMap.get(profile.user_id) || ["candidate"],
+        is_archived: profile.is_archived || false,
+        archived_at: profile.archived_at,
+        registration_city: profile.registration_city || null,
+      }));
 
       setUsers(usersWithRoles);
     } catch (error) {
