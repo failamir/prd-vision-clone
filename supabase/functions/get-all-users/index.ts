@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     const [authUsersResult, allRolesResult, profilesResult] = await Promise.all([
       supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
       supabaseAdmin.from('user_roles').select('user_id, role'),
-      supabaseAdmin.from('candidate_profiles').select('user_id, full_name, email, created_at, is_archived, archived_at'),
+      supabase Admin.from('candidate_profiles').select('user_id, full_name, email, phone, created_at, is_archived, archived_at, registration_city'),
     ]);
 
     if (authUsersResult.error) throw authUsersResult.error;
