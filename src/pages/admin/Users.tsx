@@ -130,7 +130,46 @@ const AdminUsers = () => {
 
   const fetchUsers = async (bustCache = false) => {
     try {
-      // Fetch profiles and all roles in parallel (no N+1)
+      // Try edge function with Redis caching first
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      if (accessToken) {
+        try {
+          const cacheParam = bustCache ? '?nocache=1' : '';
+          const { data, error } = await supabase.functions.invoke('get-all-users', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+            body: null,
+          });
+
+          if (!error && data?.users) {
+            let edgeUsers: User[] = data.users.map((u: any) => ({
+              id: u.id,
+              full_name: u.full_name || 'Unknown',
+              email: u.email,
+              phone: u.phone || null,
+              created_at: u.created_at,
+              roles: u.roles || ['candidate'],
+              is_archived: u.is_archived || false,
+              archived_at: u.archived_at || null,
+              registration_city: u.registration_city || null,
+            }));
+
+            // Filter by PIC city if needed
+            if (isPicUser && picCity) {
+              edgeUsers = edgeUsers.filter(u => u.registration_city === picCity);
+            }
+
+            setUsers(edgeUsers);
+            setLoading(false);
+            return;
+          }
+        } catch (edgeErr) {
+          console.warn('Edge function failed, falling back to direct query:', edgeErr);
+        }
+      }
+
+      // Fallback: direct Supabase query
       let profilesQuery = supabase
         .from("candidate_profiles")
         .select("*")
@@ -147,7 +186,6 @@ const AdminUsers = () => {
 
       if (profilesResult.error) throw profilesResult.error;
 
-      // Build roles map for O(1) lookup
       const rolesMap = new Map<string, string[]>();
       rolesResult.data?.forEach(r => {
         const existing = rolesMap.get(r.user_id) || [];
