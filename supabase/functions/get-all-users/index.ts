@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     const [authUsersResult, allRolesResult, profilesResult] = await Promise.all([
       supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
       supabaseAdmin.from('user_roles').select('user_id, role'),
-      supabaseAdmin.from('candidate_profiles').select('user_id, full_name, email, created_at, is_archived, archived_at'),
+      supabaseAdmin.from('candidate_profiles').select('user_id, full_name, email, phone, created_at, is_archived, archived_at, registration_city'),
     ]);
 
     if (authUsersResult.error) throw authUsersResult.error;
@@ -128,10 +128,12 @@ Deno.serve(async (req) => {
         id: authUser.id,
         email: authUser.email,
         full_name: profile?.full_name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Unknown',
+        phone: profile?.phone || null,
         created_at: authUser.created_at,
         roles: userRoles.length > 0 ? userRoles : ['candidate'],
         is_archived: profile?.is_archived || false,
         archived_at: profile?.archived_at || null,
+        registration_city: profile?.registration_city || null,
         has_profile: !!profile
       }
     })
