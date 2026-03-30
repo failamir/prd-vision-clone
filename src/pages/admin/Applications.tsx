@@ -356,7 +356,12 @@ const AdminApplications = () => {
     if (!matchesText(app.job.company_name, principal)) return false;
     if (!matchesText(app.job.department, department)) return false;
     if (!matchesText(app.job.title, position)) return false;
-    if (!matchesText(app.office_registered, office)) return false;
+    // For PIC users, match both office_registered and candidate's registration_city
+    if (office) {
+      const officeMatch = matchesText(app.office_registered, office);
+      const regCityMatch = matchesText(app.candidate?.registration_city, office);
+      if (!officeMatch && !regCityMatch) return false;
+    }
 
     // Age range
     const age = Number(calculateAge(app.candidate.date_of_birth));
