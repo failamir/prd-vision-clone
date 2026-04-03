@@ -819,7 +819,7 @@ const AdminApplications = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [
-    searchQuery,
+    debouncedSearch,
     startDate,
     endDate,
     principal,
