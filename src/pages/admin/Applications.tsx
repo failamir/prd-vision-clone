@@ -903,14 +903,37 @@ const AdminApplications = () => {
       const from = (p - 1) * ps;
       const to = from + ps - 1;
 
-      // Get total count
-      const { count, error: countError } = await supabase
+      // If search query exists, find matching candidate IDs first
+      let matchingCandidateIds: string[] | null = null;
+      if (searchQuery.trim()) {
+        const sq = searchQuery.trim().toLowerCase();
+        const { data: matchedProfiles, error: searchError } = await supabase
+          .from("candidate_profiles")
+          .select("id")
+          .or(`full_name.ilike.%${sq}%,email.ilike.%${sq}%`);
+        if (searchError) throw searchError;
+        matchingCandidateIds = (matchedProfiles || []).map((p: any) => p.id);
+        if (matchingCandidateIds.length === 0) {
+          setTotalCount(0);
+          setApplications([]);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Build count query
+      let countQuery = supabase
         .from("job_applications")
         .select("*", { count: "exact", head: true });
+      if (matchingCandidateIds) {
+        countQuery = countQuery.in("candidate_id", matchingCandidateIds);
+      }
+      const { count, error: countError } = await countQuery;
       if (countError) throw countError;
       setTotalCount(count || 0);
 
-      const { data, error } = await supabase
+      // Build data query
+      let dataQuery = supabase
         .from("job_applications")
         .select(`
           *,
@@ -931,8 +954,11 @@ const AdminApplications = () => {
           ),
           job:jobs(title, company_name, department)
         `)
-        .order("applied_at", { ascending: false })
-        .range(from, to);
+        .order("applied_at", { ascending: false });
+      if (matchingCandidateIds) {
+        dataQuery = dataQuery.in("candidate_id", matchingCandidateIds);
+      }
+      const { data, error } = await dataQuery.range(from, to);
 
       if (error) throw error;
       const apps = (data as any) || [];
