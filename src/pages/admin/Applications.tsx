@@ -913,8 +913,8 @@ const AdminApplications = () => {
 
       // If search query exists, find matching candidate IDs first
       let matchingCandidateIds: string[] | null = null;
-      if (searchQuery.trim()) {
-        const sq = searchQuery.trim().toLowerCase();
+      if (debouncedSearch.trim()) {
+        const sq = debouncedSearch.trim().toLowerCase();
         const { data: matchedProfiles, error: searchError } = await supabase
           .from("candidate_profiles")
           .select("id")
