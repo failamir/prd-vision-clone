@@ -290,6 +290,7 @@ const AdminApplications = () => {
 
   const clearFilters = () => {
     setSearchQuery("");
+    setDebouncedSearch("");
     setStartDate("");
     setEndDate("");
     setPrincipal("");
