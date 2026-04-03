@@ -280,7 +280,14 @@ const AdminApplications = () => {
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Helpers: filters and utilities
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const clearFilters = () => {
     setSearchQuery("");
     setStartDate("");
