@@ -805,7 +805,7 @@ const AdminApplications = () => {
 
   useEffect(() => {
     fetchApplications(currentPage, itemsPerPage);
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, searchQuery]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
