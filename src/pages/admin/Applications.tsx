@@ -350,11 +350,7 @@ const AdminApplications = () => {
   };
 
   const passesFilters = (app: Application) => {
-    // Global search
-    const searchPass = !searchQuery ||
-      app.candidate.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.candidate.email.toLowerCase().includes(searchQuery.toLowerCase());
-    if (!searchPass) return false;
+    // Search is now handled server-side, no client-side search filter needed
 
     // Applied date range (use applied_at if present, else date_of_entry)
     const appliedDate = app.applied_at || app.date_of_entry;
