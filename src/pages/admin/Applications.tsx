@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import bmiReferenceImage from "@/assets/bmi-reference.png";
 import { Card } from "@/components/ui/card";
