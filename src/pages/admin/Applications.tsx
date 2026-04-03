@@ -813,7 +813,7 @@ const AdminApplications = () => {
 
   useEffect(() => {
     fetchApplications(currentPage, itemsPerPage);
-  }, [currentPage, itemsPerPage, searchQuery]);
+  }, [currentPage, itemsPerPage, debouncedSearch]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
