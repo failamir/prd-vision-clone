@@ -51,7 +51,10 @@ Deno.serve(async (req) => {
     }
 
     const userId = claims.claims.sub as string;
-    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: userId, _role: "admin" });
+    // Check multiple admin-level roles
+    const adminRoles = ['admin', 'superadmin', 'manajer', 'manager', 'staff', 'interviewer', 'interviewer_principal', 'direktur', 'pic', 'hrd'];
+    const { data: userRoles } = await supabaseAdmin.from('user_roles').select('role').eq('user_id', userId);
+    const isAdmin = userRoles?.some((r: any) => adminRoles.includes(r.role));
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Admin only" }), { status: 403, headers: corsHeaders });
     }

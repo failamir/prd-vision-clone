@@ -67,7 +67,8 @@ Deno.serve(async (req) => {
       .select('role')
       .eq('user_id', userData.user.id)
     
-    const isAdmin = roles?.some(r => r.role === 'admin' || r.role === 'superadmin')
+    const adminRoles = ['admin', 'superadmin', 'manajer', 'manager', 'staff', 'interviewer', 'interviewer_principal', 'direktur', 'pic', 'hrd']
+    const isAdmin = roles?.some(r => adminRoles.includes(r.role))
     if (!isAdmin) {
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
