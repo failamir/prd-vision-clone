@@ -361,12 +361,14 @@ const AdminApplications = () => {
     if (!matchesText(app.job.company_name, principal)) return false;
     if (!matchesText(app.job.department, department)) return false;
     if (!matchesText(app.job.title, position)) return false;
-    // For PIC users, match both office_registered and candidate's registration_city
+    // Office filter is now handled server-side in fetchApplications
+    /*
     if (office) {
       const officeMatch = matchesText(app.office_registered, office);
       const regCityMatch = matchesText(app.candidate?.registration_city, office);
       if (!officeMatch && !regCityMatch) return false;
     }
+    */
 
     // Age range
     const age = Number(calculateAge(app.candidate.date_of_birth));
@@ -810,7 +812,7 @@ const AdminApplications = () => {
 
   useEffect(() => {
     fetchApplications(currentPage, itemsPerPage);
-  }, [currentPage, itemsPerPage, debouncedSearch]);
+  }, [currentPage, itemsPerPage, debouncedSearch, office]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -926,13 +928,38 @@ const AdminApplications = () => {
         }
       }
 
+      // If office/city filter is active (especially for PIC), fetch candidate IDs from that city
+      let cityCandidateIds: string[] | null = null;
+      if (office.trim()) {
+        const { data: cityProfiles, error: cityError } = await supabase
+          .from("candidate_profiles")
+          .select("id")
+          .ilike("registration_city", `%${office.trim()}%`);
+        if (!cityError) {
+          cityCandidateIds = (cityProfiles || []).map((p: any) => p.id);
+        }
+      }
+
       // Build count query
       let countQuery = supabase
         .from("job_applications")
         .select("*", { count: "exact", head: true });
+      
       if (matchingCandidateIds) {
         countQuery = countQuery.in("candidate_id", matchingCandidateIds);
       }
+      
+      if (office.trim()) {
+        const off = office.trim();
+        if (cityCandidateIds && cityCandidateIds.length > 0) {
+          // Filter by office_registered OR candidate_id in cityCandidateIds
+          countQuery = countQuery.or(`office_registered.ilike.%${off}%,candidate_id.in.(${cityCandidateIds.join(',')})`);
+        } else {
+          // If no candidates matched the city, just filter by office_registered
+          countQuery = countQuery.ilike("office_registered", `%${off}%`);
+        }
+      }
+
       const { count, error: countError } = await countQuery;
       if (countError) throw countError;
       setTotalCount(count || 0);
@@ -962,6 +989,15 @@ const AdminApplications = () => {
         .order("applied_at", { ascending: false });
       if (matchingCandidateIds) {
         dataQuery = dataQuery.in("candidate_id", matchingCandidateIds);
+      }
+      
+      if (office.trim()) {
+        const off = office.trim();
+        if (cityCandidateIds && cityCandidateIds.length > 0) {
+          dataQuery = dataQuery.or(`office_registered.ilike.%${off}%,candidate_id.in.(${cityCandidateIds.join(',')})`);
+        } else {
+          dataQuery = dataQuery.ilike("office_registered", `%${off}%`);
+        }
       }
       const { data, error } = await dataQuery.range(from, to);
 
@@ -2542,70 +2578,6 @@ const AdminApplications = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        {/* Header skeleton */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <Skeleton className="h-8 w-64 mb-2" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-32" />
-          </div>
-        </div>
-
-        {/* Search & filters skeleton */}
-        <Card className="p-4">
-          <div className="flex flex-wrap gap-3 mb-4">
-            <Skeleton className="h-10 w-64" />
-            <Skeleton className="h-10 w-40" />
-            <Skeleton className="h-10 w-40" />
-            <Skeleton className="h-10 w-40" />
-          </div>
-
-          {/* Table skeleton */}
-          <div className="overflow-x-auto border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <TableHead key={i}>
-                      <Skeleton className="h-4 w-20" />
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Array.from({ length: 10 }).map((_, rowIdx) => (
-                  <TableRow key={rowIdx}>
-                    {Array.from({ length: 8 }).map((_, colIdx) => (
-                      <TableCell key={colIdx}>
-                        <Skeleton className="h-4 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Pagination skeleton */}
-          <div className="flex items-center justify-between mt-4">
-            <Skeleton className="h-4 w-48" />
-            <div className="flex gap-2">
-              <Skeleton className="h-9 w-20" />
-              <Skeleton className="h-9 w-10" />
-              <Skeleton className="h-9 w-20" />
-            </div>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <>
       <Dialog open={remarksDialogOpen} onOpenChange={setRemarksDialogOpen}>
@@ -3872,449 +3844,475 @@ const AdminApplications = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {applications.filter(passesFilters).map((app) => (
-                  <TableRow key={app.id}>
-                    <TableCell className="w-[60px] min-w-[60px] sticky left-0 z-10 bg-background">
-                      <Checkbox
-                        checked={selectedIds.has(app.id)}
-                        onCheckedChange={() => handleToggleSelect(app.id)}
-                      />
-                    </TableCell>
-                    <TableCell className="sticky left-[60px] z-10 bg-background">
-                      <div className="flex flex-col gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs gap-1"
-                          onClick={() => openCandidateViewDialog(app)}
-                        >
-                          <Eye className="w-3 h-3" />
-                          View
-                        </Button>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openRemarksDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell className="sticky left-[240px] z-10 bg-background">{app.crew_code || "-"}</TableCell>
-                    <TableCell className="sticky left-[390px] z-10 bg-background">
-                      {app.candidate?.avatar_url || app.photo_url ? (
-                        <img
-                          src={app.candidate?.avatar_url || app.photo_url}
-                          alt="Photo"
-                          className="w-10 h-10 rounded object-cover"
+                {loading ? (
+                  Array.from({ length: itemsPerPage }).map((_, rowIdx) => (
+                    <TableRow key={rowIdx}>
+                      <TableCell className="w-[60px] min-w-[60px] sticky left-0 z-10 bg-background">
+                        <Skeleton className="h-4 w-4" />
+                      </TableCell>
+                      <TableCell className="sticky left-[60px] z-10 bg-background">
+                        <div className="flex flex-col gap-1">
+                          <Skeleton className="h-7 w-16" />
+                          <Skeleton className="h-4 w-12" />
+                        </div>
+                      </TableCell>
+                      <TableCell className="sticky left-[240px] z-10 bg-background"><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell className="sticky left-[390px] z-10 bg-background">
+                        <Skeleton className="w-10 h-10 rounded" />
+                      </TableCell>
+                      <TableCell className="sticky left-[470px] z-10 bg-background"><Skeleton className="h-4 w-24" /></TableCell>
+                      {Array.from({ length: 45 }).map((_, colIdx) => (
+                        <TableCell key={colIdx}>
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  applications.filter(passesFilters).map((app) => (
+                    <TableRow key={app.id}>
+                      <TableCell className="w-[60px] min-w-[60px] sticky left-0 z-10 bg-background">
+                        <Checkbox
+                          checked={selectedIds.has(app.id)}
+                          onCheckedChange={() => handleToggleSelect(app.id)}
                         />
-                      ) : "-"}
-                    </TableCell>
-                    <TableCell className="font-medium sticky left-[470px] z-10 bg-background">{app.candidate.full_name.split(" ")[0]}</TableCell>
-                    <TableCell className="font-medium">{app.candidate.full_name.split(" ").slice(1).join(" ")}</TableCell>
-                    <TableCell>{app.candidate.registration_city || app.office_registered || "-"}</TableCell>
-                    <TableCell>{formatDate(app.applied_at || app.date_of_entry)}</TableCell>
-                    <TableCell>{app.candidate.how_found_us || app.source || "-"}</TableCell>
-                    <TableCell>{app.job.title}</TableCell>
-                    <TableCell>{app.job.department || "-"}</TableCell>
-                    <TableCell>{app.second_position || "-"}</TableCell>
-                    <TableCell>{app.candidate.gender || "-"}</TableCell>
-                    <TableCell>{formatDate(app.candidate.date_of_birth)}</TableCell>
-                    <TableCell>{calculateAge(app.candidate.date_of_birth)}</TableCell>
-                    <TableCell>
-                      {app.candidate.weight_kg && app.candidate.height_cm
-                        ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}`
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm" onClick={() => openReferenceDialog(app)}>View Reference</Button>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getShipExperienceFlag(app.candidate_id, app.job?.department) === "Y" ? "default" : "secondary"}>
-                        {getShipExperienceFlag(app.candidate_id, app.job?.department)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setExperienceFilter('SHIP');
-                          openExperienceModal(app);
-                        }}
-                        className="text-xs"
-                      >
-                        View ({getExperienceCountByType(app.candidate_id, 'ship')}/{getExperienceCount(app.candidate_id).total})
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setExperienceFilter('HOTEL');
-                          openExperienceModal(app);
-                        }}
-                        className="text-xs"
-                      >
-                        View ({getExperienceCountByType(app.candidate_id, 'hotel')}/{getExperienceCount(app.candidate_id).total})
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      {getVisaCount(app.candidate_id) > 0 ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openVisaModal(app)}
-                          className={`text-xs ${getVisaButtonClass(getVisaExpiryStatus(app.c1d_expiry_date))}`}
-                        >
-                          {formatDate(app.c1d_expiry_date)} ({getVisaCount(app.candidate_id)})
-                        </Button>
-                      ) : (
-                        <span className="text-muted-foreground">{formatDate(app.c1d_expiry_date)}</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {getLatestEducationInstitution(app.candidate_id) ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEducationModal(app)}
-                          className="text-xs"
-                        >
-                          {getLatestEducationInstitution(app.candidate_id)}
-                        </Button>
-                      ) : (app.education_background || "-")}
-                    </TableCell>
-                    <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
-                    <TableCell>{app.candidate.email}</TableCell>
-                    <TableCell>
-                      {getLatestEmergencyContactName(app.candidate_id) ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEmergencyContactModal(app)}
-                          className="text-xs"
-                        >
-                          {getLatestEmergencyContactName(app.candidate_id)}
-                        </Button>
-                      ) : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {getLatestNextOfKinName(app.candidate_id) ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openNextOfKinModal(app)}
-                          className="text-xs"
-                        >
-                          {getLatestNextOfKinName(app.candidate_id)}
-                        </Button>
-                      ) : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {getLatestReferenceName(app.candidate_id) ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openReferencesModal(app)}
-                          className="text-xs"
-                        >
-                          {getLatestReferenceName(app.candidate_id)}
-                        </Button>
-                      ) : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {(() => {
-                        const cvPath = app.cv_url || cvByCandidate[app.candidate_id || ""];
-                        if (cvPath) {
-                          return (
-                            <a
-                              href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/cvs/${cvPath}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline text-sm"
-                            >
-                              View CV
-                            </a>
-                          );
-                        }
-                        return "-";
-                      })()}
-                    </TableCell>
-                    {/* <TableCell>
-                      {(() => {
-                        const flPath = app.letter_form_url || formLetterByCandidate[app.candidate_id || ""];
-                        if (flPath) {
-                          return (
-                            <a
-                              href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${flPath}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline text-sm"
-                            >
-                              View Form
-                            </a>
-                          );
-                        }
-                        return "-";
-                      })()}
-                    </TableCell> */}
-                    <TableCell>
-                      {app.candidate?.covid_vaccinated
-                        ? (app.candidate.covid_vaccinated.toLowerCase().includes("booster")
-                          ? "Yes"
-                          : app.candidate.covid_vaccinated)
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {getBstCcDisplay(app.candidate_id) ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openBstCcModal(app)}
-                          className="text-xs"
-                        >
-                          {getBstCcDisplay(app.candidate_id)}
-                        </Button>
-                      ) : (app.bst_cc || "-")}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>
-                          {(() => {
-                            // Show "Yes" if profile_step_unlocked >= 2, else show the suitable value
-                            const step = (app.candidate as any)?.profile_step_unlocked || 1;
-                            if (step >= 2) return "Yes";
-                            return app.suitable || "-";
-                          })()}
-                        </span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openSuitableDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>{app.interview_by || "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openInterviewerDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>{app.interview_date ? formatDate(app.interview_date) : "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openInterviewDateDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>{app.interview_result || "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openInterviewResultDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span className="line-clamp-2 max-w-[200px]">{app.interview_result_notes || "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openInterviewNotesDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>{app.approved_position || "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openApprovedPositionDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center">
-                          <span>{getTestScoreText(app, "Marlins")}</span>
-                          {renderTestDownloadButton(app, "Marlins")}
+                      </TableCell>
+                      <TableCell className="sticky left-[60px] z-10 bg-background">
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs gap-1"
+                            onClick={() => openCandidateViewDialog(app)}
+                          >
+                            <Eye className="w-3 h-3" />
+                            View
+                          </Button>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openRemarksDialog(app)}
+                          >
+                            Update
+                          </Button>
                         </div>
+                      </TableCell>
+                      <TableCell className="sticky left-[240px] z-10 bg-background">{app.crew_code || "-"}</TableCell>
+                      <TableCell className="sticky left-[390px] z-10 bg-background">
+                        {app.candidate?.avatar_url || app.photo_url ? (
+                          <img
+                            src={app.candidate?.avatar_url || app.photo_url}
+                            alt="Photo"
+                            className="w-10 h-10 rounded object-cover"
+                          />
+                        ) : "-"}
+                      </TableCell>
+                      <TableCell className="font-medium sticky left-[470px] z-10 bg-background">{app.candidate.full_name.split(" ")[0]}</TableCell>
+                      <TableCell className="font-medium">{app.candidate.full_name.split(" ").slice(1).join(" ")}</TableCell>
+                      <TableCell>{app.candidate.registration_city || app.office_registered || "-"}</TableCell>
+                      <TableCell>{formatDate(app.applied_at || app.date_of_entry)}</TableCell>
+                      <TableCell>{app.candidate.how_found_us || app.source || "-"}</TableCell>
+                      <TableCell>{app.job.title}</TableCell>
+                      <TableCell>{app.job.department || "-"}</TableCell>
+                      <TableCell>{app.second_position || "-"}</TableCell>
+                      <TableCell>{app.candidate.gender || "-"}</TableCell>
+                      <TableCell>{formatDate(app.candidate.date_of_birth)}</TableCell>
+                      <TableCell>{calculateAge(app.candidate.date_of_birth)}</TableCell>
+                      <TableCell>
+                        {app.candidate.weight_kg && app.candidate.height_cm
+                          ? `${app.candidate.weight_kg} / ${app.candidate.height_cm}`
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm" onClick={() => openReferenceDialog(app)}>View Reference</Button>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getShipExperienceFlag(app.candidate_id, app.job?.department) === "Y" ? "default" : "secondary"}>
+                          {getShipExperienceFlag(app.candidate_id, app.job?.department)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         <Button
-                          variant="link"
+                          variant="outline"
                           size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openTestDialog(app, "Marlins")}
+                          onClick={() => {
+                            setExperienceFilter('SHIP');
+                            openExperienceModal(app);
+                          }}
+                          className="text-xs"
                         >
-                          Update
+                          View ({getExperienceCountByType(app.candidate_id, 'ship')}/{getExperienceCount(app.candidate_id).total})
                         </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center">
-                          <span>{getTestScoreText(app, "NEHA")}</span>
-                          {renderTestDownloadButton(app, "NEHA")}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setExperienceFilter('HOTEL');
+                            openExperienceModal(app);
+                          }}
+                          className="text-xs"
+                        >
+                          View ({getExperienceCountByType(app.candidate_id, 'hotel')}/{getExperienceCount(app.candidate_id).total})
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        {getVisaCount(app.candidate_id) > 0 ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openVisaModal(app)}
+                            className={`text-xs ${getVisaButtonClass(getVisaExpiryStatus(app.c1d_expiry_date))}`}
+                          >
+                            {formatDate(app.c1d_expiry_date)} ({getVisaCount(app.candidate_id)})
+                          </Button>
+                        ) : (
+                          <span className="text-muted-foreground">{formatDate(app.c1d_expiry_date)}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {getLatestEducationInstitution(app.candidate_id) ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEducationModal(app)}
+                            className="text-xs"
+                          >
+                            {getLatestEducationInstitution(app.candidate_id)}
+                          </Button>
+                        ) : (app.education_background || "-")}
+                      </TableCell>
+                      <TableCell>{app.candidate.phone || app.contact_no || "-"}</TableCell>
+                      <TableCell>{app.candidate.email}</TableCell>
+                      <TableCell>
+                        {getLatestEmergencyContactName(app.candidate_id) ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEmergencyContactModal(app)}
+                            className="text-xs"
+                          >
+                            {getLatestEmergencyContactName(app.candidate_id)}
+                          </Button>
+                        ) : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {getLatestNextOfKinName(app.candidate_id) ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openNextOfKinModal(app)}
+                            className="text-xs"
+                          >
+                            {getLatestNextOfKinName(app.candidate_id)}
+                          </Button>
+                        ) : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {getLatestReferenceName(app.candidate_id) ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openReferencesModal(app)}
+                            className="text-xs"
+                          >
+                            {getLatestReferenceName(app.candidate_id)}
+                          </Button>
+                        ) : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const cvPath = app.cv_url || cvByCandidate[app.candidate_id || ""];
+                          if (cvPath) {
+                            return (
+                              <a
+                                href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/cvs/${cvPath}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline text-sm"
+                              >
+                                View CV
+                              </a>
+                            );
+                          }
+                          return "-";
+                        })()}
+                      </TableCell>
+                      {/* <TableCell>
+                        {(() => {
+                          const flPath = app.letter_form_url || formLetterByCandidate[app.candidate_id || ""];
+                          if (flPath) {
+                            return (
+                              <a
+                                href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/candidate-documents/${flPath}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline text-sm"
+                              >
+                                View Form
+                              </a>
+                            );
+                          }
+                          return "-";
+                        })()}
+                      </TableCell> */}
+                      <TableCell>
+                        {app.candidate?.covid_vaccinated
+                          ? (app.candidate.covid_vaccinated.toLowerCase().includes("booster")
+                            ? "Yes"
+                            : app.candidate.covid_vaccinated)
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {getBstCcDisplay(app.candidate_id) ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openBstCcModal(app)}
+                            className="text-xs"
+                          >
+                            {getBstCcDisplay(app.candidate_id)}
+                          </Button>
+                        ) : (app.bst_cc || "-")}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>
+                            {(() => {
+                              // Show "Yes" if profile_step_unlocked >= 2, else show the suitable value
+                              const step = (app.candidate as any)?.profile_step_unlocked || 1;
+                              if (step >= 2) return "Yes";
+                              return app.suitable || "-";
+                            })()}
+                          </span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openSuitableDialog(app)}
+                          >
+                            Update
+                          </Button>
                         </div>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openTestDialog(app, "NEHA")}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center">
-                          <span>{getTestScoreText(app, "CES")}</span>
-                          {renderTestDownloadButton(app, "CES")}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>{app.interview_by || "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openInterviewerDialog(app)}
+                          >
+                            Update
+                          </Button>
                         </div>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openTestDialog(app, "CES")}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>{app.principal_interview_by || "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openPrincipalInterviewerDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>
-                          {app.principal_interview_date
-                            ? formatDate(app.principal_interview_date)
-                            : "-"}
-                        </span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openPrincipalInterviewDateDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>{app.principal_interview_result || "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openPrincipalInterviewResultDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>{app.approved_as || "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openApprovedAsDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>{app.status || "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openNotesDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>{app.employment_offer || "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openEmploymentOfferDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span>{app.eo_acceptance || "-"}</span>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                          onClick={() => openEoAcceptanceDialog(app)}
-                        >
-                          Update
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>{app.interview_date ? formatDate(app.interview_date) : "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openInterviewDateDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>{app.interview_result || "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openInterviewResultDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span className="line-clamp-2 max-w-[200px]">{app.interview_result_notes || "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openInterviewNotesDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>{app.approved_position || "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openApprovedPositionDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center">
+                            <span>{getTestScoreText(app, "Marlins")}</span>
+                            {renderTestDownloadButton(app, "Marlins")}
+                          </div>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openTestDialog(app, "Marlins")}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center">
+                            <span>{getTestScoreText(app, "NEHA")}</span>
+                            {renderTestDownloadButton(app, "NEHA")}
+                          </div>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openTestDialog(app, "NEHA")}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center">
+                            <span>{getTestScoreText(app, "CES")}</span>
+                            {renderTestDownloadButton(app, "CES")}
+                          </div>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openTestDialog(app, "CES")}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>{app.principal_interview_by || "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openPrincipalInterviewerDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>
+                            {app.principal_interview_date
+                              ? formatDate(app.principal_interview_date)
+                              : "-"}
+                          </span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openPrincipalInterviewDateDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>{app.principal_interview_result || "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openPrincipalInterviewResultDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>{app.approved_as || "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openApprovedAsDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>{app.status || "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openNotesDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>{app.employment_offer || "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openEmploymentOfferDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span>{app.eo_acceptance || "-"}</span>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => openEoAcceptanceDialog(app)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
 
-          {applications.length === 0 && (
+          {!loading && applications.length === 0 && (
             <div className="p-12 text-center">
               <p className="text-muted-foreground">No applications found</p>
             </div>
