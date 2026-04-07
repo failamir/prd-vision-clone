@@ -277,7 +277,7 @@ const AdminApplications = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalCount, setTotalCount] = useState(0);
 
   // Debounce search query
@@ -4341,7 +4341,7 @@ const AdminApplications = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {[10, 20, 50, 100].map(n => (
+                        {[5, 10, 20, 50, 100].map(n => (
                           <SelectItem key={n} value={String(n)}>{n}</SelectItem>
                         ))}
                       </SelectContent>

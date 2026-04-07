@@ -13,6 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Row {
   id: string;
@@ -28,6 +35,8 @@ export default function AdminTestimonials() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   useEffect(() => { fetchRows(); }, []);
 
@@ -106,6 +115,7 @@ export default function AdminTestimonials() {
               <TableBody>
                 {rows
                   .filter(r => (r.testimonial || "").toLowerCase().includes(search.toLowerCase()))
+                  .slice((page - 1) * pageSize, page * pageSize)
                   .map(r => (
                     <TableRow key={r.id}>
                       <TableCell>{new Date(r.created_at).toLocaleString()}</TableCell>
@@ -124,6 +134,70 @@ export default function AdminTestimonials() {
               </TableBody>
             </Table>
           </div>
+
+        {/* Pagination */}
+        {(() => {
+          const filtered = rows.filter(r => (r.testimonial || "").toLowerCase().includes(search.toLowerCase()));
+          const totalCount = filtered.length;
+          const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+          const currentPage = Math.min(page, totalPages);
+          const startIndex = (currentPage - 1) * pageSize;
+          const endIndex = Math.min(startIndex + pageSize, totalCount);
+
+          if (totalCount === 0) return null;
+
+          return (
+            <div className="flex items-center justify-between mt-4 flex-wrap gap-2 pt-4 border-t">
+              <div className="flex items-center gap-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1} to {endIndex} of {totalCount} entries
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Per page:</span>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={(v) => {
+                      setPageSize(Number(v));
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-[70px] h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[5, 10, 20, 50].map((n) => (
+                        <SelectItem key={n} value={String(n)}>
+                          {n}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex gap-1 items-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  &lt;
+                </Button>
+                <span className="text-sm px-2">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  &gt;
+                </Button>
+              </div>
+            </div>
+          );
+        })()}
         </Card>
       </div>
     </>

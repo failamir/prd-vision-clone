@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Loader2, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Mail, Loader2, Trash2, CheckCircle, XCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -14,6 +14,13 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
     Dialog,
     DialogContent,
@@ -39,6 +46,8 @@ export default function ContactSubmissions() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [selectedSubmission, setSelectedSubmission] = useState<ContactSubmission | null>(null);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
 
     useEffect(() => {
         fetchSubmissions();
@@ -147,7 +156,8 @@ export default function ContactSubmissions() {
                             Loading...
                         </div>
                     ) : (
-                        <div className="overflow-x-auto border rounded-lg">
+                        <>
+                            <div className="overflow-x-auto border rounded-lg">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -166,7 +176,9 @@ export default function ContactSubmissions() {
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        filteredSubmissions.map((submission) => (
+                                        filteredSubmissions
+                                            .slice((page - 1) * pageSize, page * pageSize)
+                                            .map((submission) => (
                                             <TableRow key={submission.id} className={submission.is_read ? "bg-muted/30" : "bg-white"}>
                                                 <TableCell className="whitespace-nowrap">
                                                     {new Date(submission.created_at).toLocaleDateString()}
@@ -258,6 +270,70 @@ export default function ContactSubmissions() {
                                 </TableBody>
                             </Table>
                         </div>
+
+                        {/* Pagination */}
+                        {(() => {
+                            const totalCount = filteredSubmissions.length;
+                            const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+                            const currentPage = Math.min(page, totalPages);
+                            const startIndex = (currentPage - 1) * pageSize;
+                            const endIndex = Math.min(startIndex + pageSize, totalCount);
+
+                            if (totalCount === 0) return null;
+
+                            return (
+                                <div className="flex items-center justify-between mt-4 flex-wrap gap-2 pt-4 border-t">
+                                    <div className="flex items-center gap-4">
+                                        <p className="text-sm text-muted-foreground">
+                                            Showing {startIndex + 1} to {endIndex} of {totalCount} entries
+                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm text-muted-foreground">Per page:</span>
+                                            <Select
+                                                value={pageSize.toString()}
+                                                onValueChange={(v) => {
+                                                    setPageSize(Number(v));
+                                                    setPage(1);
+                                                }}
+                                            >
+                                                <SelectTrigger className="w-[70px] h-8">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {[5, 10, 20, 50].map((n) => (
+                                                        <SelectItem key={n} value={String(n)}>
+                                                            {n}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-1 items-center">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                                            disabled={currentPage === 1}
+                                        >
+                                            &lt;
+                                        </Button>
+                                        <span className="text-sm px-2">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            &gt;
+                                        </Button>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                        </>
                     )}
                 </Card>
             </div>

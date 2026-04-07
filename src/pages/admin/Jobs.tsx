@@ -77,7 +77,7 @@ const AdminJobs = () => {
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(5);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
@@ -509,26 +509,48 @@ const AdminJobs = () => {
                 {" "}
                 {Math.min(currentPage * pageSize, filteredJobs.length)} of {filteredJobs.length} jobs
               </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={currentPage === 1}
-                  onClick={() => goToPage(currentPage - 1)}
-                >
-                  Previous
-                </Button>
-                <span className="text-sm">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={currentPage === totalPages}
-                  onClick={() => goToPage(currentPage + 1)}
-                >
-                  Next
-                </Button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Per page:</span>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={(value) => {
+                      setPageSize(Number(value));
+                      setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-20 h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => goToPage(currentPage - 1)}
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-sm">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => goToPage(currentPage + 1)}
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
             </div>
           )}

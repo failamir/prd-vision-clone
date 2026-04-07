@@ -13,6 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useUser } from "@/contexts/UserContext";
 
@@ -65,6 +72,8 @@ export default function AdminMessages() {
   const [rows, setRows] = useState<DBMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [replyOpen, setReplyOpen] = useState<Record<string, boolean>>({});
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [sending, setSending] = useState<Record<string, boolean>>({});
@@ -230,89 +239,159 @@ export default function AdminMessages() {
           {loading ? (
             <div className="flex items-center justify-center h-40 text-muted-foreground"><Loader2 className="w-5 h-5 animate-spin mr-2" />Loading...</div>
           ) : (
-            <div className="overflow-x-auto border rounded-lg">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Sender</TableHead>
-                    <TableHead>Receiver</TableHead>
-                    <TableHead>Subject</TableHead>
-                    <TableHead>Message</TableHead>
-                    <TableHead className="w-60">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows
-                    .filter(r =>
-                      (r.subject || "").toLowerCase().includes(search.toLowerCase()) ||
-                      (r.message || "").toLowerCase().includes(search.toLowerCase())
-                    )
-                    .map(r => (
-                      <>
-                        <TableRow key={r.id}>
-                          <TableCell>{new Date(r.created_at).toLocaleString()}</TableCell>
-                          <TableCell className="font-mono text-xs">{r.sender_id}</TableCell>
-                          <TableCell className="font-mono text-xs">{r.receiver_id}</TableCell>
-                          <TableCell>{r.subject || "-"}</TableCell>
-                          <TableCell className="max-w-[420px] truncate" title={r.message || undefined}>{r.message || "-"}</TableCell>
-                          <TableCell className="space-x-2">
-                            <Button size="sm" variant={r.is_read ? "secondary" : "default"} onClick={() => markRead(r.id, !r.is_read)}>
-                              {r.is_read ? "Mark Unread" : "Mark Read"}
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => toggleReply(r.id)}>
-                              Reply
-                            </Button>
-                            <a href={`/admin/message-center?selected=${encodeURIComponent((user?.id === r.sender_id ? r.receiver_id : r.sender_id) || '')}`}>
-                              <Button size="sm" variant="secondary">Open Chat</Button>
-                            </a>
-                            <Button size="sm" variant="destructive" onClick={() => del(r.id)}>Delete</Button>
-                          </TableCell>
-                        </TableRow>
-                        {replyOpen[r.id] && (
-                          <TableRow>
-                            <TableCell colSpan={6}>
-                              <div className="p-3 bg-muted/30 rounded-md space-y-3">
-                                <div className="text-sm font-medium">Conversation</div>
-                                <div className="max-h-64 overflow-y-auto space-y-2">
-                                  {threadLoading[r.id] ? (
-                                    <div className="text-sm text-muted-foreground">Loading thread...</div>
-                                  ) : (threads[r.id] || []).length === 0 ? (
-                                    <div className="text-sm text-muted-foreground">No messages yet</div>
-                                  ) : (
-                                    (threads[r.id] || []).map((tm) => (
-                                      <div key={tm.id} className={`flex ${tm.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${tm.sender_id === user?.id ? 'bg-blue-500 text-white' : 'bg-white border'}`}>
-                                          <div>{tm.message}</div>
-                                          <div className={`text-[10px] mt-1 ${tm.sender_id === user?.id ? 'text-blue-100' : 'text-muted-foreground'}`}>{new Date(tm.created_at).toLocaleString()}</div>
-                                        </div>
-                                      </div>
-                                    ))
-                                  )}
-                                </div>
-                                <div className="text-sm text-muted-foreground">Reply to: <span className="font-mono text-xs">{user?.id === r.sender_id ? r.receiver_id : r.sender_id}</span></div>
-                                <Textarea
-                                  value={replyText[r.id] || ""}
-                                  onChange={(e) => setReplyText(prev => ({ ...prev, [r.id]: e.target.value }))}
-                                  placeholder="Type your reply..."
-                                  className="min-h-[80px]"
-                                />
-                                <div className="flex items-center justify-end gap-2">
-                                  <Button size="sm" variant="ghost" onClick={() => toggleReply(r.id)}>Cancel</Button>
-                                  <Button size="sm" onClick={() => sendReply(r)} disabled={sending[r.id]}>
-                                    {sending[r.id] ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                                    Send Reply
-                                  </Button>
-                                </div>
-                              </div>
+            <>
+              <div className="overflow-x-auto border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Sender</TableHead>
+                      <TableHead>Receiver</TableHead>
+                      <TableHead>Subject</TableHead>
+                      <TableHead>Message</TableHead>
+                      <TableHead className="w-60">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rows
+                      .filter(r =>
+                        (r.subject || "").toLowerCase().includes(search.toLowerCase()) ||
+                        (r.message || "").toLowerCase().includes(search.toLowerCase())
+                      )
+                      .slice((page - 1) * pageSize, page * pageSize)
+                      .map(r => (
+                        <>
+                          <TableRow key={r.id}>
+                            <TableCell>{new Date(r.created_at).toLocaleString()}</TableCell>
+                            <TableCell className="font-mono text-xs">{r.sender_id}</TableCell>
+                            <TableCell className="font-mono text-xs">{r.receiver_id}</TableCell>
+                            <TableCell>{r.subject || "-"}</TableCell>
+                            <TableCell className="max-w-[420px] truncate" title={r.message || undefined}>{r.message || "-"}</TableCell>
+                            <TableCell className="space-x-2">
+                              <Button size="sm" variant={r.is_read ? "secondary" : "default"} onClick={() => markRead(r.id, !r.is_read)}>
+                                {r.is_read ? "Mark Unread" : "Mark Read"}
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => toggleReply(r.id)}>
+                                Reply
+                              </Button>
+                              <a href={`/admin/message-center?selected=${encodeURIComponent((user?.id === r.sender_id ? r.receiver_id : r.sender_id) || '')}`}>
+                                <Button size="sm" variant="secondary">Open Chat</Button>
+                              </a>
+                              <Button size="sm" variant="destructive" onClick={() => del(r.id)}>Delete</Button>
                             </TableCell>
                           </TableRow>
-                        )}
-                      </>
-                    ))}
-                </TableBody>
-              </Table>
-            </div>
+                          {replyOpen[r.id] && (
+                            <TableRow>
+                              <TableCell colSpan={6}>
+                                <div className="p-3 bg-muted/30 rounded-md space-y-3">
+                                  <div className="text-sm font-medium">Conversation</div>
+                                  <div className="max-h-64 overflow-y-auto space-y-2">
+                                    {threadLoading[r.id] ? (
+                                      <div className="text-sm text-muted-foreground">Loading thread...</div>
+                                    ) : (threads[r.id] || []).length === 0 ? (
+                                      <div className="text-sm text-muted-foreground">No messages yet</div>
+                                    ) : (
+                                      (threads[r.id] || []).map((tm) => (
+                                        <div key={tm.id} className={`flex ${tm.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
+                                          <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${tm.sender_id === user?.id ? 'bg-blue-500 text-white' : 'bg-white border'}`}>
+                                            <div>{tm.message}</div>
+                                            <div className={`text-[10px] mt-1 ${tm.sender_id === user?.id ? 'text-blue-100' : 'text-muted-foreground'}`}>{new Date(tm.created_at).toLocaleString()}</div>
+                                          </div>
+                                        </div>
+                                      ))
+                                    )}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">Reply to: <span className="font-mono text-xs">{user?.id === r.sender_id ? r.receiver_id : r.sender_id}</span></div>
+                                  <Textarea
+                                    value={replyText[r.id] || ""}
+                                    onChange={(e) => setReplyText(prev => ({ ...prev, [r.id]: e.target.value }))}
+                                    placeholder="Type your reply..."
+                                    className="min-h-[80px]"
+                                  />
+                                  <div className="flex items-center justify-end gap-2">
+                                    <Button size="sm" variant="ghost" onClick={() => toggleReply(r.id)}>Cancel</Button>
+                                    <Button size="sm" onClick={() => sendReply(r)} disabled={sending[r.id]}>
+                                      {sending[r.id] ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                                      Send Reply
+                                    </Button>
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination */}
+              {(() => {
+                const filtered = rows.filter(r =>
+                  (r.subject || "").toLowerCase().includes(search.toLowerCase()) ||
+                  (r.message || "").toLowerCase().includes(search.toLowerCase())
+                );
+                const totalCount = filtered.length;
+                const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+                const currentPage = Math.min(page, totalPages);
+                const startIndex = (currentPage - 1) * pageSize;
+                const endIndex = Math.min(startIndex + pageSize, totalCount);
+
+                if (totalCount === 0) return null;
+
+                return (
+                  <div className="flex items-center justify-between mt-4 flex-wrap gap-2 pt-4 border-t">
+                    <div className="flex items-center gap-4">
+                      <p className="text-sm text-muted-foreground">
+                        Showing {startIndex + 1} to {endIndex} of {totalCount} entries
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Per page:</span>
+                        <Select
+                          value={pageSize.toString()}
+                          onValueChange={(v) => {
+                            setPageSize(Number(v));
+                            setPage(1);
+                          }}
+                        >
+                          <SelectTrigger className="w-[70px] h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[5, 10, 20, 50].map((n) => (
+                              <SelectItem key={n} value={String(n)}>
+                                {n}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 items-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        &lt;
+                      </Button>
+                      <span className="text-sm px-2">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        &gt;
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </>
           )}
         </Card>
       </div>
