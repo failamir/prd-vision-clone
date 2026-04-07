@@ -37,21 +37,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const userClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: claims, error: claimsErr } = await userClient.auth.getClaims(
-      authHeader.replace("Bearer ", "")
-    );
-    if (claimsErr || !claims?.claims) {
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
+    if (userError || !userData.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
     }
 
-    const userId = claims.claims.sub as string;
-    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: userId, _role: "admin" });
+    const userId = userData.user.id;
+    // Check multiple admin-level roles
+    const adminRoles = ['admin', 'superadmin', 'manajer', 'manager', 'staff', 'interviewer', 'interviewer_principal', 'direktur', 'pic', 'hrd'];
+    const { data: userRoles } = await supabaseAdmin.from('user_roles').select('role').eq('user_id', userId);
+    const isAdmin = userRoles?.some((r: any) => adminRoles.includes(r.role));
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Admin only" }), { status: 403, headers: corsHeaders });
     }
