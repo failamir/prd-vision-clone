@@ -2470,7 +2470,7 @@ const Profile = () => {
                               Cancel
                             </Button>
                           )}
-                          <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck} className="flex-1 rounded-full">
+                          <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck} variant="success" className="flex-1 rounded-full">
                             {uploadingDeck ? (
                               <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -2479,7 +2479,7 @@ const Profile = () => {
                             ) : editingDeckId ? (
                               "Update"
                             ) : (
-                              "Add"
+                              "Save"
                             )}
                           </Button>
                         </div>
