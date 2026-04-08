@@ -519,43 +519,6 @@ const Profile = () => {
     return missing;
   };
 
-  const isStep1Valid = () => {
-    const validGenders = new Set(["male", "female"]);
-    const validRegistrationCities = new Set(["Jakarta", "Bandung", "Bali", "Surabaya", "Yogyakarta"]);
-    const validVaccinationStatuses = new Set([
-      "Not Vaccinated",
-      "Partially Vaccinated",
-      "Fully Vaccinated",
-      "Fully Vaccinated with Booster",
-    ]);
-    const validHowFoundUs = new Set([
-      "Online Search",
-      "Social Media",
-      "Referral",
-      "Job Fair",
-      "Company Website",
-    ]);
-
-    if (!profile.full_name?.trim()) return false;
-    if (!profile.phone?.trim()) return false;
-    if (!profile.address?.trim()) return false;
-    if (!profile.city?.trim()) return false;
-    if (!profile.country?.trim()) return false;
-    if (!profile.place_of_birth?.trim()) return false;
-    if (!profile.date_of_birth) return false;
-    if (!profile.ktp_number?.trim()) return false;
-    if (!profile.weight_kg) return false;
-    if (!profile.height_cm) return false;
-    if (!validGenders.has(profile.gender)) return false;
-    if (!validRegistrationCities.has(profile.registration_city)) return false;
-    if (!validVaccinationStatuses.has(profile.covid_vaccinated)) return false;
-    if (!validHowFoundUs.has(profile.how_found_us)) return false;
-    if (profile.how_found_us === "Referral" && !profile.referral_name?.trim()) return false;
-    if (cvs.length === 0) return false;
-
-    return true;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -3640,7 +3603,7 @@ const Profile = () => {
             ) : (
               <Button
                 type="submit"
-                disabled={saving || (currentStep === 1 && !isStep1Valid())}
+                disabled={saving || (currentStep === 1 && !isStep1Valid)}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {saving ? (
@@ -3660,7 +3623,7 @@ const Profile = () => {
           visible={!isFooterVisible} 
           saving={saving} 
           isSaveStep={!(currentStep < totalSteps && currentStep < stepUnlocked)}
-          disabled={currentStep === 1 && !isStep1Valid()}
+          disabled={currentStep === 1 && !isStep1Valid}
         />
       </div>
     </>
@@ -3686,7 +3649,7 @@ const FloatingSaveButton = ({
         type="submit"
         form="profile-form"
         disabled={saving || disabled}
-        className="h-14 px-8 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/20 backdrop-blur-sm bg-primary hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 flex items-center gap-3 font-semibold text-lg"
+        className="h-14 px-8 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/20 backdrop-blur-sm bg-blue-600 hover:bg-blue-700 text-white transition-all hover:scale-105 active:scale-95 flex items-center gap-3 font-semibold text-lg"
       >
         {saving ? (
           <>
