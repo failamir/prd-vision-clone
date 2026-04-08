@@ -84,6 +84,8 @@ export const AdminLayout = ({ children = null }: AdminLayoutProps) => {
     return () => { channel.unsubscribe(); };
   }, [user]);
 
+  const isPicOnly = userRoles.includes('pic') && !userRoles.some(r => ['admin', 'superadmin'].includes(r));
+
   const navigationGroups = [
     {
       title: "Main",
@@ -109,12 +111,12 @@ export const AdminLayout = ({ children = null }: AdminLayoutProps) => {
         { name: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
       ]
     },
-    {
+    ...(!isPicOnly ? [{
       title: "Settings",
       items: [
         { name: "Role Permissions", href: "/admin/role-permissions", icon: Key },
       ]
-    }
+    }] : []),
   ];
 
   const handleLogout = async () => {
