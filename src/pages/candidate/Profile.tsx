@@ -318,6 +318,25 @@ const Profile = () => {
     }
   };
 
+  const isStep1Valid = !!(
+    profile.full_name &&
+    profile.ktp_number &&
+    profile.weight_kg &&
+    profile.height_cm &&
+    profile.gender &&
+    profile.country &&
+    profile.phone &&
+    profile.address &&
+    profile.city &&
+    profile.place_of_birth &&
+    profile.date_of_birth &&
+    profile.registration_city &&
+    profile.covid_vaccinated &&
+    profile.how_found_us &&
+    (profile.how_found_us !== "Referral" || profile.referral_name) &&
+    cvs.length > 0
+  );
+
   const handleAddCertificate = async () => {
     if (!candidateId) return;
     if (!newCertificate.type_certificate || !newCertificate.institution || !newCertificate.cert_number || !newCertificate.date_of_issue || !newCertificate.file) {
@@ -484,6 +503,9 @@ const Profile = () => {
     if (!profile.country?.trim()) { missing.push("Nationality"); errorKeys.add("country"); }
     if (!profile.place_of_birth?.trim()) { missing.push("Place of Birth"); errorKeys.add("place_of_birth"); }
     if (!profile.date_of_birth) { missing.push("Date of Birth"); errorKeys.add("date_of_birth"); }
+    if (!profile.ktp_number?.trim()) { missing.push("KTP Number"); errorKeys.add("ktp_number"); }
+    if (!profile.weight_kg) { missing.push("Weight"); errorKeys.add("weight_kg"); }
+    if (!profile.height_cm) { missing.push("Height"); errorKeys.add("height_cm"); }
 
     if (!validGenders.has(profile.gender)) { missing.push("Gender"); errorKeys.add("gender"); }
     if (!validRegistrationCities.has(profile.registration_city)) { missing.push("Registration City"); errorKeys.add("registration_city"); }
@@ -495,6 +517,43 @@ const Profile = () => {
 
     setValidationErrors(errorKeys);
     return missing;
+  };
+
+  const isStep1Valid = () => {
+    const validGenders = new Set(["male", "female"]);
+    const validRegistrationCities = new Set(["Jakarta", "Bandung", "Bali", "Surabaya", "Yogyakarta"]);
+    const validVaccinationStatuses = new Set([
+      "Not Vaccinated",
+      "Partially Vaccinated",
+      "Fully Vaccinated",
+      "Fully Vaccinated with Booster",
+    ]);
+    const validHowFoundUs = new Set([
+      "Online Search",
+      "Social Media",
+      "Referral",
+      "Job Fair",
+      "Company Website",
+    ]);
+
+    if (!profile.full_name?.trim()) return false;
+    if (!profile.phone?.trim()) return false;
+    if (!profile.address?.trim()) return false;
+    if (!profile.city?.trim()) return false;
+    if (!profile.country?.trim()) return false;
+    if (!profile.place_of_birth?.trim()) return false;
+    if (!profile.date_of_birth) return false;
+    if (!profile.ktp_number?.trim()) return false;
+    if (!profile.weight_kg) return false;
+    if (!profile.height_cm) return false;
+    if (!validGenders.has(profile.gender)) return false;
+    if (!validRegistrationCities.has(profile.registration_city)) return false;
+    if (!validVaccinationStatuses.has(profile.covid_vaccinated)) return false;
+    if (!validHowFoundUs.has(profile.how_found_us)) return false;
+    if (profile.how_found_us === "Referral" && !profile.referral_name?.trim()) return false;
+    if (cvs.length === 0) return false;
+
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -2305,7 +2364,7 @@ const Profile = () => {
                   <Button
                     type="button"
                     onClick={handleSaveTest}
-                    disabled={uploadingTest || !newTest.test_name || !newTest.score || !newTestFile}
+                    disabled={uploadingTest || !newTest.test_name || !newTest.score || !newTest.file}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {uploadingTest ? (
@@ -3581,7 +3640,7 @@ const Profile = () => {
             ) : (
               <Button
                 type="submit"
-                disabled={saving || (currentStep === 1 && !isStep1Valid)}
+                disabled={saving || (currentStep === 1 && !isStep1Valid())}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {saving ? (
@@ -3601,6 +3660,7 @@ const Profile = () => {
           visible={!isFooterVisible} 
           saving={saving} 
           isSaveStep={!(currentStep < totalSteps && currentStep < stepUnlocked)}
+          disabled={currentStep === 1 && !isStep1Valid()}
         />
       </div>
     </>
@@ -3610,11 +3670,13 @@ const Profile = () => {
 const FloatingSaveButton = ({ 
   visible, 
   saving, 
-  isSaveStep 
+  isSaveStep,
+  disabled
 }: { 
   visible: boolean; 
   saving: boolean; 
   isSaveStep: boolean;
+  disabled?: boolean;
 }) => {
   if (!visible || !isSaveStep) return null;
 
@@ -3623,7 +3685,7 @@ const FloatingSaveButton = ({
       <Button
         type="submit"
         form="profile-form"
-        disabled={saving}
+        disabled={saving || disabled}
         className="h-14 px-8 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/20 backdrop-blur-sm bg-primary hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 flex items-center gap-3 font-semibold text-lg"
       >
         {saving ? (
