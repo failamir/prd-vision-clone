@@ -246,7 +246,7 @@ Deno.serve(async (req) => {
             await pg.unsafe(stmt);
             successCount++;
           } catch (e) {
-            const msg = e.message || String(e);
+            const msg = e instanceof Error ? e.message : String(e);
             // Skip conflict errors silently
             if (msg.includes("duplicate key") || msg.includes("already exists")) {
               skipCount++;
@@ -276,8 +276,9 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: 'Invalid action. Use "validate" or "execute"' }),
       { status: 400, headers: corsHeaders }
     );
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
