@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, User, FileText, Trash2, Edit2, ExternalLink, Download, Star } from "lucide-react";
+import { Loader2, Upload, User, FileText, Trash2, Edit2, ExternalLink, Download, Star, Save } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -58,6 +58,8 @@ const Profile = () => {
     score: "",
     file: null as File | null,
   });
+  const footerRef = useRef<HTMLDivElement>(null);
+  const [isFooterVisible, setIsFooterVisible] = useState(true);
   const [uploadingTest, setUploadingTest] = useState(false);
   const [candidateId, setCandidateId] = useState<string | null>(null);
   const [deckExperiences, setDeckExperiences] = useState<any[]>([]);
@@ -225,6 +227,25 @@ const Profile = () => {
       fetchFormLetters();
     }
   }, [candidateId, currentStep]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsFooterVisible(entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+
+    if (footerRef.current) {
+      observer.observe(footerRef.current);
+    }
+
+    return () => {
+      if (footerRef.current) {
+        observer.unobserve(footerRef.current);
+      }
+    };
+  }, []);
 
   const fetchProfile = async () => {
     try {
@@ -1780,7 +1801,7 @@ const Profile = () => {
                   )}
                 </Button>
                 <p className="text-sm text-muted-foreground mt-2 text-center">
-                  Max 5MB, JPG/PNG
+                  Max 5MB, JPG/PNG <span className="text-destructive">*</span>
                 </p>
               </div>
             </div>
@@ -2284,8 +2305,8 @@ const Profile = () => {
                   <Button
                     type="button"
                     onClick={handleSaveTest}
-                    disabled={uploadingTest}
-                    className="bg-destructive hover:bg-destructive/90"
+                    disabled={uploadingTest || !newTest.test_name || !newTest.score || !newTestFile}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {uploadingTest ? (
                       <>
@@ -2478,7 +2499,7 @@ const Profile = () => {
                                 ? (!newDeck.vessel_name_type || !newDeck.position || !newDeck.start_date || !newDeck.reason || !newDeck.job_description)
                                 : (!newDeck.vessel_name_type || !newDeck.gt_loa || !newDeck.position || !newDeck.start_date || !newDeck.reason))
                             } 
-                            className="flex-1"
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                           >
                             {uploadingDeck ? (
                               <>
@@ -2697,7 +2718,7 @@ const Profile = () => {
                           type="button"
                           onClick={handleAddCertificate}
                           disabled={uploadingCertificate || !newCertificate.type_certificate || !newCertificate.institution || !newCertificate.cert_number || !newCertificate.date_of_issue || !newCertificate.file}
-                          className="bg-destructive hover:bg-destructive/90"
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           {uploadingCertificate ? (
                             <>
@@ -2859,7 +2880,7 @@ const Profile = () => {
                           type="button"
                           onClick={handleAddTravel}
                           disabled={uploadingTravel || !newTravel.document_type || !newTravel.document_number || !newTravel.issue_date || !newTravel.expiry_date || !newTravel.file}
-                          className="bg-destructive hover:bg-destructive/90"
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           {uploadingTravel ? (
                             <>
@@ -3000,6 +3021,7 @@ const Profile = () => {
                           type="button" 
                           onClick={handleAddEducation}
                           disabled={!newEducation.institution || !newEducation.start_date || !newEducation.end_date || !newEducation.degree}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           Save
                         </Button>
@@ -3127,7 +3149,7 @@ const Profile = () => {
                         type="button"
                         onClick={handleAddReference}
                         disabled={!newReference.full_name || !newReference.phone}
-                        className="bg-destructive hover:bg-destructive/90"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         Save
                       </Button>
@@ -3255,7 +3277,7 @@ const Profile = () => {
                         type="button"
                         onClick={handleAddNextOfKin}
                         disabled={!newNextOfKin.full_name || !newNextOfKin.relationship}
-                        className="bg-destructive hover:bg-destructive/90"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         Save
                       </Button>
@@ -3385,7 +3407,7 @@ const Profile = () => {
                           type="button"
                           onClick={handleAddEmergencyContact}
                           disabled={!newEmergencyContact.full_name || !newEmergencyContact.relationship || !newEmergencyContact.phone}
-                          className="bg-destructive hover:bg-destructive/90"
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           Save
                         </Button>
@@ -3535,11 +3557,11 @@ const Profile = () => {
           </Select>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="profile-form" onSubmit={handleSubmit} className="space-y-6">
           {renderStepContent()}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between">
+          <div ref={footerRef} className="flex justify-between">
             <Button
               type="button"
               variant="outline"
@@ -3559,7 +3581,8 @@ const Profile = () => {
             ) : (
               <Button
                 type="submit"
-                disabled={saving}
+                disabled={saving || (currentStep === 1 && !isStep1Valid)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {saving ? (
                   <>
@@ -3573,8 +3596,49 @@ const Profile = () => {
             )}
           </div>
         </form>
+
+        <FloatingSaveButton 
+          visible={!isFooterVisible} 
+          saving={saving} 
+          isSaveStep={!(currentStep < totalSteps && currentStep < stepUnlocked)}
+        />
       </div>
     </>
+  );
+};
+
+const FloatingSaveButton = ({ 
+  visible, 
+  saving, 
+  isSaveStep 
+}: { 
+  visible: boolean; 
+  saving: boolean; 
+  isSaveStep: boolean;
+}) => {
+  if (!visible || !isSaveStep) return null;
+
+  return (
+    <div className="fixed bottom-8 right-8 z-50 animate-in fade-in slide-in-from-bottom-10 duration-300">
+      <Button
+        type="submit"
+        form="profile-form"
+        disabled={saving}
+        className="h-14 px-8 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/20 backdrop-blur-sm bg-primary hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 flex items-center gap-3 font-semibold text-lg"
+      >
+        {saving ? (
+          <>
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Saving...</span>
+          </>
+        ) : (
+          <>
+            <Save className="h-5 w-5" />
+            <span>Save Profile</span>
+          </>
+        )}
+      </Button>
+    </div>
   );
 };
 
