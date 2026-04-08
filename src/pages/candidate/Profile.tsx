@@ -2285,7 +2285,8 @@ const Profile = () => {
                     type="button"
                     onClick={handleSaveTest}
                     disabled={uploadingTest}
-                    className="bg-destructive hover:bg-destructive/90"
+                    variant="success"
+                    className="rounded-full w-full"
                   >
                     {uploadingTest ? (
                       <>
@@ -2469,7 +2470,7 @@ const Profile = () => {
                               Cancel
                             </Button>
                           )}
-                          <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck} className="flex-1">
+                          <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck} className="flex-1 rounded-full">
                             {uploadingDeck ? (
                               <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -2687,7 +2688,8 @@ const Profile = () => {
                           type="button"
                           onClick={handleAddCertificate}
                           disabled={uploadingCertificate}
-                          className="bg-destructive hover:bg-destructive/90"
+                          variant="success"
+                          className="rounded-full w-full"
                         >
                           {uploadingCertificate ? (
                             <>
@@ -2849,7 +2851,8 @@ const Profile = () => {
                           type="button"
                           onClick={handleAddTravel}
                           disabled={uploadingTravel}
-                          className="bg-destructive hover:bg-destructive/90"
+                          variant="success"
+                          className="rounded-full w-full"
                         >
                           {uploadingTravel ? (
                             <>
@@ -2986,7 +2989,7 @@ const Profile = () => {
                           />
                         </div>
 
-                        <Button type="button" onClick={handleAddEducation}>
+                        <Button type="button" onClick={handleAddEducation} variant="success" className="rounded-full w-full">
                           Save
                         </Button>
                       </div>
@@ -3113,7 +3116,8 @@ const Profile = () => {
                         type="button"
                         onClick={handleAddReference}
                         disabled={!newReference.full_name || !newReference.phone}
-                        className="bg-destructive hover:bg-destructive/90"
+                        variant="success"
+                        className="rounded-full w-full"
                       >
                         Save
                       </Button>
@@ -3240,7 +3244,8 @@ const Profile = () => {
                       <Button
                         type="button"
                         onClick={handleAddNextOfKin}
-                        className="bg-destructive hover:bg-destructive/90"
+                        variant="success"
+                        className="rounded-full w-full"
                       >
                         Save
                       </Button>
@@ -3369,7 +3374,8 @@ const Profile = () => {
                         <Button
                           type="button"
                           onClick={handleAddEmergencyContact}
-                          className="bg-destructive hover:bg-destructive/90"
+                          variant="success"
+                          className="rounded-full w-full"
                         >
                           Save
                         </Button>
@@ -3529,6 +3535,7 @@ const Profile = () => {
               variant="outline"
               onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
               disabled={currentStep === 1}
+              className="rounded-full"
             >
               Previous
             </Button>
@@ -3537,6 +3544,7 @@ const Profile = () => {
               <Button
                 type="button"
                 onClick={() => setCurrentStep(Math.min(stepUnlocked, currentStep + 1))}
+                className="rounded-full"
               >
                 Next
               </Button>
@@ -3544,6 +3552,7 @@ const Profile = () => {
               <Button
                 type="submit"
                 disabled={saving}
+                className="rounded-full px-8"
               >
                 {saving ? (
                   <>
