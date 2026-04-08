@@ -299,8 +299,8 @@ const Profile = () => {
 
   const handleAddCertificate = async () => {
     if (!candidateId) return;
-    if (!newCertificate.type_certificate || !newCertificate.institution || !newCertificate.cert_number || !newCertificate.date_of_issue) {
-      toast({ title: "Please fill required fields", variant: "destructive" });
+    if (!newCertificate.type_certificate || !newCertificate.institution || !newCertificate.cert_number || !newCertificate.date_of_issue || !newCertificate.file) {
+      toast({ title: "Please fill required fields and upload file", variant: "destructive" });
       return;
     }
 
@@ -1095,8 +1095,8 @@ const Profile = () => {
 
   const handleAddTravel = async () => {
     if (!candidateId) return;
-    if (!newTravel.document_type || !newTravel.document_number || !newTravel.issue_date || !newTravel.expiry_date) {
-      toast({ title: "Please fill required fields", variant: "destructive" });
+    if (!newTravel.document_type || !newTravel.document_number || !newTravel.issue_date || !newTravel.expiry_date || !newTravel.file) {
+      toast({ title: "Please fill required fields and upload file", variant: "destructive" });
       return;
     }
 
@@ -2469,7 +2469,17 @@ const Profile = () => {
                               Cancel
                             </Button>
                           )}
-                          <Button type="button" onClick={handleAddDeck} disabled={uploadingDeck} className="flex-1">
+                          <Button 
+                            type="button" 
+                            onClick={handleAddDeck} 
+                            disabled={
+                              uploadingDeck || 
+                              (department === "Hotel Department" 
+                                ? (!newDeck.vessel_name_type || !newDeck.position || !newDeck.start_date || !newDeck.reason || !newDeck.job_description)
+                                : (!newDeck.vessel_name_type || !newDeck.gt_loa || !newDeck.position || !newDeck.start_date || !newDeck.reason))
+                            } 
+                            className="flex-1"
+                          >
                             {uploadingDeck ? (
                               <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -2686,7 +2696,7 @@ const Profile = () => {
                         <Button
                           type="button"
                           onClick={handleAddCertificate}
-                          disabled={uploadingCertificate}
+                          disabled={uploadingCertificate || !newCertificate.type_certificate || !newCertificate.institution || !newCertificate.cert_number || !newCertificate.date_of_issue || !newCertificate.file}
                           className="bg-destructive hover:bg-destructive/90"
                         >
                           {uploadingCertificate ? (
@@ -2848,7 +2858,7 @@ const Profile = () => {
                         <Button
                           type="button"
                           onClick={handleAddTravel}
-                          disabled={uploadingTravel}
+                          disabled={uploadingTravel || !newTravel.document_type || !newTravel.document_number || !newTravel.issue_date || !newTravel.expiry_date || !newTravel.file}
                           className="bg-destructive hover:bg-destructive/90"
                         >
                           {uploadingTravel ? (
@@ -2986,7 +2996,11 @@ const Profile = () => {
                           />
                         </div>
 
-                        <Button type="button" onClick={handleAddEducation}>
+                        <Button 
+                          type="button" 
+                          onClick={handleAddEducation}
+                          disabled={!newEducation.institution || !newEducation.start_date || !newEducation.end_date || !newEducation.degree}
+                        >
                           Save
                         </Button>
                       </div>
@@ -3240,6 +3254,7 @@ const Profile = () => {
                       <Button
                         type="button"
                         onClick={handleAddNextOfKin}
+                        disabled={!newNextOfKin.full_name || !newNextOfKin.relationship}
                         className="bg-destructive hover:bg-destructive/90"
                       >
                         Save
@@ -3369,6 +3384,7 @@ const Profile = () => {
                         <Button
                           type="button"
                           onClick={handleAddEmergencyContact}
+                          disabled={!newEmergencyContact.full_name || !newEmergencyContact.relationship || !newEmergencyContact.phone}
                           className="bg-destructive hover:bg-destructive/90"
                         >
                           Save
