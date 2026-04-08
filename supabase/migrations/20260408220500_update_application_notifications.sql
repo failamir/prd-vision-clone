@@ -1,4 +1,4 @@
--- Update notify_application_status_change function to handle more fields
+-- Update notify_application_update function to handle more fields and notify Admins
 CREATE OR REPLACE FUNCTION public.notify_application_update()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -7,12 +7,15 @@ SET search_path = public
 AS $$
 DECLARE
     _candidate_user_id UUID;
+    _performer_user_id UUID := auth.uid();
     _job_title TEXT;
     _notification_type TEXT := 'info';
     _title TEXT := 'Application Updated';
     _message TEXT;
-    _link TEXT := '/candidate/applications';
+    _candidate_link TEXT := '/candidate/applications';
+    _admin_link TEXT := '/admin/applications';
     _changes TEXT[] := ARRAY[]::TEXT[];
+    _admin_user_id UUID;
 BEGIN
     -- Get candidate's auth user_id
     SELECT cp.user_id INTO _candidate_user_id
@@ -24,34 +27,37 @@ BEGIN
     FROM public.jobs j
     WHERE j.id = NEW.job_id;
 
-    -- Detect changes
+    -- Detect changes and set notification type
     IF OLD.status IS DISTINCT FROM NEW.status THEN
-        _changes := _changes || ('Status: ' || OLD.status || ' -> ' || NEW.status);
-        _notification_type := CASE 
-            WHEN NEW.status IN ('approved', 'hired', 'shortlisted') THEN 'success'
-            WHEN NEW.status = 'rejected' THEN 'error'
-            ELSE 'info'
-        END;
+        _changes := _changes || ('Status: ' || NEW.status);
+        _notification_type := 'status_change';
+        IF NEW.status = 'interview' THEN
+            _notification_type := 'interview';
+        ELSIF NEW.status IN ('approved', 'hired', 'shortlisted') THEN
+            _notification_type := 'success';
+        ELSIF NEW.status = 'rejected' THEN
+            _notification_type := 'error';
+        END IF;
     END IF;
 
     IF OLD.remarks IS DISTINCT FROM NEW.remarks THEN
         _changes := _changes || ('Remarks: ' || NEW.remarks);
+        IF _notification_type = 'info' THEN _notification_type := 'status_change'; END IF;
     END IF;
 
     IF OLD.interview_result IS DISTINCT FROM NEW.interview_result THEN
         _changes := _changes || ('Interview Result: ' || NEW.interview_result);
+        _notification_type := 'interview';
     END IF;
 
     IF OLD.principal_interview_result IS DISTINCT FROM NEW.principal_interview_result THEN
         _changes := _changes || ('Principal Interview Result: ' || NEW.principal_interview_result);
+        _notification_type := 'interview';
     END IF;
 
     IF OLD.approved_as IS DISTINCT FROM NEW.approved_as THEN
         _changes := _changes || ('Approved As: ' || NEW.approved_as);
-    END IF;
-
-    IF OLD.employment_offer IS DISTINCT FROM NEW.employment_offer THEN
-        _changes := _changes || ('Employment Offer: ' || NEW.employment_offer);
+        _notification_type := 'success';
     END IF;
 
     -- If no monitored fields changed, return
@@ -59,31 +65,61 @@ BEGIN
         RETURN NEW;
     END IF;
 
-    _message := 'Your application for "' || COALESCE(_job_title, 'Unknown Position') || '" has been updated: ' || array_to_string(_changes, ', ');
+    -- Base message
+    _message := 'Application for "' || COALESCE(_job_title, 'Position') || '" updated: ' || array_to_string(_changes, ', ');
 
-    -- Insert notification for the candidate
+    -- 1. Insert notification for the CANDIDATE
     IF _candidate_user_id IS NOT NULL THEN
         INSERT INTO public.notifications (user_id, title, message, type, link, metadata)
         VALUES (
             _candidate_user_id,
             _title,
-            _message,
+            'Your application for "' || COALESCE(_job_title, 'Position') || '" has been updated: ' || array_to_string(_changes, ', '),
             _notification_type,
-            _link,
+            _candidate_link,
             jsonb_build_object(
                 'application_id', NEW.id,
                 'job_id', NEW.job_id,
-                'changes', _changes
+                'changes', _changes,
+                'role', 'candidate'
             )
         );
     END IF;
+
+    -- 2. Insert notification for ADMINISTRATIVE USERS (Admins, Superadmins, PICs)
+    -- We notify the performer (as a confirmation) and other relevant admins
+    FOR _admin_user_id IN 
+        SELECT DISTINCT user_id 
+        FROM public.user_roles 
+        WHERE role IN ('admin', 'superadmin', 'pic')
+    LOOP
+        -- Don't double-notify if admin is also the candidate (unlikely but possible)
+        IF _admin_user_id IS DISTINCT FROM _candidate_user_id THEN
+            INSERT INTO public.notifications (user_id, title, message, type, link, metadata)
+            VALUES (
+                _admin_user_id,
+                _title,
+                COALESCE((SELECT full_name FROM public.candidate_profiles WHERE id = NEW.candidate_id), 'A candidate') || 
+                '''s application for "' || COALESCE(_job_title, 'Position') || '" was updated: ' || array_to_string(_changes, ', '),
+                _notification_type,
+                _admin_link,
+                jsonb_build_object(
+                    'application_id', NEW.id,
+                    'job_id', NEW.job_id,
+                    'changes', _changes,
+                    'role', 'admin',
+                    'performer_id', _performer_user_id
+                )
+            );
+        END IF;
+    END LOOP;
 
     RETURN NEW;
 END;
 $$;
 
--- Replace old trigger with the new one
-DROP TRIGGER IF EXISTS on_application_status_change ON public.job_applications;
+-- Trigger remains the same
+DROP TRIGGER IF EXISTS on_application_update ON public.job_applications;
 CREATE TRIGGER on_application_update
     AFTER UPDATE ON public.job_applications
     FOR EACH ROW

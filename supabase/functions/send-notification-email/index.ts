@@ -30,11 +30,22 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Notification Webhook Payload:", payload);
 
     const record = payload.record as NotificationRecord;
+    const metadata = (record as any).metadata || {};
 
     if (!record || !record.user_id) {
       return new Response(
         JSON.stringify({ error: "Invalid payload" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Skip sending email if the recipient is an admin/staff (unless specifically desired)
+    // or if the recipient is the one who performed the update.
+    if (metadata.role === 'admin' || record.user_id === metadata.performer_id) {
+      console.log("Skipping email for admin/performer:", record.user_id);
+      return new Response(
+        JSON.stringify({ success: true, message: "Email skipped for this role/user" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
