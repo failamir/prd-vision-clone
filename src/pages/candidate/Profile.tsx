@@ -2235,7 +2235,7 @@ const Profile = () => {
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="test_name">Test Name</Label>
+                    <Label htmlFor="test_name">Test Name*</Label>
                     <Select
                       value={newTest.test_name}
                       onValueChange={(v) => setNewTest({ ...newTest, test_name: v })}
@@ -2252,7 +2252,7 @@ const Profile = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="score">Score</Label>
+                    <Label htmlFor="score">Score*</Label>
                     <Input
                       id="score"
                       type="number"
