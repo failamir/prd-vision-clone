@@ -4,9 +4,27 @@ import { Loader2 } from "lucide-react";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import DatabaseBackup from "@/components/admin/DatabaseBackup";
 import DatabaseImport from "@/components/admin/DatabaseImport";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminDashboard = () => {
   const { stats, loading } = useDashboardData();
+  const [isPicUser, setIsPicUser] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+      const hasPic = roles?.some(r => r.role === "pic");
+      const hasAdmin = roles?.some(r => ["admin", "superadmin"].includes(r.role));
+      setIsPicUser(!!hasPic && !hasAdmin);
+    };
+    checkRole();
+  }, []);
 
   const statCards = [
     {
@@ -101,11 +119,13 @@ const AdminDashboard = () => {
           </div>
         </Card>
 
-        {/* Database Backup & Import */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <DatabaseBackup />
-          <DatabaseImport />
-        </div>
+        {/* Database Backup & Import - Hidden for PIC users */}
+        {!isPicUser && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <DatabaseBackup />
+            <DatabaseImport />
+          </div>
+        )}
       </div>
     </>
   );
